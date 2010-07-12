@@ -13,13 +13,6 @@ namespace ConsoleTest {
 			FibTest2();
 		}
 
-		static void KrgnProcDynamic() {
-			Func<dynamic, dynamic, dynamic> add = (x, y) => x + y;
-			dynamic 加算 = new KrgnFunc(add, "と", "を");
-			var three = 加算(と: 1, を: 2);
-			Console.WriteLine(three);
-		}
-
 		static void SimpleGreet() {
 			var code =
 				"「こんにちは」を[改行出力]する。" +
@@ -137,7 +130,6 @@ namespace ConsoleTest {
 ";
 			var engine = new Engine();
 			engine.Execute(code);
-			var obj = engine.DefaultScope.GetVariable("挨拶") as KrgnFunc;
 		}
 
 		static void ScopeTest() {

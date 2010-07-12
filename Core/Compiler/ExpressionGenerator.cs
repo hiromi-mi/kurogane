@@ -214,9 +214,10 @@ namespace Kurogane.Compiler {
 			Expression makeProcExpr;
 			//if (pps.Length > 0)
 			makeProcExpr = Expression.New(
-			   typeof(KrgnFunc).GetConstructor(new[] { typeof(Delegate), typeof(string[]) }),
-			   lambdaExpr,
-			   Expression.Constant(pps));
+				//typeof(KrgnFunc_).GetConstructor(new[] { typeof(Delegate), typeof(string[]) }),
+				KrgnFunc.GetConstructorInfo(pps.Length),
+				lambdaExpr,
+				Expression.Constant(pps));
 			//else
 			//    makeProcExpr = Expression.New(
 			//         typeof(KrgnFunc_0).GetConstructor(new[] { typeof(Delegate) }),

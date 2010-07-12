@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Kurogane.Buildin;
@@ -21,18 +22,18 @@ namespace Kurogane.Runtime {
 
 		private void Set_出力する() {
 			Func<object, object> write = obj => { Console.Write(obj); return obj; };
-			_scope.SetVariable("出力", new KrgnFunc(write, "を"));
+			_scope.SetVariable("出力", KrgnFunc.Create(write, "を"));
 
 			Func<object, object> writeln = obj => { Console.WriteLine(obj); return obj; };
-			_scope.SetVariable("改行出力", new KrgnFunc(writeln, "を"));
-			_scope.SetVariable("表示", new KrgnFunc(writeln, "を"));
+			_scope.SetVariable("改行出力", KrgnFunc.Create(writeln, "を"));
+			_scope.SetVariable("表示", KrgnFunc.Create(writeln, "を"));
 
 			_scope.SetVariable("挨拶", "やっほ～");
 		}
 
 		private void Set_パスする() {
 			Func<object, object> pass = a => a;
-			_scope.SetVariable("パス", new KrgnFunc(pass, "を"));
+			_scope.SetVariable("パス", KrgnFunc.Create(pass, "を"));
 		}
 
 		private void Set_演算子() {

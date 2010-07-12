@@ -44,7 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buildin\KrgnException.cs" />
-    <Compile Include="Buildin\KrgnFunc.cs" />
+    <Compile Include="Buildin\KrgnFunc1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>KrgnFunc.tt</DependentUpon>
+    </Compile>
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\Binders\BinderExtension.cs" />
     <Compile Include="Compiler\Binders\KrgnExpressionBinder.cs" />
@@ -61,7 +65,15 @@
     <Compile Include="Runtime\Scope.cs" />
     <Compile Include="Runtime\StandardLibraryLoader.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Buildin\KrgnFunc.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>KrgnFunc1.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
