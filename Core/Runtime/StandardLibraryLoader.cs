@@ -20,10 +20,10 @@ namespace Kurogane.Runtime {
 		}
 
 		private void Set_出力する() {
-			Action<object> write = Console.Write;
+			Func<object, object> write = obj => { Console.Write(obj); return obj; };
 			_scope.SetVariable("出力", new KrgnFunc(write, "を"));
 
-			Action<object> writeln = Console.WriteLine;
+			Func<object, object> writeln = obj => { Console.WriteLine(obj); return obj; };
 			_scope.SetVariable("改行出力", new KrgnFunc(writeln, "を"));
 			_scope.SetVariable("表示", new KrgnFunc(writeln, "を"));
 

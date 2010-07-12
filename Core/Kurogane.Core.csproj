@@ -46,6 +46,7 @@
     <Compile Include="Buildin\KrgnException.cs" />
     <Compile Include="Buildin\KrgnFunc.cs" />
     <Compile Include="Compiler\Ast.cs" />
+    <Compile Include="Compiler\Binders\BinderExtension.cs" />
     <Compile Include="Compiler\Binders\KrgnExpressionBinder.cs" />
     <Compile Include="Compiler\Binders\KrgnInvokeBinder.cs" />
     <Compile Include="Compiler\ExpressionGenerator.cs" />

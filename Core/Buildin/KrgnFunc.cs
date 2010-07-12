@@ -14,7 +14,7 @@ namespace Kurogane.Buildin {
 		/// </summary>
 		public Delegate Function { get; private set; }
 
-		private readonly string[] _suffixes;
+		internal readonly string[] _suffixes;
 
 		/// <summary>
 		/// この手順に属する助詞の配列
