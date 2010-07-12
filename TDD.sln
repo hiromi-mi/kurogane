@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Core", "Core\Kurogane.Core.csproj", "{00005D4D-7A9E-4399-A2FF-86102BC72ECB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Test", "Test\Kurogane.Test.csproj", "{AA072613-2A6B-4F9D-8089-C530A4FACEC7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00005D4D-7A9E-4399-A2FF-86102BC72ECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00005D4D-7A9E-4399-A2FF-86102BC72ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00005D4D-7A9E-4399-A2FF-86102BC72ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00005D4D-7A9E-4399-A2FF-86102BC72ECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA072613-2A6B-4F9D-8089-C530A4FACEC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA072613-2A6B-4F9D-8089-C530A4FACEC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA072613-2A6B-4F9D-8089-C530A4FACEC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA072613-2A6B-4F9D-8089-C530A4FACEC7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
