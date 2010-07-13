@@ -367,6 +367,8 @@ namespace Kurogane.Compiler {
 		}
 
 		public override string ToString() {
+			if (Value == null)
+				return "null";
 			if (Value is String)
 				return "「" + Value + "」";
 			return Value.ToString();

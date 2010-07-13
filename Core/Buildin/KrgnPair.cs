@@ -16,6 +16,10 @@ namespace Kurogane.Buildin {
 			Tail = tail;
 		}
 
+		public override string ToString() {
+			return "(" + Head + " . " + Tail + ")";
+		}
+
 		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
 			return new MetaObject(this, parameter);
 		}

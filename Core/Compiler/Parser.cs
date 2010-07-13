@@ -239,8 +239,13 @@ namespace Kurogane.Compiler {
 			var pair = ParseProperty(token);
 			if (pair != null && pair.Token is PostPositionToken && ((PostPositionToken)pair.Token).Value == "と") {
 				var next = pair.Token.Next;
-				var tailPair = ParseExpression(next);
-				return MakePair(new TuppleExpression(pair.Node, tailPair.Node), tailPair.Token);
+				if (next is PostPositionToken) { // 「と」の直後が助詞なら「無」を補う
+					return MakePair(new TuppleExpression(pair.Node, new LiteralExpression(null)), next);
+				}
+				else {
+					var tailPair = ParseExpression(next);
+					return MakePair(new TuppleExpression(pair.Node, tailPair.Node), tailPair.Token);
+				}
 			}
 			return pair;
 		}

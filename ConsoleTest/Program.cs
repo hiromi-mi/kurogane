@@ -10,19 +10,55 @@ using Kurogane.Buildin;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			Test();
+			List();
 		}
 
 		static void Test() {
 			var code =
-				"以下の手順でAとBを加算する。" +
-				"	(A+B)をパスする。" +
-				"以上。" +
-				"3と5を加算する。";
+				"3をAに代入する。" +
+				"もし(A＝無)なら" +
+				"	「正しい」をパスする。" +
+				"他なら" +
+				"	「間違い」をパスする。";
 
 			var engine = new Engine();
 			var result = engine.Execute(code);
 			Console.WriteLine(result);
+		}
+
+		static void Pair() {
+			var code =
+				"「こんにちは」と「こんばんは」をペアに代入する。" +
+				"ペアの頭を表示する。" +
+				"ペアの体を表示する。";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
+		static void List() {
+			var code =
+				"以下の手順でAとBを加算する。" +
+				"	(A＋B)をパスする。" +
+				"以上。" +
+				"以下の手順でAとBを乗算する。" +
+				"	(A×B)をパスする。" +
+				"以上。" +
+				"以下の手順でリストを初期値から関数で集約する。" +
+				"	以下の手順で計算する。" +
+				"		リストの体を初期値から関数で集約し、次に代入する。" +
+				"		リストの頭と次を関数する。" +
+				"	以上。" +
+				"	もし(リスト＝無)なら" +
+				"		初期値をパスする。" +
+				"	他なら" +
+				"		計算する。" +
+				"以上。" +
+				"1と2と3と4と5とを0から加算で集約し、Aに代入する。" +
+				"1と2と3と4と5とを1から乗算で集約し、Bに代入する。" +
+				"AとBを表示する。";
+
+			var engine = new Engine();
+			engine.Execute(code);
 		}
 	}
 }

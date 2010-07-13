@@ -316,11 +316,18 @@ namespace Kurogane.Compiler {
 				return Convert((UnaryExpression)node);
 			if (node is TuppleExpression)
 				return Convert((TuppleExpression)node);
+			if (node is PropertyExpression)
+				return Convert((PropertyExpression)node);
 			throw new NotImplementedException();
 		}
 
 		private Expression Convert(ReferenceExpression refExpr) {
 			return ConvertName(refExpr.Name);
+		}
+
+		private Expression Convert(PropertyExpression node) {
+			return Expression.Dynamic(
+				KrgnGetMemberBinder.Create(node.PropertyName), typeof(object), Convert(node.Target));
 		}
 
 		private Expression Convert(TuppleExpression node) {

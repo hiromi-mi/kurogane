@@ -18,9 +18,14 @@ namespace Kurogane.Compiler.Binders {
 
 		private KrgnGetMemberBinder(string name)
 			: base(name, false) {
- 		}
+		}
 
 		public override DynamicMetaObject FallbackGetMember(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
+			var value = target.Value;
+			var name = base.Name;
+			if (value == null) 
+				throw new NullReferenceException();
+
 			throw new NotImplementedException();
 		}
 	}

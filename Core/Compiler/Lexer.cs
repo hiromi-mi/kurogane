@@ -198,18 +198,6 @@ namespace Kurogane.Compiler {
 			else if (Char.IsLetter((char)_CurrentChar))
 				return ReadSymbolLetterToken();
 			throw new NotImplementedException();
-			var buff = new StringBuilder();
-			buff.Append((char)_CurrentChar);
-			while (true) {
-				int c = _NextChar();
-				if (c == -1 || BreakTokenSet.Contains((char)c) || Char.IsWhiteSpace((char)c)) {
-					break;
-				}
-				else {
-					buff.Append((char)c);
-				}
-			}
-			return SplitReservedToken(buff.ToString());
 		}
 
 		private Token ReadSymbolLetterToken() {
@@ -222,7 +210,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "手順", "以上", "以下", "他" };
+			string[] reserved = { "手順", "以上", "以下", "他", "無" };
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
@@ -231,6 +219,10 @@ namespace Kurogane.Compiler {
 		}
 
 		private Token ReadPostPositionToken() {
+			if (_CurrentChar == (int)'と') {
+				_NextChar();
+				return new PostPositionToken(this, "と");
+			}
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {

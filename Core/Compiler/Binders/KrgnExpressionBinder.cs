@@ -26,6 +26,8 @@ namespace Kurogane.Compiler.Binders {
 		}
 
 		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
+			if (target.Value == null || arg.Value == null)
+				return FallbackOnNull(target, arg);
 
 			var restrictions = target.Restrictions
 				.Merge(arg.Restrictions)
@@ -56,10 +58,34 @@ namespace Kurogane.Compiler.Binders {
 				);
 			}
 		}
+
+		private DynamicMetaObject FallbackOnNull(DynamicMetaObject target, DynamicMetaObject arg) {
+			var nullExpr = Expression.Constant(null);
+			var restL = target.Value == null
+				? Expression.Equal(target.Expression, nullExpr)
+				: Expression.NotEqual(target.Expression, nullExpr);
+			var restR = arg.Value == null
+				? Expression.Equal(arg.Expression, nullExpr)
+				: Expression.NotEqual(arg.Expression, nullExpr);
+
+			var rest = BindingRestrictions.GetExpressionRestriction(Expression.And(restL, restR));
+			bool result = false;
+			switch (this.Operation) {
+			case ExpressionType.Equal: result = (target.Value == arg.Value); break;
+			case ExpressionType.NotEqual: result = (target.Value != arg.Value); break;
+
+			default:
+				if (target.Value == null)
+					throw new NullReferenceException("left hand is null");
+				else
+					throw new NullReferenceException("right hand is null");
+			}
+			return new DynamicMetaObject(Expression.Convert(Expression.Constant(result), typeof(object)), rest);
+		}
 	}
 
 	/// <summary>
-	/// 一般的な二項演算をbindするクラス
+	/// 一般的な単項演算をbindするクラス
 	/// </summary>
 	public class KrgnUnaryExpressionBinder : UnaryOperationBinder {
 

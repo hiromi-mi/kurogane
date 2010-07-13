@@ -84,6 +84,7 @@ namespace Kurogane.Test {
 			Assert.AreEqual((int)num, 10);
 		}
 
+		[TestMethod]
 		public void 対で引数をとれる() {
 			var code =
 				"以下の手順でAとBを加算する。" +
@@ -94,6 +95,39 @@ namespace Kurogane.Test {
 			object num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 8);
+		}
+
+		[TestMethod]
+		public void 集約関数() {
+			var code =
+				"以下の手順でAとBを加算する。" +
+				"	(A＋B)をパスする。" +
+				"以上。" +
+				"以下の手順でAとBを乗算する。" +
+				"	(A×B)をパスする。" +
+				"以上。" +
+				"以下の手順でリストを初期値から関数で集約する。" +
+				"	以下の手順で計算する。" +
+				"		リストの体を初期値から関数で集約し、次に代入する。" +
+				"		リストの頭と次を関数する。" +
+				"	以上。" +
+				"	もし(リスト＝無)なら" +
+				"		初期値をパスする。" +
+				"	他なら" +
+				"		計算する。" +
+				"以上。" +
+				"1と2と3と4と5とを0から加算で集約し、Aに代入する。" +
+				"1と2と3と4と5とを1から乗算で集約し、Bに代入する。";
+			var engine = new Engine();
+			engine.Execute(code);
+
+			object a = engine.DefaultScope.GetVariable("A");
+			Assert.IsInstanceOfType(a, typeof(int));
+			Assert.AreEqual((int)a, 15);
+
+			object b = engine.DefaultScope.GetVariable("B");
+			Assert.IsInstanceOfType(b, typeof(int));
+			Assert.AreEqual((int)b, 120);
 		}
 	}
 }
