@@ -41,9 +41,10 @@ namespace Kurogane.Compiler {
 			return null;
 		}
 
-		public void AddRange(ParameterExpression[] exprs) {
+		public void AddRange(IEnumerable<ParameterExpression> exprs) {
 			foreach (var expr in exprs)
-				_dic[expr.Name] = expr;
+				if (expr.Name != null)
+					_dic[expr.Name] = expr;
 		}
 
 		public ICollection<ParameterExpression> Variables {
@@ -189,39 +190,54 @@ namespace Kurogane.Compiler {
 
 		private Expression Convert(DefunNode defun) {
 			// param
-			var param = defun.Declare.Params;
-			ParameterExpression[] paramExpr;
-			if (param.All(p => p.Param is NormalParam)) {
-				paramExpr = new ParameterExpression[param.Count];
-				for (int i = 0; i < paramExpr.Length; i++)
-					paramExpr[i] = Expression.Parameter(
-						typeof(object),
-						((NormalParam)param[i].Param).Name);
+			var paramsExpr = new ParameterExpression[defun.Declare.Params.Count];
+			var innerParamExpr = new List<Tuple<ParameterExpression, System.Linq.Expressions.BinaryExpression>>();
+			for (int i = 0; i < paramsExpr.Length; i++) {
+				var param = defun.Declare.Params[i].Param;
+				if (param is NormalParam) {
+					paramsExpr[i] = Expression.Parameter(typeof(object), ((NormalParam)param).Name);
+				}
+				else if (param is PairParam) {
+					var outerParam = Expression.Parameter(typeof(object));
+					paramsExpr[i] = outerParam;
+					Expression parent = outerParam;
+					while (param is PairParam) {
+						PairParam pairParam = (PairParam)param;
+						var paramExpr = Expression.Parameter(typeof(object), pairParam.Head);
+						var assign = Expression.Assign(paramExpr,
+							Expression.Property(Expression.Convert(parent, typeof(KrgnPair)), "Head"));
+						param = pairParam.Tail;
+						parent = Expression.Property(Expression.Convert(parent, typeof(KrgnPair)), "Tail");
+						innerParamExpr.Add(Tuple.Create(paramExpr, assign));
+					}
+					var normalParam = (NormalParam)param;
+					var lastParamExpr = Expression.Parameter(typeof(object), normalParam.Name);
+					var lastAssign = Expression.Assign(lastParamExpr, parent);
+					innerParamExpr.Add(Tuple.Create(lastParamExpr, lastAssign));
+				}
 			}
-			else {
-				throw new NotImplementedException("「の」には対応していません。");
-			}
-			var pps = new string[param.Count];
+			var pps = new string[paramsExpr.Length];
 			for (int i = 0; i < pps.Length; i++)
-				pps[i] = param[i].PostPosition;
+				pps[i] = defun.Declare.Params[i].PostPosition;
 			Expression body;
 			Define(defun.Declare.Name);
 			using (Scope()) {
-				_currentScope.AddRange(paramExpr);
+				// ラムダ式の変数を追加
+				_currentScope.AddRange(paramsExpr);
+				_currentScope.AddRange(innerParamExpr.Select(t => t.Item1));
 				body = Convert(defun.Body);
 			}
-			var lambdaExpr = Expression.Lambda(body, paramExpr);
+			if (innerParamExpr.Count > 0) { // 対引数
+				body = Expression.Block(
+					innerParamExpr.Select(t => t.Item1),
+					innerParamExpr.Select(t => t.Item2).Concat(Enumerable.Repeat(body, 1)));
+			}
+			var lambdaExpr = Expression.Lambda(body, paramsExpr);
 			Expression makeProcExpr;
-			//if (pps.Length > 0)
 			makeProcExpr = Expression.New(
-				//typeof(KrgnFunc_).GetConstructor(new[] { typeof(Delegate), typeof(string[]) }),
 				KrgnFunc.GetConstructorInfo(pps.Length),
 				lambdaExpr,
 				Expression.Constant(pps));
-			//else
-			//    makeProcExpr = Expression.New(
-			//         typeof(KrgnFunc_0).GetConstructor(new[] { typeof(Delegate) }),
-			//         lambdaExpr);
 			return AssignToDefined(defun.Declare.Name, makeProcExpr);
 		}
 
@@ -298,11 +314,18 @@ namespace Kurogane.Compiler {
 				return Convert((BinaryExpression)node);
 			if (node is UnaryExpression)
 				return Convert((UnaryExpression)node);
+			if (node is TuppleExpression)
+				return Convert((TuppleExpression)node);
 			throw new NotImplementedException();
 		}
 
 		private Expression Convert(ReferenceExpression refExpr) {
 			return ConvertName(refExpr.Name);
+		}
+
+		private Expression Convert(TuppleExpression node) {
+			var ctorInfo = typeof(KrgnPair).GetConstructor(new[] { typeof(object), typeof(object) });
+			return Expression.New(ctorInfo, Convert(node.Head), Convert(node.Tail));
 		}
 
 		private Expression ConvertName(string name) {
@@ -317,7 +340,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression Convert(LiteralExpression literal) {
-			return Expression.Constant(literal.Value);
+			return Expression.Convert(Expression.Constant(literal.Value), typeof(object));
 		}
 
 		private Expression Convert(BinaryExpression expr) {

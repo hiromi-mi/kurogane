@@ -49,9 +49,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>KrgnFunc.tt</DependentUpon>
     </Compile>
+    <Compile Include="Buildin\KrgnPair.cs" />
     <Compile Include="Compiler\Ast.cs" />
-    <Compile Include="Compiler\Binders\BinderExtension.cs" />
     <Compile Include="Compiler\Binders\KrgnExpressionBinder.cs" />
+    <Compile Include="Compiler\Binders\KrgnGetMemberBinder.cs" />
     <Compile Include="Compiler\Binders\KrgnInvokeBinder.cs" />
     <Compile Include="Compiler\ExpressionGenerator.cs" />
     <Compile Include="Compiler\Lexer.cs" />

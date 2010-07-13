@@ -111,23 +111,35 @@ namespace Kurogane.Compiler {
 			// 「AをBにCする。」を読みとる
 			List<ParamPair> lst = new List<ParamPair>();
 			while (true) {
-				var paramPair = ParseRef(token);
-				if (paramPair == null) return null;
+				var paramPair = ParseParam(token);
+				if (paramPair == null) break;
+				lst.Add(paramPair.Node);
+				token = paramPair.Token;
+			}
+			var next = token
+				.MatchFlow((SymbolToken t) => true)
+				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.MatchFlow((PunctuationToken t) => t.Value == "。" || t.Value == "．");
+			if (next == null) return null;
+			var funcName = ((SymbolToken)token).Value;
+			return MakePair(new FuncDeclareNode(lst, funcName), next);
+		}
 
-				if (paramPair.Token is PostPositionToken) {
-					var ppToken = (PostPositionToken)paramPair.Token;
-					var pp = ppToken.Value;
-					lst.Add(new ParamPair(new NormalParam(paramPair.Node.Name), pp));
-					token = ppToken.Next;
-					continue;
-				}
-				if (paramPair.Token is ReservedToken) {
-					var next = paramPair.Token
-						.MatchFlow((ReservedToken t) => t.Value == "する")
-						.MatchFlow((PunctuationToken t) => t.Value == "。" || t.Value == "．");
-					if (next == null) return null;
-					return MakePair(new FuncDeclareNode(lst, paramPair.Node.Name), next);
-				}
+		private IPair<ParamPair> ParseParam(Token token) {
+			var namePair = ParseRef(token);
+			if (namePair == null) return null;
+			if (!(namePair.Token is PostPositionToken)) return null;
+			var ppToken = (PostPositionToken)namePair.Token;
+			var pp = ppToken.Value;
+			if (pp != "と") {
+				return MakePair(new ParamPair(new NormalParam(namePair.Node.Name), pp), ppToken.Next);
+			}
+			else {
+				var pair = ParseParam(ppToken.Next);
+				return MakePair(new ParamPair(
+					new PairParam(namePair.Node.Name, pair.Node.Param),
+						pair.Node.PostPosition),
+					pair.Token);
 			}
 		}
 
@@ -226,7 +238,8 @@ namespace Kurogane.Compiler {
 		private IPair<ExpressionNode> ParseTuple(Token token) {
 			var pair = ParseProperty(token);
 			if (pair != null && pair.Token is PostPositionToken && ((PostPositionToken)pair.Token).Value == "と") {
-				var tailPair = ParseExpression(pair.Token);
+				var next = pair.Token.Next;
+				var tailPair = ParseExpression(next);
 				return MakePair(new TuppleExpression(pair.Node, tailPair.Node), tailPair.Token);
 			}
 			return pair;
@@ -274,6 +287,11 @@ namespace Kurogane.Compiler {
 				literal = new LiteralExpression(((DecimalToken)token).DecimalValue);
 			if (token is LiteralToken)
 				literal = new LiteralExpression(((LiteralToken)token).Value);
+			if (token is ReservedToken) {
+				var resToken = (ReservedToken)token;
+				if (resToken.Value == "無")
+					literal = new LiteralExpression(default(object));
+			}
 			if (literal != null)
 				return MakePair(literal, token.Next);
 			return null;

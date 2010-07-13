@@ -15,7 +15,6 @@ namespace Kurogane.Compiler.Binders {
 
 		public KrgnInvokeBinder(CallInfo callInfo)
 			: base(callInfo) {
-
 		}
 
 		public override DynamicMetaObject FallbackInvoke(DynamicMetaObject target, DynamicMetaObject[] args, DynamicMetaObject errorSuggestion) {
