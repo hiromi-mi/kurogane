@@ -10,7 +10,7 @@ using Kurogane.Buildin;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			OrderTest();
+			FibTest2();
 		}
 
 		static void SimpleGreet() {
@@ -187,7 +187,7 @@ namespace ConsoleTest {
 	他なら
 		[計算]する。
 以上。
-26を[FIB変換]し、[表示]する。
+10を[FIB変換]し、[表示]する。
 ";
 			var engine = new Engine();
 			engine.Execute(code);

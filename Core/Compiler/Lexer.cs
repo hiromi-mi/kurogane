@@ -12,6 +12,9 @@ namespace Kurogane.Compiler {
 
 		#region static
 
+		private const char kanaBegin = 'ぁ';
+		private const char kanaEnd = 'ん';
+
 		private static readonly char[] OperatorCharacter = {
 			'+', '-', '*', '/', '%', '^', '&', '|', '!', '<', '>', '=',
 			'＋', '－', '×', '÷', // 四則演算
@@ -92,7 +95,7 @@ namespace Kurogane.Compiler {
 				return ReadCloseParenthesisToken();
 
 			default:
-				if ('0' <= _CurrentChar && _CurrentChar <= '9')
+				if (Char.IsDigit((char)_CurrentChar))
 					return ReadNumberToken();
 				if (OperatorCharacterSet.Contains((char)_CurrentChar))
 					return ReadOperatorToken();
@@ -190,6 +193,11 @@ namespace Kurogane.Compiler {
 		/// </summary>
 		/// <returns></returns>
 		private Token ReadPostPositionOrReservedToken() {
+			if (kanaBegin <= (char)_CurrentChar && (char)_CurrentChar <= kanaEnd)
+				return ReadPostPositionToken();
+			else if (Char.IsLetter((char)_CurrentChar))
+				return ReadSymbolLetterToken();
+			throw new NotImplementedException();
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {
@@ -202,6 +210,42 @@ namespace Kurogane.Compiler {
 				}
 			}
 			return SplitReservedToken(buff.ToString());
+		}
+
+		private Token ReadSymbolLetterToken() {
+			var buff = new StringBuilder();
+			buff.Append((char)_CurrentChar);
+			while (true) {
+				char c = (char)_NextChar();
+				if (Char.IsLetter(c) && (c < kanaBegin || kanaEnd < c))
+					buff.Append(c);
+				else
+					break;
+			}
+			string[] reserved = { "手順", "以上", "以下", "他" };
+			string str = buff.ToString();
+			if (Array.IndexOf(reserved, str) >= 0)
+				return new ReservedToken(this, str);
+			else
+				return new SymbolToken(this, buff.ToString());
+		}
+
+		private Token ReadPostPositionToken() {
+			var buff = new StringBuilder();
+			buff.Append((char)_CurrentChar);
+			while (true) {
+				char c = (char)_NextChar();
+				if (kanaBegin <= c && c <= kanaEnd)
+					buff.Append(c);
+				else
+					break;
+			}
+			string[] reserved = {"もし", "なら", "し", "する"};
+			string str =  buff.ToString();
+			if (Array.IndexOf(reserved, str) >= 0)
+				return new ReservedToken(this, str);
+			else
+				return new PostPositionToken(this,str);
 		}
 
 		/// <summary>
