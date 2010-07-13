@@ -10,7 +10,7 @@ using Kurogane.Buildin;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			FibTest2();
+			OrderTest();
 		}
 
 		static void SimpleGreet() {
@@ -187,7 +187,25 @@ namespace ConsoleTest {
 	他なら
 		[計算]する。
 以上。
-18を[FIB変換]し、[表示]する。
+26を[FIB変換]し、[表示]する。
+";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
+		static void OrderTest() {
+			string code = @"
+以下の手順で[A]が[B]を[C]に[テスト]する。
+	[A]を[出力]する。
+	[B]を[出力]する。
+	[C]を[改行出力]する。
+以上。
+「A」が「B」を「C」に[テスト]する。
+「A」が「C」に「B」を[テスト]する。
+「B」を「A」が「C」に[テスト]する。
+「B」を「C」に「A」が[テスト]する。
+「C」に「A」が「B」を[テスト]する。
+「C」に「B」を「A」が[テスト]する。
 ";
 			var engine = new Engine();
 			engine.Execute(code);

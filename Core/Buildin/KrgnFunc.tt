@@ -1,34 +1,32 @@
 ﻿<#@ template  debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
 <#@ Assembly Name="System.Core.dll" #>
-<#@ Assembly Name="System.Windows.Forms.dll" #>
 <#@ import namespace="System" #>
-<#@ import namespace="System.IO" #>
-<#@ import namespace="System.Diagnostics" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Collections" #>
-<#@ import namespace="System.Collections.Generic" #> 
 <#@ import namespace="System.Text" #> 
 
 <#
-	int LEVEL = 4;
-	int INLINE_LEVEL = 3;
-	string NameFunc = "Func";
-	string NameSuffix = "Suffixes";
+	int LEVEL = 10;
+	string NameFunc = "_func";
+	string NameSuffix = "_suffixes";
 #>
 using System;
+using System.Collections.ObjectModel;
 using System.Dynamic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Kurogane.Buildin {
 
-public abstract class KrgnFunc {
+public interface IKrgnFunc {
+	Delegate Func { get; }
+	ReadOnlyCollection<string> Suffixes { get; }
+}
+
+public static class KrgnFunc {
 
 	public static Type GetTypeOf(int n) {
 		switch(n) {
-<# for (int level = 0; level <= LEVEL; level++) { #>
+<# for (int level = 0; level < LEVEL; level++) { #>
 		case <#= level #>: return typeof(<#= KlassName(level) #>);
 <# } #>
 		}
@@ -37,27 +35,32 @@ public abstract class KrgnFunc {
 	
 	public static ConstructorInfo GetConstructorInfo(int n) {
 		switch(n) {
-<# for (int level = 0; level <= LEVEL; level++) { #>
+<# for (int level = 0; level < LEVEL; level++) { #>
 		case <#= level #>: return typeof(<#= KlassName(level) #>).GetConstructor(new[] { typeof(<#= FuncOf(level) #>), typeof(string[]) });
 <# } #>
 		}
 		throw new IndexOutOfRangeException("n must be less than <#= LEVEL #>");
 	}
 	
-<# for (int level = 0; level <= LEVEL; level++) { #>
-	public static KrgnFunc Create(<#= FuncOf(level) #> func, params string[] suffixes) {
+<# for (int level = 0; level < LEVEL; level++) { #>
+	public static IKrgnFunc Create(<#= FuncOf(level) #> func, params string[] suffixes) {
 		return new <#= KlassName(level)#>(func, suffixes);
 	}
 <# } #>
 
-<# for(int level = 0; level <= LEVEL; level++) { #>
-private class <#= KlassName(level)#> : KrgnFunc, IDynamicMetaObjectProvider {
+<# for(int level = 0; level < LEVEL; level++) { #>
+private class <#= KlassName(level)#> : IKrgnFunc, IDynamicMetaObjectProvider {
 	private readonly string[] <#= NameSuffix #>;
 	private readonly <#= FuncOf(level) #> <#= NameFunc #>;
 	
 	public <#= KlassName(level) #>(<#= FuncOf(level) #> func, string[] suffixes) {
 		this.<#= NameFunc #> = func;
 		this.<#= NameSuffix #> = suffixes;
+	}
+
+	Delegate IKrgnFunc.Func { get { return <#= NameFunc #>; } }
+	ReadOnlyCollection<string> IKrgnFunc.Suffixes {
+		get { return new ReadOnlyCollection<string>(<#= NameSuffix #>); }
 	}
 	
 	public DynamicMetaObject GetMetaObject(Expression parameter) {
@@ -72,47 +75,25 @@ private class <#= KlassName(level)#> : KrgnFunc, IDynamicMetaObjectProvider {
 			var value = (<#= KlassName(level) #>)base.Value;
 			Expression[] procArgs = new Expression[<#= level#>];
 			int offset = binder.CallInfo.ArgumentCount - binder.CallInfo.ArgumentNames.Count;
-<#
-	string loop = "i";
-	bool inline = level < INLINE_LEVEL;
-	int loop_max = inline ? level : 1;
-#>
-			<# if (inline == false) { #>
-			for (int i = 0; i < <#= level#>; i++)
-			<# } #>
-			<# for (int i = 0; i < loop_max; i++) { if (inline) { loop = i.ToString(); } #>
-			{
-				var pp = value.Suffixes[<#= loop#>];
-				for (int j = 0; j < binder.CallInfo.ArgumentNames.Count; j++) {
-					if (binder.CallInfo.ArgumentNames[j] == pp) {
-						procArgs[<#= loop#>] = Expression.Convert(args[j + offset].Expression, typeof(object));
-						break;
-					}
-				}
-				if (offset > 0 && procArgs[<#= loop#>] == null) {
-					procArgs[<#= loop#>] = Expression.Convert(args[0].Expression, typeof(object));
-				}
-			}
-			<# } #>
+<# for (int i = 0; i < level; i++) { #>
+			procArgs[<#= i #>] = Expression.Convert(
+				args[binder.CallInfo.ArgumentNames.IndexOf(value.<#= NameSuffix #>[<#= i #>]) + offset].Expression,
+				typeof(object));
+<# } #>
+
 			Expression target = Expression.Convert(base.Expression, base.LimitType);
 			Expression invokeExpr = Expression.Invoke(
 				 Expression.Convert(Expression.PropertyOrField(target, "<#= NameFunc #>"), typeof(<#= FuncOf(level) #>)),
 				 procArgs);
 			Expression restExpr = Expression.TypeIs(base.Expression, typeof(<#= KlassName(level) #>));
-<# if (level > 0) { #>
 			Expression suffProperty = Expression.PropertyOrField(target, "<#= NameSuffix #>");
-			restExpr = Expression.AndAlso(restExpr,
 <# for (int i = 0; i < level; i++) { #>
-<# if (i != level - 1) { #>
-				Expression.AndAlso(Expression.Equal(
-					Expression.ArrayIndex(suffProperty, Expression.Constant(<#= i #>)), Expression.Constant(value.Suffixes[<#= i #>])),
-<# } else { #>
-				Expression.Equal(Expression.ArrayIndex(suffProperty, Expression.Constant(<#= i #>)), Expression.Constant(value.Suffixes[<#= i #>])
+			restExpr = Expression.AndAlso(restExpr, Expression.Equal(
+				Expression.ArrayIndex(suffProperty, Expression.Constant(<#= i #>)),
+				Expression.Constant(value.<#= NameSuffix #>[<#= i #>])));
 <# } #>
-<# } #>
-<# for (int i = 0; i < level; i++) { #> ) <# } #>);
-<# } #>
-			var func = Expression.Lambda<Func<object, bool>>(restExpr, (ParameterExpression)base.Expression).Compile();
+			var lambda = Expression.Lambda<Func<object, bool>>(restExpr, (ParameterExpression)base.Expression);
+			var func = lambda.Compile();
 			var result = func(value);
 			return new DynamicMetaObject(invokeExpr,
 				BindingRestrictions.GetExpressionRestriction(restExpr));
