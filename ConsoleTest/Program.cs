@@ -10,7 +10,7 @@ using Kurogane.Buildin;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			List();
+			Fibonacci();
 		}
 
 		static void Test() {
@@ -60,5 +60,24 @@ namespace ConsoleTest {
 			var engine = new Engine();
 			engine.Execute(code);
 		}
+
+		public static void Fibonacci() {
+			string code =
+				"以下の手順でNをFIB変換する。" +
+				"	以下の手順で計算する。" +
+				"		(N-1)をFIB変換し、Aに代入する。" +
+				"		(N-2)をFIB変換し、Bに代入する。" +
+				"		(A+B)をパスする。" +
+				"	以上。" +
+				"	もし(N≦1)なら" +
+				"		Nをパスする。" +
+				"	他なら" +
+				"		計算する。" +
+				"以上。" +
+				"27をFIB変換し、表示する。";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
 	}
 }

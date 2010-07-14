@@ -9,5 +9,9 @@ namespace Kurogane {
 		public static readonly Nil Instance = new Nil();
 
 		private Nil() { }
+
+		public override string ToString() {
+			return "nil";
+		}
 	}
 }
