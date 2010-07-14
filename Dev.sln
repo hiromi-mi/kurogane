@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{FE64C171-D4C5-4540-96B5-8AA5649E9952}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Core", "Core\Kurogane.Core.csproj", "{00005D4D-7A9E-4399-A2FF-86102BC72ECB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Test", "Test\Kurogane.Test.csproj", "{AA072613-2A6B-4F9D-8089-C530A4FACEC7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{FE64C171-D4C5-4540-96B5-8AA5649E9952}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

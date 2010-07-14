@@ -205,9 +205,9 @@ namespace Kurogane.Compiler {
 						PairParam pairParam = (PairParam)param;
 						var paramExpr = Expression.Parameter(typeof(object), pairParam.Head);
 						var assign = Expression.Assign(paramExpr,
-							Expression.Property(Expression.Convert(parent, typeof(KrgnPair)), "Head"));
+							Expression.Property(Expression.Convert(parent, typeof(Pair)), "Head"));
 						param = pairParam.Tail;
-						parent = Expression.Property(Expression.Convert(parent, typeof(KrgnPair)), "Tail");
+						parent = Expression.Property(Expression.Convert(parent, typeof(Pair)), "Tail");
 						innerParamExpr.Add(Tuple.Create(paramExpr, assign));
 					}
 					var normalParam = (NormalParam)param;
@@ -331,7 +331,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression Convert(TuppleExpression node) {
-			var ctorInfo = typeof(KrgnPair).GetConstructor(new[] { typeof(object), typeof(object) });
+			var ctorInfo = typeof(Pair).GetConstructor(new[] { typeof(object), typeof(object) });
 			return Expression.New(ctorInfo, Convert(node.Head), Convert(node.Tail));
 		}
 

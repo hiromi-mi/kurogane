@@ -49,7 +49,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>KrgnFunc.tt</DependentUpon>
     </Compile>
-    <Compile Include="Buildin\KrgnPair.cs" />
+    <Compile Include="Nil.cs" />
+    <Compile Include="Pair.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\Binders\KrgnExpressionBinder.cs" />
     <Compile Include="Compiler\Binders\KrgnGetMemberBinder.cs" />
@@ -62,7 +63,6 @@
     <Compile Include="Compiler\TokenMatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runtime\Engine.cs" />
-    <Compile Include="Buildin\KrgnString.cs" />
     <Compile Include="Runtime\Scope.cs" />
     <Compile Include="Runtime\StandardLibraryLoader.cs" />
   </ItemGroup>

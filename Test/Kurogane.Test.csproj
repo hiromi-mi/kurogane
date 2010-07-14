@@ -45,9 +45,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\ParserTest.cs" />
     <Compile Include="Compiler\TokenizerTest.cs" />
-    <Compile Include="Compiler\TokenMatcherTest.cs" />
     <Compile Include="ExecuteTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

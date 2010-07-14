@@ -30,6 +30,14 @@ namespace Kurogane.Compiler {
 			return MakePair(result, token);
 		}
 
+		#region 定数
+
+		private LiteralExpression LiteralNil {
+			get { return new LiteralExpression(Nil.Instance); }
+		}
+
+		#endregion
+
 		#region 文
 
 		private IPair<AbstractStatementNode> ParseStatement(Token token) {
@@ -240,7 +248,7 @@ namespace Kurogane.Compiler {
 			if (pair != null && pair.Token is PostPositionToken && ((PostPositionToken)pair.Token).Value == "と") {
 				var next = pair.Token.Next;
 				if (next is PostPositionToken) { // 「と」の直後が助詞なら「無」を補う
-					return MakePair(new TuppleExpression(pair.Node, new LiteralExpression(null)), next);
+					return MakePair(new TuppleExpression(pair.Node, LiteralNil), next);
 				}
 				else {
 					var tailPair = ParseExpression(next);
@@ -295,7 +303,7 @@ namespace Kurogane.Compiler {
 			if (token is ReservedToken) {
 				var resToken = (ReservedToken)token;
 				if (resToken.Value == "無")
-					literal = new LiteralExpression(default(object));
+					literal = LiteralNil;
 			}
 			if (literal != null)
 				return MakePair(literal, token.Next);

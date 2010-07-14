@@ -5,13 +5,13 @@ using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Kurogane.Buildin {
+namespace Kurogane {
 
-	public class KrgnPair : IDynamicMetaObjectProvider {
+	public class Pair : IDynamicMetaObjectProvider {
 		public object Head { get; private set; }
 		public object Tail { get; private set; }
 
-		public KrgnPair(object head, object tail) {
+		public Pair(object head, object tail) {
 			Head = head;
 			Tail = tail;
 		}
@@ -25,7 +25,7 @@ namespace Kurogane.Buildin {
 		}
 
 		private class MetaObject : DynamicMetaObject {
-			public MetaObject(KrgnPair pair, Expression expr)
+			public MetaObject(Pair pair, Expression expr)
 				: base(expr, BindingRestrictions.Empty, pair) {
 			}
 
@@ -37,8 +37,8 @@ namespace Kurogane.Buildin {
 				}
 				if (propName != null)
 					return new DynamicMetaObject(
-						Expression.Property(Expression.Convert(base.Expression, typeof(KrgnPair)), propName),
-						BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(base.Expression, typeof(KrgnPair))));
+						Expression.Property(Expression.Convert(base.Expression, typeof(Pair)), propName),
+						BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(base.Expression, typeof(Pair))));
 				return base.BindGetMember(binder);
 			}
 		}
