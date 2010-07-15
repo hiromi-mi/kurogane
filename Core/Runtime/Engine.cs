@@ -28,6 +28,15 @@ namespace Kurogane.Runtime {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(string code) {
+			return Execute(new StringReader(code), _DefaultGlobal);
+		}
+
+		/// <summary>
+		/// 与えられたプログラムを実行する。
+		/// </summary>
+		/// <param name="code">プログラム</param>
+		/// <returns>実行結果</returns>
+		public object Execute(StreamReader code) {
 			return Execute(code, _DefaultGlobal);
 		}
 
@@ -37,7 +46,7 @@ namespace Kurogane.Runtime {
 		/// <param name="code">プログラム</param>
 		/// <param name="scope">スコープ</param>
 		/// <returns>実行結果</returns>
-		public object Execute(string code, Scope scope) {
+		private object Execute(TextReader code, Scope scope) {
 			Stopwatch sw = new Stopwatch();
 
 			sw.Reset();
@@ -45,32 +54,33 @@ namespace Kurogane.Runtime {
 			var token = Tokenizer.Tokenize(code);
 			var program = Parser.Parse(token);
 			sw.Stop();
-			DebugWriteLine("構文解析: {0}ms", sw.ElapsedMilliseconds);
+			Debug.WriteLine("構文解析: {0}ms", sw.ElapsedMilliseconds);
 
 			sw.Reset();
 			sw.Start();
 			var expr = ExpressionGenerator.Generate(program);
 			sw.Stop();
-			DebugWriteLine("意味解析: {0}ms", sw.ElapsedMilliseconds);
+			Debug.WriteLine("意味解析: {0}ms", sw.ElapsedMilliseconds);
 
 			sw.Reset();
 			sw.Start();
 			var func = expr.Compile();
 			sw.Stop();
-			DebugWriteLine("最適化　: {0}ms", sw.ElapsedMilliseconds);
+			Debug.WriteLine("最適化　: {0}ms", sw.ElapsedMilliseconds);
 
 
 			sw.Reset();
 			sw.Start();
 			var result = func(_DefaultGlobal);
 			sw.Stop();
-			DebugWriteLine("実行時間: {0}ms", sw.ElapsedMilliseconds);
+			Debug.WriteLine("実行時間: {0}ms", sw.ElapsedMilliseconds);
 
 			return result;
 		}
 
+		[Conditional("DEBUG")]
 		private void DebugWriteLine(string format, params object[] args) {
-			Console.Error.WriteLine(format, args);
+			//Console.Error.WriteLine(format, args);
 		}
 	}
 }
