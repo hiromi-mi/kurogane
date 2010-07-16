@@ -20,5 +20,9 @@ namespace Kurogane.Compiler {
 			var lexer = new Lexer(code);
 			return lexer.Next();
 		}
+
+		public static Token Tokenize(string code) {
+			return Tokenize(new StringReader(code));
+		}
 	}
 }
