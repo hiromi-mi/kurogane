@@ -210,7 +210,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "手順", "以上", "以下", "他", "無" };
+			string[] reserved = { "手順", "以上", "以下", "他", "無", "失敗" };
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
@@ -232,12 +232,12 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = {"もし", "なら", "し", "する"};
-			string str =  buff.ToString();
+			string[] reserved = { "もし", "なら", "し", "して", "する", "してみて", "してみる" };
+			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
 			else
-				return new PostPositionToken(this,str);
+				return new PostPositionToken(this, str);
 		}
 
 		/// <summary>

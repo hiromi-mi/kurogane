@@ -36,6 +36,10 @@ namespace Kurogane.Compiler {
 			get { return new LiteralExpression(Nil.Instance); }
 		}
 
+		private LiteralExpression LiteralFail {
+			get { return new LiteralExpression(Nothing<object>.Instance); }
+		}
+
 		#endregion
 
 		#region 文
@@ -304,6 +308,8 @@ namespace Kurogane.Compiler {
 				var resToken = (ReservedToken)token;
 				if (resToken.Value == "無")
 					literal = LiteralNil;
+				if (resToken.Value == "失敗")
+					literal = LiteralFail;
 			}
 			if (literal != null)
 				return MakePair(literal, token.Next);

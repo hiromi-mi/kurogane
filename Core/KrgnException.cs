@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane.Buildin {
+namespace Kurogane {
 	public class KrgnException :Exception {
 		public KrgnException() : base() { }
 		public KrgnException(string message) : base(message) { }

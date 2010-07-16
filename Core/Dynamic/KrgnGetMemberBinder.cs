@@ -5,7 +5,7 @@ using System.Text;
 using System.Dynamic;
 using Kurogane.Dynamic;
 
-namespace Kurogane.Compiler.Binders {
+namespace Kurogane.Dynamic {
 	
 	class KrgnGetMemberBinder : GetMemberBinder {
 

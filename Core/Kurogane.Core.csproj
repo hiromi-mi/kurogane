@@ -43,20 +43,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buildin\KrgnException.cs" />
-    <Compile Include="Buildin\KrgnFunc1.cs">
+    <Compile Include="KrgnException.cs" />
+    <Compile Include="KrgnFunc1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>KrgnFunc.tt</DependentUpon>
     </Compile>
     <Compile Include="Dynamic\MetaObjectLoader.cs" />
     <Compile Include="Dynamic\PairMetaObject.cs" />
+    <Compile Include="Maybe.cs" />
     <Compile Include="Nil.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Compiler\Ast.cs" />
-    <Compile Include="Compiler\Binders\KrgnExpressionBinder.cs" />
-    <Compile Include="Compiler\Binders\KrgnGetMemberBinder.cs" />
-    <Compile Include="Compiler\Binders\KrgnInvokeBinder.cs" />
+    <Compile Include="Dynamic\KrgnExpressionBinder.cs" />
+    <Compile Include="Dynamic\KrgnGetMemberBinder.cs" />
+    <Compile Include="Dynamic\KrgnInvokeBinder.cs" />
     <Compile Include="Compiler\ExpressionGenerator.cs" />
     <Compile Include="Compiler\Lexer.cs" />
     <Compile Include="Compiler\Parser.cs" />
@@ -69,13 +70,16 @@
     <Compile Include="Runtime\StandardLibraryLoader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Buildin\KrgnFunc.tt">
+    <None Include="KrgnFunc.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>KrgnFunc1.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Buildin\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

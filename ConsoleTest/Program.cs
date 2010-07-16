@@ -1,16 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Kurogane.Compiler;
-using System.IO;
 using Kurogane.Runtime;
-using Kurogane.Buildin;
 
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			LinerFib();
+			Pair();
+		}
+
+		static void Tree() {
+			var code = @"
+以下の手順でAにBを連結する。
+	AとBをパスする。
+以上。
+
+0と1に
+0と2を連結し，
+1と3を連結し，
+1と4を連結し，
+1と5を連結し，
+2と6を連結し，
+2と7を連結し，
+3と8を連結し，
+3と9を連結し，
+7, 10を連結し，
+無を連結し，リストに代入する。
+
+以下の手順でNまで線表示する。
+	以下の手順で第二線表示する。
+		「＿」を出力する。
+		(N-1)まで線表示する。
+	以上。
+	もし(N>0)なら第二線表示する。
+以上。
+
+以下の手順でリストをNでフィルタする。
+	もし
+		(リスト＝無)なら
+			無をパスする。
+		(リストの頭の頭＝N)なら
+			リストの体をフィルタし，リストの頭の体に連結する。
+		他なら
+			リストの体をフィルタする。
+以上。
+
+以下の手順でリストを関数で逐次処理する。
+	以下の手順で処理する。
+		リストの頭をパスし，関数する。
+		リストの体を関数で逐次処理する。
+	以上。
+	もし(リスト≠無)なら
+		処理する。
+以上。
+
+以下の手順で基点と深度からツリー表示する。
+	深度まで線表示する。
+	基点を改行出力する。
+	以下の手順で基点から，次処理する。
+		基点と(深度+1)からツリー表示する。
+	以上。
+	リストを基点でフィルタし，次処理で逐次処理する。
+以上。
+0からリストをツリー表示する。
+";
+
+			var engine = new Engine();
+			engine.Execute(code);
 		}
 
 		static void Test() {

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Linq.Expressions;
-using Kurogane.Runtime;
-using System.Dynamic;
 using System.Diagnostics;
-using Kurogane.Compiler.Binders;
-using Kurogane.Buildin;
+using System.Dynamic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using Kurogane.Runtime;
+using Kurogane.Dynamic;
 
 namespace Kurogane.Compiler {
 
@@ -219,8 +218,8 @@ namespace Kurogane.Compiler {
 			var pps = new string[paramsExpr.Length];
 			for (int i = 0; i < pps.Length; i++)
 				pps[i] = defun.Declare.Params[i].PostPosition;
-			Expression body;
 			Define(defun.Declare.Name);
+			Expression body;
 			using (Scope()) {
 				// ラムダ式の変数を追加
 				_currentScope.AddRange(paramsExpr);

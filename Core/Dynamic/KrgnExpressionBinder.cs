@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane.Compiler.Binders {
+namespace Kurogane.Dynamic {
 
 	/// <summary>
 	/// 一般的な二項演算をbindするクラス

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 
 namespace Kurogane {
-	public class Nil {
+	public sealed class Nil {
 
 		public static readonly Nil Instance = new Nil();
 
 		private Nil() { }
 
 		public override string ToString() {
-			return "nil";
+			return String.Empty;
 		}
 	}
 }
