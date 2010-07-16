@@ -10,7 +10,7 @@ using Kurogane.Buildin;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			Fibonacci();
+			LinerFib();
 		}
 
 		static void Test() {
@@ -78,6 +78,25 @@ namespace ConsoleTest {
 			var engine = new Engine();
 			engine.Execute(code);
 		}
+
+		public static void LinerFib() {
+			string code =
+				"以下の手順でNをFIB変換する。" +
+				"	以下の手順でペアをNまでFIB変換する。" +
+				"		ペアの頭をAに代入する。" +
+				"		ペアの体をBに代入する。" +
+				"		もし(N>0)なら" +
+				"			Bと(A+B)を(N-1)までFIB変換する。" +
+				"		他なら" +
+				"			Aをパスする。" +
+				"	以上。" +
+				"	0と1をNまでFIB変換する。" +
+				"以上。" +
+				"1000をFIB変換し、表示する。";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
 
 	}
 }

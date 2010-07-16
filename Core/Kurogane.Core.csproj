@@ -49,6 +49,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>KrgnFunc.tt</DependentUpon>
     </Compile>
+    <Compile Include="Dynamic\MetaObjectLoader.cs" />
+    <Compile Include="Dynamic\PairMetaObject.cs" />
     <Compile Include="Nil.cs" />
     <Compile Include="Pair.cs" />
     <Compile Include="Compiler\Ast.cs" />

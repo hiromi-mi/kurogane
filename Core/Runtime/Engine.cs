@@ -80,7 +80,7 @@ namespace Kurogane.Runtime {
 
 		[Conditional("DEBUG")]
 		private void DebugWriteLine(string format, params object[] args) {
-			//Console.Error.WriteLine(format, args);
+			Console.Error.WriteLine(format, args);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Dynamic;
+using Kurogane.Dynamic;
 
 namespace Kurogane.Compiler.Binders {
 	
@@ -21,11 +22,9 @@ namespace Kurogane.Compiler.Binders {
 		}
 
 		public override DynamicMetaObject FallbackGetMember(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
-			var value = target.Value;
-			var name = base.Name;
-			if (value == null) 
-				throw new NullReferenceException();
-
+			var mo = MetaObjectLoader.Create(target.Value, target.Expression);
+			if (mo != null)
+				return mo.BindGetMember(this);
 			throw new NotImplementedException();
 		}
 	}
