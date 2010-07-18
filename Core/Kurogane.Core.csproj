@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dynamic\KrgnSetMemberBinder.cs" />
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnFunc1.cs">
       <AutoGen>True</AutoGen>

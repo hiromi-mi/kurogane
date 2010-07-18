@@ -6,7 +6,7 @@ using System.Dynamic;
 using Kurogane.Dynamic;
 
 namespace Kurogane.Dynamic {
-	
+
 	class KrgnGetMemberBinder : GetMemberBinder {
 
 		private static Dictionary<string, KrgnGetMemberBinder> cache = new Dictionary<string, KrgnGetMemberBinder>();

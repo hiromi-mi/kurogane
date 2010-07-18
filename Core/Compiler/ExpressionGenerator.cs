@@ -68,7 +68,7 @@ namespace Kurogane.Compiler {
 		}
 
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
-		ParameterExpression _globalScope = Expression.Parameter(typeof(Scope), "__global__");
+		ParameterExpression _globalScope = Expression.Parameter(typeof(Scope), "$");
 		LexicalScope _currentScope = null;
 
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
@@ -273,11 +273,13 @@ namespace Kurogane.Compiler {
 				return Expression.Assign(param, value);
 			}
 			else {
-				return Expression.Call(
-					_globalScope,
-					typeof(Scope).GetMethod("SetVariable"),
-					Expression.Constant(name),
-					value);
+				return Expression.Dynamic(KrgnSetMemberBinder.Create(name), typeof(object), _globalScope, value);
+
+				//return Expression.Call(
+				//    _globalScope,
+				//    typeof(Scope).GetMethod("SetVariable"),
+				//    Expression.Constant(name),
+				//    value);
 			}
 		}
 
@@ -292,11 +294,12 @@ namespace Kurogane.Compiler {
 				return Expression.Assign(param, value);
 			}
 			else {
-				return Expression.Call(
-					_globalScope,
-					typeof(Scope).GetMethod("SetVariable"),
-					Expression.Constant(name),
-					value);
+				return Expression.Dynamic(KrgnSetMemberBinder.Create(name), typeof(object), _globalScope, value);
+				//return Expression.Call(
+				//    _globalScope,
+				//    typeof(Scope).GetMethod("SetVariable"),
+				//    Expression.Constant(name),
+				//    value);
 			}
 		}
 
@@ -339,10 +342,11 @@ namespace Kurogane.Compiler {
 				var expr = _currentScope.GetVariable(name);
 				if (expr != null) return expr;
 			}
-			return Expression.Call(
-				_globalScope,
-				typeof(Scope).GetMethod("GetVariable"),
-				Expression.Constant(name));
+			return Expression.Dynamic(KrgnGetMemberBinder.Create(name), typeof(object), _globalScope);
+			//return Expression.Call(
+			//    _globalScope,
+			//    typeof(Scope).GetMethod("GetVariable"),
+			//    Expression.Constant(name));
 		}
 
 		private Expression Convert(LiteralExpression literal) {

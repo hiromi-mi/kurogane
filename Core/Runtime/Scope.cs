@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
+using System.Linq.Expressions;
 
 namespace Kurogane.Runtime {
 
@@ -26,7 +27,7 @@ namespace Kurogane.Runtime {
 		object GetVariable(string name);
 	}
 
-	public class Scope {
+	public class Scope : IDynamicMetaObjectProvider {
 
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
 
@@ -61,5 +62,35 @@ namespace Kurogane.Runtime {
 		public dynamic SetVariable(string name, dynamic value) {
 			return _values[name] = value;
 		}
+
+		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
+			return new MetaObject(this, parameter);
+		}
+
+		private class MetaObject : DynamicMetaObject {
+			public MetaObject(Scope self, Expression expr)
+				: base(expr, BindingRestrictions.Empty, self) {
+			}
+
+			public override DynamicMetaObject BindGetMember(GetMemberBinder binder) {
+				return new DynamicMetaObject(
+					Expression.Call(
+						Expression.Convert(this.Expression, typeof(Scope)),
+						typeof(Scope).GetMethod("GetVariable"),
+						Expression.Constant(binder.Name)),
+					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(this.Expression, typeof(Scope))));
+			}
+
+			public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value) {
+				return new DynamicMetaObject(
+					Expression.Call(
+						Expression.Convert(this.Expression, typeof(Scope)),
+						typeof(Scope).GetMethod("SetVariable"),
+						Expression.Constant(binder.Name),
+						value.Expression),
+					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(this.Expression, typeof(Scope))));
+			}
+		}
+
 	}
 }
