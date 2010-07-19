@@ -11,6 +11,7 @@ namespace Kurogane.Shell {
 
 		const string ConsoleWait = "> ";
 
+		/// <summary>エントリポイント</summary>
 		public static void Main(string[] args) {
 			if (args.Length == 0)
 				StartRepl();
@@ -18,12 +19,15 @@ namespace Kurogane.Shell {
 				ExecuteFile(args[0]);
 		}
 
+		/// <summary>
+		/// ファイルからの実行
+		/// </summary>
 		private static void ExecuteFile(string filepath) {
 			if (!File.Exists(filepath)) {
 				Console.Error.WriteLine("ファイル「{0}」が存在しません。", filepath);
 				Environment.Exit(-1);
 			}
-			using (var reader = new StreamReader(filepath)) {
+			using (var reader = new StreamReader(filepath, Encoding.Default)) {
 				var engine = new Engine();
 				engine.Execute(reader);
 			}
