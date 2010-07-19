@@ -7,6 +7,7 @@ namespace Kurogane.Compiler {
 
 	public interface IToken<out T> where T : IToken<T> {
 		T Next { get; }
+		bool HasNext { get; }
 	}
 
 	/// <summary>
@@ -31,6 +32,7 @@ namespace Kurogane.Compiler {
 				return _next;
 			}
 		}
+		public virtual bool HasNext { get { return true; } }
 
 		public Token(Lexer lexer) {
 			_lexer = lexer;
@@ -39,6 +41,18 @@ namespace Kurogane.Compiler {
 		public override string ToString() {
 			return this.GetType().Name + " : " + Value;
 		}
+	}
+
+	/// <summary>
+	/// 最後をnullにする代わりにこのトークンを用いる。
+	/// </summary>
+	public class NullToken : Token {
+		public NullToken(Lexer lexer) : base(lexer) { }
+
+		public override string Value {
+			get { throw new NotImplementedException(); }
+		}
+		public override bool HasNext { get { return false; } }
 	}
 
 	/// <summary>

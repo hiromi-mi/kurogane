@@ -15,7 +15,7 @@ namespace Kurogane.Compiler {
 			var parser = new Parser();
 			var pair = parser.ParseProgram(token);
 			if (pair == null) Throw("プログラムが正しく読めませんでした。");
-			if (pair.Token != null) Throw("プログラムに読み残しがあります。");
+			if (pair.Token.HasNext) Throw("プログラムに読み残しがあります。");
 			return pair.Node;
 		}
 
@@ -171,7 +171,7 @@ namespace Kurogane.Compiler {
 		#region 通常文
 
 		private IPair<StatementNode> ParseNomalStmt(Token token) {
-			List<Procedure> procs = new List<Procedure>();
+			List<IProcedure> procs = new List<IProcedure>();
 			while (true) {
 				var procPair = ParseProc(token);
 				if (procPair == null) break;
@@ -187,10 +187,21 @@ namespace Kurogane.Compiler {
 				return null;
 		}
 
-		private IPair<Procedure> ParseProc(Token token) {
+		private IPair<IProcedure> ParseProc(Token token) {
 			List<ArgumentPair> args = new List<ArgumentPair>();
 			Procedure proc = null;
 			while (true) {
+				if (IsExecKeyword(token)) {
+					if (args.Count > 0 && args[args.Count - 1].PostPosition == "と") {
+						ExpressionNode node = null;
+						if (args.Count == 2 && args[0].PostPosition == "を") {
+							node = args[0].Target;
+						}
+						return MakePair(
+							new AssignmentNode(((ReferenceExpression)args[args.Count - 1].Target).Name, node),
+							token.Next);
+					}
+				}
 				var expPair = ParseExpression(token);
 				if (expPair == null) return null;
 				if (expPair.Token is PostPositionToken) {
@@ -199,14 +210,37 @@ namespace Kurogane.Compiler {
 					token = ppToken.Next;
 					continue;
 				}
-				if (expPair.Token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する") && expPair.Node is ReferenceExpression) {
-					proc = new Procedure(args, ((ReferenceExpression)expPair.Node).Name);
+				if (IsExecKeyword(expPair.Token) && expPair.Node is ReferenceExpression) {
+					proc = new Procedure(args, ((ReferenceExpression)expPair.Node).Name, false);
+					token = expPair.Token.Next;
+					break;
+				}
+				if (IsTryExecKeyword(expPair.Token) && expPair.Node is ReferenceExpression) {
+					proc = new Procedure(args, ((ReferenceExpression)expPair.Node).Name, true);
 					token = expPair.Token.Next;
 					break;
 				}
 				Throw("解析できないトークンが現れました。");
 			}
 			return MakePair(proc, token);
+		}
+
+		private bool IsExecKeyword(Token token) {
+			return token
+				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "して")
+				.Match((PunctuationToken t) => t.Value == "," || t.Value == "、" || t.Value == "，")
+				|| token
+				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.Match((PunctuationToken t) => t.Value == "。" || t.Value == "．");
+		}
+
+		private bool IsTryExecKeyword(Token token) {
+			return token
+				.MatchFlow((ReservedToken t) => t.Value == "してみて")
+				.Match((PunctuationToken t) => t.Value == "," || t.Value == "、" || t.Value == "，")
+				|| token
+				.MatchFlow((ReservedToken t) => t.Value == "してみる")
+				.Match((PunctuationToken t) => t.Value == "。" || t.Value == "．");
 		}
 
 		#endregion
@@ -253,6 +287,9 @@ namespace Kurogane.Compiler {
 				var next = pair.Token.Next;
 				if (next is PostPositionToken) { // 「と」の直後が助詞なら「無」を補う
 					return MakePair(new TuppleExpression(pair.Node, LiteralNil), next);
+				}
+				if (IsExecKeyword(next)) {
+					return pair;
 				}
 				else {
 					var tailPair = ParseExpression(next);

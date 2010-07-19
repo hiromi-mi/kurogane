@@ -27,23 +27,14 @@ namespace Kurogane.Compiler {
 
 	#region 普通の手続き
 
-	public class AssignmentNode {
-		public readonly string Name;
-		public readonly ExpressionNode Value;
-		public AssignmentNode(string name, ExpressionNode value) {
-			this.Name = name;
-			this.Value = value;
-		}
-	}
-
 	/// <summary>
 	/// 普通の命令文の示すノード。
 	/// </summary>
 	public class StatementNode : AbstractStatementNode {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public readonly IList<Procedure> Procedures;
-		public StatementNode(IList<Procedure> procs) {
+		public readonly IList<IProcedure> Procedures;
+		public StatementNode(IList<IProcedure> procs) {
 			Debug.Assert(procs != null);
 			Debug.Assert(procs.Count > 0);
 			this.Procedures = procs;
@@ -56,23 +47,48 @@ namespace Kurogane.Compiler {
 		}
 	}
 
+	public interface IProcedure { }
+
 	/// <summary>
 	/// 文の中の一つの手続きを示すノード
 	/// </summary>
-	public class Procedure {
+	public class Procedure : IProcedure {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<ArgumentPair> Arguments;
 		public readonly string Name;
-		public Procedure(IList<ArgumentPair> args, string name) {
+		public readonly bool TryExec;
+		public Procedure(IList<ArgumentPair> args, string name, bool tryExec) {
 			this.Arguments = args;
 			this.Name = name;
+			this.TryExec = tryExec;
 		}
 
 		public override string ToString() {
-			return Name + "する。";
+			if (TryExec)
+				return Name + "してみる。";
+			else
+				return Name + "する。";
 		}
 	}
+
+	/// <summary>
+	/// 代入文
+	/// </summary>
+	public class AssignmentNode : IProcedure {
+		public readonly string Name;
+		public readonly ExpressionNode Value;
+		public AssignmentNode(string name, ExpressionNode value) {
+			this.Name = name;
+			this.Value = value;
+		}
+
+		public override string ToString() {
+			return Name + "とする。";
+		}
+	}
+
+
 
 	public class ArgumentPair {
 		public readonly ExpressionNode Target;

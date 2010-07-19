@@ -33,7 +33,7 @@ namespace Kurogane.Compiler {
 			where T : TToken
 			where TToken : class, IToken<TToken> {
 
-				return Match(token, pred) ? token.Next : null;
+			return Match(token, pred) ? token.Next : null;
 		}
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace Kurogane.Compiler {
 			where T : TToken
 			where TToken : class, IToken<TToken> {
 
-			return Match(token, pred) && token.Next == null;
+			return Match(token, pred) && token.Next.HasNext == false;
 		}
 	}
 }

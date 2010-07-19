@@ -9,7 +9,31 @@ using Kurogane.Runtime;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			Pair();
+			MyabeMonad();
+		}
+
+		static void MyabeMonad() {
+			var code =
+				"以下の手順で甲する。" +
+				"	「A」をイに代入する。" +
+				"	失敗をパスする。" +
+				"以上。" +
+				"以下の手順で乙する。" +
+				"	「B」をロに代入する。" +
+				"以上。" +
+				"以下の手順で丙する。" +
+				"	「C」をハに代入する。" +
+				"	失敗をパスする。" +
+				"以上。" +
+				"以下の手順で丁する。" +
+				"	「D」をニに代入する。" +
+				"以上。" +
+				"甲して、乙する。" +
+				"丙して、丁してみる。" +
+				"";
+			var engine = new Engine();
+			engine.Execute(code);
+			var scope = engine.DefaultScope;
 		}
 
 		static void Tree() {
@@ -124,8 +148,8 @@ namespace ConsoleTest {
 			string code =
 				"以下の手順でNをFIB変換する。" +
 				"	以下の手順で計算する。" +
-				"		(N-1)をFIB変換し、Aに代入する。" +
-				"		(N-2)をFIB変換し、Bに代入する。" +
+				"		(N-1)をFIB変換し、Aとする。" +
+				"		(N-2)をFIB変換し、Bとする。" +
 				"		(A+B)をパスする。" +
 				"	以上。" +
 				"	もし(N≦1)なら" +
@@ -133,7 +157,7 @@ namespace ConsoleTest {
 				"	他なら" +
 				"		計算する。" +
 				"以上。" +
-				"27をFIB変換し、表示する。";
+				"10をFIB変換し、表示する。";
 			var engine = new Engine();
 			engine.Execute(code);
 		}

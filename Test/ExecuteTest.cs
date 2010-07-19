@@ -36,8 +36,8 @@ namespace Kurogane.Test {
 			string code =
 				"以下の手順でNをFIB変換する。" +
 				"	以下の手順で計算する。" +
-				"		(N-1)をFIB変換し、Aに代入する。" +
-				"		(N-2)をFIB変換し、Bに代入する。" +
+				"		(N-1)をFIB変換し、Aとする。" +
+				"		(N-2)をFIB変換し、Bとする。" +
 				"		(A+B)をパスする。" +
 				"	以上。" +
 				"	もし(N≦1)なら" +
@@ -66,8 +66,8 @@ namespace Kurogane.Test {
 				"以上。" +
 				"以下の手順で分解を合計する。" +
 				"	以下の手順で計算する。" +
-				"		0で分解し、Aに代入する。" +
-				"		1で分解し、合計し、Bに代入する。" +
+				"		0で分解し、Aとする。" +
+				"		1で分解し、合計し、Bとする。" +
 				"		(A+B)をパスする。" +
 				"	以上。" +
 				"	もし(分解＝0)なら" +
@@ -127,6 +127,67 @@ namespace Kurogane.Test {
 			object b = engine.DefaultScope.GetVariable("B");
 			Assert.IsInstanceOfType(b, typeof(int));
 			Assert.AreEqual((int)b, 120);
+		}
+
+		[TestMethod]
+		public void ローカル変数() {
+			string code =
+				"「こんにちは」をAに代入する。" +
+				"「さようなら」をBに代入する。" +
+				"以下の手順でテストする。" +
+				"	「おはよう」をAに代入する。" +
+				"	「ごきげんよう」をBとする。" +
+				"	「ようこそ」をCとする。" +
+				"以上。" +
+				"テストする。";
+			var engine = new Engine();
+			engine.Execute(code);
+			var scope = engine.DefaultScope;
+			object a = scope.GetVariable("A");
+			object b = scope.GetVariable("B");
+			Assert.AreEqual("おはよう", a);
+			Assert.AreEqual("さようなら", b);
+			Assert.IsFalse(scope.HasVariable("C"));
+
+		}
+
+		[TestMethod]
+		public void してみる() {
+			string code =
+				"以下の手順で甲する。" +
+				"	「A」をイに代入する。" +
+				"	失敗をパスする。" +
+				"以上。" +
+				"以下の手順で乙する。" +
+				"	「B」をロに代入する。" +
+				"以上。" +
+				"以下の手順で丙する。" +
+				"	「C」をハに代入する。" +
+				"	失敗をパスする。" +
+				"以上。" +
+				"以下の手順で丁する。" +
+				"	「D」をニに代入する。" +
+				"以上。" +
+				"甲して、乙する。" +
+				"丙して、丁してみる。" +
+				"甲して、ホに代入する。" +
+				"甲して、ヘに代入してみる。" +
+				"";
+			var engine = new Engine();
+			engine.Execute(code);
+			var scope = engine.DefaultScope;
+			object a = scope.GetVariable("イ");
+			object b = scope.GetVariable("ロ");
+			object c = scope.GetVariable("ハ");
+			bool d = scope.HasVariable("ニ");
+			object e = scope.GetVariable("ホ");
+			bool f = scope.HasVariable("ヘ");
+			Assert.AreEqual("A", a);
+			Assert.AreEqual("B", b);
+			Assert.AreEqual("C", c);
+			Assert.IsFalse(d);
+			Assert.AreEqual(Nothing<object>.Instance, e);
+			Assert.IsFalse(f);
 		}
 	}
 }

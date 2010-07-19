@@ -18,7 +18,7 @@ namespace Kurogane {
 	/// <summary>
 	/// 失敗を表すクラス。
 	/// </summary>
-	public sealed class Nothing<T> : Maybe<T>, Nothing {
+	public sealed class Nothing<T> : Maybe<T>, Nothing, IEquatable<Nothing<T>> {
 
 		public static readonly Nothing<T> Instance = new Nothing<T>();
 
@@ -29,9 +29,17 @@ namespace Kurogane {
 		public Maybe<TResult> Execute<TResult>(Func<T, Maybe<TResult>> func) {
 			return Nothing<TResult>.Instance;
 		}
+
+		public bool Equals(Nothing<T> other) {
+			return other != null;
+		}
+
+		public override int GetHashCode() {
+			return typeof(T).GetHashCode();
+		}
 	}
 
-	public interface Nothing {}
+	public interface Nothing { }
 
 	/// <summary>
 	/// 成功を表すクラス。

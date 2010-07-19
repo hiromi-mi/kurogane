@@ -112,15 +112,21 @@ namespace Kurogane.Compiler {
 			return expr;
 		}
 
-		private Expression Convert(Procedure proc, Expression prevExpr) {
-			var procName = proc.Name;
-			switch (procName) {
+		private Expression Convert(IProcedure proc, Expression prevExpr) {
+			if (proc is Procedure) {
+				var proc_ = (Procedure)proc;
+				var procName = proc_.Name;
+				switch (procName) {
 
-			case "代入":
-				return ConvertAssign(proc, prevExpr);
+				case "代入":
+					return ConvertAssignGlobal(proc_, prevExpr);
 
-			default:
-				return ConvertNormal(proc, prevExpr);
+				default:
+					return ConvertNormal(proc_, prevExpr);
+				}
+			}
+			if (proc is AssignmentNode) {
+				return AssignLocal((AssignmentNode)proc, prevExpr);
 			}
 			throw new NotImplementedException();
 		}
@@ -137,10 +143,23 @@ namespace Kurogane.Compiler {
 			var pps = new string[proc.Arguments.Count];
 			for (int i = 0; i < pps.Length; i++)
 				pps[i] = proc.Arguments[i].PostPosition;
-			return Expression.Dynamic(
+			Expression execExpr = Expression.Dynamic(
 				new KrgnInvokeBinder(new CallInfo(args.Length - 1, pps)),
 				typeof(object),
 				args);
+			if (proc.TryExec && prevExpr != null)
+				execExpr = MaybeExec(execExpr, prevExpr);
+			return execExpr;
+		}
+
+		/// <summary>
+		/// ～してみるをif文に置き換える。
+		/// </summary>
+		private Expression MaybeExec(Expression execExpr, Expression prevExpr) {
+			var nothing = Expression.Constant(Nothing<object>.Instance);
+			return Expression.Condition(
+				Expression.NotEqual(prevExpr, nothing),
+				execExpr, Expression.Convert(nothing, typeof(object)));
 		}
 
 		#endregion
@@ -218,7 +237,7 @@ namespace Kurogane.Compiler {
 			var pps = new string[paramsExpr.Length];
 			for (int i = 0; i < pps.Length; i++)
 				pps[i] = defun.Declare.Params[i].PostPosition;
-			Define(defun.Declare.Name);
+			DefineFunction(defun.Declare.Name);
 			Expression body;
 			using (Scope()) {
 				// ラムダ式の変数を追加
@@ -237,7 +256,7 @@ namespace Kurogane.Compiler {
 				KrgnFunc.GetConstructorInfo(pps.Length),
 				lambdaExpr,
 				Expression.Constant(pps));
-			return AssignToDefined(defun.Declare.Name, makeProcExpr);
+			return AssignFunctionToDefined(defun.Declare.Name, makeProcExpr);
 		}
 
 		#endregion
@@ -258,48 +277,64 @@ namespace Kurogane.Compiler {
 			}
 		}
 
-		private Expression ConvertAssign(Procedure proc, Expression prevExpr) {
+		/// <summary>
+		/// 何度でもおこなえる代入文。
+		/// </summary>
+		/// <param name="proc"></param>
+		/// <param name="prevExpr"></param>
+		/// <returns></returns>
+		private Expression ConvertAssignGlobal(Procedure proc, Expression prevExpr) {
 			Debug.Assert(proc.Name == "代入");
 			var valueNode = proc.Arguments.SingleOrDefault(a => a.PostPosition == "を");
 			var valueExpr = valueNode != null ? Convert(valueNode.Target) : prevExpr;
 			var nameNode = proc.Arguments.Single(a => a.PostPosition == "に").Target;
 			var name = ((ReferenceExpression)nameNode).Name;
-			return Assign(name, valueExpr);
+
+			Expression assignExpr =
+				Expression.Dynamic(KrgnSetMemberBinder.Create(name), typeof(object), _globalScope, valueExpr);
+			if (proc.TryExec && prevExpr != null)
+				return assignExpr = MaybeExec(assignExpr, prevExpr);
+			return assignExpr;
 		}
 
-		private Expression Assign(string name, Expression value) {
-			if (_currentScope != null) {
-				var param = _currentScope.CreateVariable(name);
-				return Expression.Assign(param, value);
+		/// <summary>
+		/// 定義する。一度きりの代入。
+		/// </summary>
+		private Expression AssignLocal(AssignmentNode assign, Expression prevExpr) {
+			if (_currentScope == null) {
+				throw new SemanticException("トップレベルでは代入のみ用いてください。");
 			}
-			else {
-				return Expression.Dynamic(KrgnSetMemberBinder.Create(name), typeof(object), _globalScope, value);
-
-				//return Expression.Call(
-				//    _globalScope,
-				//    typeof(Scope).GetMethod("SetVariable"),
-				//    Expression.Constant(name),
-				//    value);
+			if (prevExpr == null) {
+				if (assign.Value == null)
+					throw new SemanticException("代入対象がありません");
+				prevExpr = Convert(assign.Value);
 			}
+			else if (assign.Value != null) {
+				throw new SemanticException("代入対象が複数あります。重文を用いないでください。");
+			}
+			var param = _currentScope.CreateVariable(assign.Name);
+			return Expression.Assign(param, prevExpr);
 		}
 
-		private void Define(string name) {
+		/// <summary>
+		/// 関数宣言
+		/// </summary>
+		/// <param name="name"></param>
+		private void DefineFunction(string name) {
 			if (_currentScope != null)
 				_currentScope.CreateVariable(name);
 		}
 
-		private Expression AssignToDefined(string name, Expression value) {
+		/// <summary>
+		/// 関数本体の設定
+		/// </summary>
+		private Expression AssignFunctionToDefined(string name, Expression value) {
 			if (_currentScope != null) {
 				var param = _currentScope.GetVariable(name);
 				return Expression.Assign(param, value);
 			}
 			else {
 				return Expression.Dynamic(KrgnSetMemberBinder.Create(name), typeof(object), _globalScope, value);
-				//return Expression.Call(
-				//    _globalScope,
-				//    typeof(Scope).GetMethod("SetVariable"),
-				//    Expression.Constant(name),
-				//    value);
 			}
 		}
 

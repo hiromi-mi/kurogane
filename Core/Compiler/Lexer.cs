@@ -75,7 +75,7 @@ namespace Kurogane.Compiler {
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 			switch (_CurrentChar) {
 			case -1:
-				return null;
+				return new NullToken(this);
 
 			case '[':
 				return ReadSymbolToken();
@@ -232,7 +232,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "もし", "なら", "し", "して", "する", "してみて", "してみる" };
+			string[] reserved = { "もし", "なら", "してみて", "してみる", "して", "し", "する" };
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
