@@ -11,6 +11,7 @@ namespace Kurogane {
 	public class Scope : IDynamicMetaObjectProvider {
 
 		private readonly IDictionary<string, dynamic> _values = new Dictionary<string, dynamic>();
+		internal readonly ISet<string> Included = new HashSet<string>();
 
 		public bool HasVariable(string name) {
 			return _values.ContainsKey(name);

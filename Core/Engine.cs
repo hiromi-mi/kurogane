@@ -6,29 +6,37 @@ using System.Linq;
 using System.Text;
 using Kurogane.Compilers;
 using Kurogane.Libraries;
+using Kurogane.Dynamic;
 
 namespace Kurogane {
 
 	public class Engine {
 
-		private Scope _global = new Scope();
+		public Encoding Encoding { get; set; }
 
 		/// <summary>標準入力</summary>
 		public TextReader Input { get; set; }
 		/// <summary>標準出力</summary>
 		public TextWriter Output { get; set; }
 
-		public Scope Global { get { return _global; } }
+		/// <summary>グローバル変数があるスコープ</summary>
+		public Scope Global { get; private set; }
 
 		public Engine() {
-			//var loader = new StandardLibraryLoader(_BuildinScope);
-			//loader.Load();
-			var loader = new LibraryLoader(this, _global);
-			loader.Load();
-
-			// 標準入出力
+			// Engineの準備
+			this.Global = new Scope();
 			this.Input = Console.In;
 			this.Output = Console.Out;
+			this.Encoding = Encoding.Default;
+			InitScope(this.Global);
+		}
+
+		/// <summary>
+		/// 標準関数のロードなど，グローバル変数の初期化
+		/// </summary>
+		private void InitScope(Scope scope) {
+			var loader = new LibraryLoader(this, Global);
+			loader.Load();
 		}
 
 		/// <summary>
@@ -37,7 +45,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(string code) {
-			return Execute(new StringReader(code), _global);
+			return Execute(new StringReader(code), Global);
 		}
 
 		/// <summary>
@@ -46,7 +54,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(StreamReader code) {
-			return Execute(code, _global);
+			return Execute(code, Global);
 		}
 
 		/// <summary>
@@ -55,7 +63,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <param name="scope">スコープ</param>
 		/// <returns>実行結果</returns>
-		private object Execute(TextReader code, Scope scope) {
+		internal object Execute(TextReader code, Scope scope) {
 			Stopwatch sw = new Stopwatch();
 
 			sw.Reset();
@@ -80,16 +88,11 @@ namespace Kurogane {
 
 			sw.Reset();
 			sw.Start();
-			var result = func(_global);
+			var result = func(Global);
 			sw.Stop();
 			Debug.WriteLine("実行時間: {0}ms", sw.ElapsedMilliseconds);
 
 			return result;
-		}
-
-		[Conditional("DEBUG")]
-		private void DebugWriteLine(string format, params object[] args) {
-			Console.Error.WriteLine(format, args);
 		}
 	}
 }

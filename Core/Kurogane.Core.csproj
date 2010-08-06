@@ -43,18 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilers\LexicalScope.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamic\ScopeMetaObject.cs" />
     <Compile Include="Dynamic\KrgnInvokeMemberBinder.cs" />
     <Compile Include="Dynamic\KrgnSetMemberBinder.cs" />
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnRuntimeException.cs" />
-    <Compile Include="Libraries\FunctionAttribute.cs" />
+    <Compile Include="Libraries\StandardLibrary.cs" />
     <Compile Include="Libraries\LibraryAttribute.cs" />
     <Compile Include="Libraries\LibraryLoader.cs" />
-    <Compile Include="Libraries\NameAttribute.cs" />
-    <Compile Include="Libraries\StandardIO.cs" />
-    <Compile Include="Libraries\Utility.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Types\IInspectable.cs" />
     <Compile Include="Types\KrgnFunc1.cs">
