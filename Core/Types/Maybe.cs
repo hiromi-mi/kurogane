@@ -9,37 +9,31 @@ namespace Kurogane.Types {
 	/// 失敗するかもしれない結果を示すクラス。
 	/// </summary>
 	/// <typeparam name="T">結果の値</typeparam>
-	public interface Maybe<out T> {
+	public interface Maybe<out T> : IInspectable {
 		T Value { get; }
 
 		Maybe<TResult> Execute<TResult>(Func<T, Maybe<TResult>> func);
 	}
 
 	/// <summary>
-	/// 失敗を表すクラス。
+	/// 失敗を表すクラス。Singleton
 	/// </summary>
-	public sealed class Nothing<T> : Maybe<T>, Nothing, IEquatable<Nothing<T>> {
+	public sealed class Nothing<T> : Maybe<T> {
 
 		public static readonly Nothing<T> Instance = new Nothing<T>();
 
 		public T Value {
-			get { throw new KrgnException("value is nothing"); }
+			get { throw new InvalidOperationException("value is nothing"); }
 		}
 
 		public Maybe<TResult> Execute<TResult>(Func<T, Maybe<TResult>> func) {
 			return Nothing<TResult>.Instance;
 		}
 
-		public bool Equals(Nothing<T> other) {
-			return other != null;
-		}
-
-		public override int GetHashCode() {
-			return typeof(T).GetHashCode();
+		public string Inspect() {
+			return "-";
 		}
 	}
-
-	public interface Nothing { }
 
 	/// <summary>
 	/// 成功を表すクラス。
@@ -53,6 +47,14 @@ namespace Kurogane.Types {
 
 		public Maybe<TResult> Execute<TResult>(Func<T, Maybe<TResult>> func) {
 			return func(Value);
+		}
+
+		public string Inspect() {
+			var i = Value as IInspectable;
+			if (i != null)
+				return i.Inspect();
+			else
+				return Value.ToString();
 		}
 	}
 }

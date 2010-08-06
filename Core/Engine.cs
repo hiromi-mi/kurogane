@@ -5,27 +5,26 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Kurogane.Compilers;
-using Kurogane.Runtime;
 using Kurogane.Libraries;
 
 namespace Kurogane {
 
 	public class Engine {
 
-		private Scope _BuildinScope = new Scope();
-		private Scope _DefaultGlobal;
+		private Globals _BuildinScope = new Globals();
+		private Globals _DefaultGlobal;
 
 		/// <summary>標準入力</summary>
 		public TextReader Input { get; set; }
 		/// <summary>標準出力</summary>
 		public TextWriter Output { get; set; }
 
-		public Scope DefaultScope { get { return _DefaultGlobal; } }
+		public Globals DefaultScope { get { return _DefaultGlobal; } }
 
 		public Engine() {
 			//var loader = new StandardLibraryLoader(_BuildinScope);
 			//loader.Load();
-			_DefaultGlobal = new Scope(_BuildinScope);
+			_DefaultGlobal = new Globals();
 			var loader = new LibraryLoader(this, _DefaultGlobal);
 			loader.Load();
 
@@ -58,7 +57,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <param name="scope">スコープ</param>
 		/// <returns>実行結果</returns>
-		private object Execute(TextReader code, Scope scope) {
+		private object Execute(TextReader code, Globals scope) {
 			Stopwatch sw = new Stopwatch();
 
 			sw.Reset();

@@ -10,7 +10,7 @@ namespace Kurogane.Dynamic {
 
 	class PairMetaObject : DynamicMetaObject {
 
-		public PairMetaObject(IPair pair, Expression expr)
+		public PairMetaObject(Pair pair, Expression expr)
 			: base(expr, BindingRestrictions.Empty, pair) {
 		}
 
@@ -22,8 +22,8 @@ namespace Kurogane.Dynamic {
 			}
 			if (propName != null)
 				return new DynamicMetaObject(
-					Expression.Property(Expression.Convert(base.Expression, typeof(IPair)), propName),
-					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(base.Expression, typeof(IPair))));
+					Expression.Property(Expression.Convert(base.Expression, typeof(Pair)), propName),
+					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(base.Expression, typeof(Pair))));
 			return base.BindGetMember(binder);
 		}
 	}

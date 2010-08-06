@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Kurogane.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Kurogane.Types;
 

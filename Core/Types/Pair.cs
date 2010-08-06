@@ -7,12 +7,7 @@ using System.Linq.Expressions;
 
 namespace Kurogane.Types {
 
-	public interface IPair {
-		object Head { get; }
-		object Tail { get; }
-	}
-
-	public class Pair : IPair{
+	public class Pair :  IInspectable {
 		public object Head { get; private set; }
 		public object Tail { get; private set; }
 
@@ -22,8 +17,13 @@ namespace Kurogane.Types {
 		}
 
 		public override string ToString() {
-			return "(" + Head + " . " + Tail + ")";
+			return String.Concat(Head, Tail);
+		}
+
+		public string Inspect() {
+			var hStr = Head is IInspectable ? ((IInspectable)Head).Inspect() : Head.ToString();
+			var tStr = Tail is IInspectable ? ((IInspectable)Tail).Inspect() : Tail.ToString();
+			return "(" + hStr + " . " + tStr + ")";
 		}
 	}
-
 }

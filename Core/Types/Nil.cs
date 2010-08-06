@@ -5,7 +5,10 @@ using System.Text;
 
 namespace Kurogane.Types {
 
-	public sealed class Nil {
+	/// <summary>
+	/// Nullの代わりをするクラス。Singleton
+	/// </summary>
+	public sealed class Nil : IInspectable {
 
 		public static readonly Nil Instance = new Nil();
 
@@ -13,6 +16,10 @@ namespace Kurogane.Types {
 
 		public override string ToString() {
 			return String.Empty;
+		}
+
+		public string Inspect() {
+			return "nil";
 		}
 	}
 }
