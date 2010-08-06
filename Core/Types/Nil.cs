@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane {
+namespace Kurogane.Types {
+
 	public sealed class Nil {
 
 		public static readonly Nil Instance = new Nil();

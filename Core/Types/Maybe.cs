@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane {
+namespace Kurogane.Types {
 
 	/// <summary>
 	/// 失敗するかもしれない結果を示すクラス。

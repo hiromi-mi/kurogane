@@ -5,7 +5,7 @@ using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Kurogane {
+namespace Kurogane.Types {
 
 	public interface IPair {
 		object Head { get; }

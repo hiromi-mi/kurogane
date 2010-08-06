@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Linq.Expressions;
 
-namespace Kurogane.Runtime {
+namespace Kurogane {
 
 	/// <summary>
 	/// 値を保持するオブジェクトのインタフェース。
@@ -69,7 +69,7 @@ namespace Kurogane.Runtime {
 
 		private class MetaObject : DynamicMetaObject {
 			public MetaObject(Scope self, Expression expr)
-				: base(expr, BindingRestrictions.Empty, self) {
+				: base(expr, BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(expr, typeof(Scope))), self) {
 			}
 
 			public override DynamicMetaObject BindGetMember(GetMemberBinder binder) {
@@ -78,7 +78,7 @@ namespace Kurogane.Runtime {
 						Expression.Convert(this.Expression, typeof(Scope)),
 						typeof(Scope).GetMethod("GetVariable"),
 						Expression.Constant(binder.Name)),
-					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(this.Expression, typeof(Scope))));
+					this.Restrictions);
 			}
 
 			public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value) {
@@ -88,7 +88,7 @@ namespace Kurogane.Runtime {
 						typeof(Scope).GetMethod("SetVariable"),
 						Expression.Constant(binder.Name),
 						value.Expression),
-					BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(this.Expression, typeof(Scope))));
+					this.Restrictions);
 			}
 		}
 

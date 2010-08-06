@@ -4,21 +4,34 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Kurogane.Compiler;
+using Kurogane.Compilers;
+using Kurogane.Runtime;
+using Kurogane.Libraries;
 
-namespace Kurogane.Runtime {
+namespace Kurogane {
+
 	public class Engine {
 
 		private Scope _BuildinScope = new Scope();
 		private Scope _DefaultGlobal;
 
+		/// <summary>標準入力</summary>
+		public TextReader Input { get; set; }
+		/// <summary>標準出力</summary>
+		public TextWriter Output { get; set; }
 
 		public Scope DefaultScope { get { return _DefaultGlobal; } }
 
 		public Engine() {
-			var loader = new StandardLibraryLoader(_BuildinScope);
-			loader.Load();
+			//var loader = new StandardLibraryLoader(_BuildinScope);
+			//loader.Load();
 			_DefaultGlobal = new Scope(_BuildinScope);
+			var loader = new LibraryLoader(this, _DefaultGlobal);
+			loader.Load();
+
+			// 標準入出力
+			this.Input = Console.In;
+			this.Output = Console.Out;
 		}
 
 		/// <summary>

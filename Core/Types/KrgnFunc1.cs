@@ -6,7 +6,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Kurogane {
+namespace Kurogane.Types {
 
 public interface IKrgnFunc {
 	Delegate Func { get; }

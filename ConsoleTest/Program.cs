@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Kurogane.Compiler;
+using Kurogane.Compilers;
 using Kurogane.Runtime;
+using Kurogane;
 
 namespace ConsoleTest {
 	class Program {
