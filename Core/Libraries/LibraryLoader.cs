@@ -11,12 +11,12 @@ namespace Kurogane.Libraries {
 	public class LibraryLoader {
 
 		private Engine _engine;
-		private Globals _scope;
+		private Scope _scope;
 
 		private ISet<string> _loadLibraries = new HashSet<string>();
 		private ISet<Assembly> _loadedAssemblies = new HashSet<Assembly>();
 
-		public LibraryLoader(Engine engine, Globals scope) {
+		public LibraryLoader(Engine engine, Scope scope) {
 			_engine = engine;
 			_scope = scope;
 		}
@@ -63,7 +63,7 @@ namespace Kurogane.Libraries {
 				var paramInfos = method.GetParameters();
 				if (paramInfos.Length == 2 &&
 					paramInfos[0].ParameterType == typeof(Engine) &&
-					paramInfos[1].ParameterType == typeof(Globals)) {
+					paramInfos[1].ParameterType == typeof(Scope)) {
 
 					method.Invoke(null, param);
 				}

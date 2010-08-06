@@ -7,17 +7,17 @@ using System.Linq.Expressions;
 
 namespace Kurogane.Dynamic {
 
-	internal class GlobalMetaObject : DynamicMetaObject {
+	internal class ScopeMetaObject : DynamicMetaObject {
 
-		public GlobalMetaObject(Globals self, Expression expr)
-			: base(expr, BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(expr, typeof(Globals))), self) {
+		public ScopeMetaObject(Scope self, Expression expr)
+			: base(expr, BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(expr, typeof(Scope))), self) {
 		}
 
 		public override DynamicMetaObject BindGetMember(GetMemberBinder binder) {
 			return new DynamicMetaObject(
 				Expression.Call(
-					Expression.Convert(this.Expression, typeof(Globals)),
-					typeof(Globals).GetMethod("GetVariable"),
+					Expression.Convert(this.Expression, typeof(Scope)),
+					typeof(Scope).GetMethod("GetVariable"),
 					Expression.Constant(binder.Name)),
 				this.Restrictions);
 		}
@@ -25,8 +25,8 @@ namespace Kurogane.Dynamic {
 		public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value) {
 			return new DynamicMetaObject(
 				Expression.Call(
-					Expression.Convert(this.Expression, typeof(Globals)),
-					typeof(Globals).GetMethod("SetVariable"),
+					Expression.Convert(this.Expression, typeof(Scope)),
+					typeof(Scope).GetMethod("SetVariable"),
 					Expression.Constant(binder.Name),
 					value.Expression),
 				this.Restrictions);

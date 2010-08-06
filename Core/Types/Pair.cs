@@ -7,7 +7,11 @@ using System.Linq.Expressions;
 
 namespace Kurogane.Types {
 
-	public class Pair :  IInspectable {
+	public class Pair : IInspectable {
+
+		internal static string txtHead = ReflectionHelper.PropertyName<Pair>(p => p.Head);
+		internal static string txtTail = ReflectionHelper.PropertyName<Pair>(p => p.Tail);
+
 		public object Head { get; private set; }
 		public object Tail { get; private set; }
 

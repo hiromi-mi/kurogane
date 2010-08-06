@@ -11,21 +11,19 @@ namespace Kurogane {
 
 	public class Engine {
 
-		private Globals _BuildinScope = new Globals();
-		private Globals _DefaultGlobal;
+		private Scope _global = new Scope();
 
 		/// <summary>標準入力</summary>
 		public TextReader Input { get; set; }
 		/// <summary>標準出力</summary>
 		public TextWriter Output { get; set; }
 
-		public Globals DefaultScope { get { return _DefaultGlobal; } }
+		public Scope Global { get { return _global; } }
 
 		public Engine() {
 			//var loader = new StandardLibraryLoader(_BuildinScope);
 			//loader.Load();
-			_DefaultGlobal = new Globals();
-			var loader = new LibraryLoader(this, _DefaultGlobal);
+			var loader = new LibraryLoader(this, _global);
 			loader.Load();
 
 			// 標準入出力
@@ -39,7 +37,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(string code) {
-			return Execute(new StringReader(code), _DefaultGlobal);
+			return Execute(new StringReader(code), _global);
 		}
 
 		/// <summary>
@@ -48,7 +46,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(StreamReader code) {
-			return Execute(code, _DefaultGlobal);
+			return Execute(code, _global);
 		}
 
 		/// <summary>
@@ -57,7 +55,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <param name="scope">スコープ</param>
 		/// <returns>実行結果</returns>
-		private object Execute(TextReader code, Globals scope) {
+		private object Execute(TextReader code, Scope scope) {
 			Stopwatch sw = new Stopwatch();
 
 			sw.Reset();
@@ -82,7 +80,7 @@ namespace Kurogane {
 
 			sw.Reset();
 			sw.Start();
-			var result = func(_DefaultGlobal);
+			var result = func(_global);
 			sw.Stop();
 			Debug.WriteLine("実行時間: {0}ms", sw.ElapsedMilliseconds);
 

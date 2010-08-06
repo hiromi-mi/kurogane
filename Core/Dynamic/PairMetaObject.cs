@@ -17,8 +17,8 @@ namespace Kurogane.Dynamic {
 		public override DynamicMetaObject BindGetMember(GetMemberBinder binder) {
 			string propName = null;
 			switch (binder.Name) {
-			case "頭": propName = "Head"; break;
-			case "体": propName = "Tail"; break;
+			case ConstantNames.Head: propName = Pair.txtHead; break;
+			case ConstantNames.Tail: propName = Pair.txtTail; break;
 			}
 			if (propName != null)
 				return new DynamicMetaObject(

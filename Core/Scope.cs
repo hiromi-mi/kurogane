@@ -8,7 +8,7 @@ using Kurogane.Dynamic;
 
 namespace Kurogane {
 
-	public class Globals : IDynamicMetaObjectProvider {
+	public class Scope : IDynamicMetaObjectProvider {
 
 		private readonly IDictionary<string, dynamic> _values = new Dictionary<string, dynamic>();
 
@@ -28,7 +28,7 @@ namespace Kurogane {
 		}
 
 		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
-			return new GlobalMetaObject(this, parameter);
+			return new ScopeMetaObject(this, parameter);
 		}
 	}
 }

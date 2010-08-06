@@ -9,14 +9,14 @@ namespace Kurogane.Libraries {
 	[Library]
 	public static class StandardIO {
 
-		public static void Read(Engine engine, Globals scope) {
+		public static void Read(Engine engine, Scope scope) {
 			Func<object> read = delegate {
 				return engine.Input.ReadLine();
 			};
 			scope.SetVariable("入力", KrgnFunc.Create(read));
 		}
 
-		public static void Write(Engine engine, Globals scope) {
+		public static void Write(Engine engine, Scope scope) {
 			Func<object, object> write = delegate(object obj) {
 				var str = obj.ToString();
 				engine.Output.Write(str);

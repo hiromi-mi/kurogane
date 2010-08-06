@@ -33,7 +33,7 @@ namespace ConsoleTest {
 				"";
 			var engine = new Engine();
 			engine.Execute(code);
-			var scope = engine.DefaultScope;
+			var scope = engine.Global;
 		}
 
 		static void Tree() {

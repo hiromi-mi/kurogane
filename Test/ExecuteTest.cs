@@ -20,7 +20,7 @@ namespace Kurogane.Test {
 				"「C」に「A」が「B」をテストする。" ,
 				"「C」に「B」を「A」がテストする。"};
 			var engine = new Engine();
-			var scope = engine.DefaultScope;
+			var scope = engine.Global;
 			scope.SetVariable("テスト", KrgnFunc.Create(
 				(a, b, c) => ((string)a == "A" && (string)b == "B" && (string)c == "C"),
 				"が", "を", "に"));
@@ -120,11 +120,11 @@ namespace Kurogane.Test {
 			var engine = new Engine();
 			engine.Execute(code);
 
-			object a = engine.DefaultScope.GetVariable("A");
+			object a = engine.Global.GetVariable("A");
 			Assert.IsInstanceOfType(a, typeof(int));
 			Assert.AreEqual((int)a, 15);
 
-			object b = engine.DefaultScope.GetVariable("B");
+			object b = engine.Global.GetVariable("B");
 			Assert.IsInstanceOfType(b, typeof(int));
 			Assert.AreEqual((int)b, 120);
 		}
@@ -142,7 +142,7 @@ namespace Kurogane.Test {
 				"テストする。";
 			var engine = new Engine();
 			engine.Execute(code);
-			var scope = engine.DefaultScope;
+			var scope = engine.Global;
 			object a = scope.GetVariable("A");
 			object b = scope.GetVariable("B");
 			Assert.AreEqual("おはよう", a);
@@ -175,7 +175,7 @@ namespace Kurogane.Test {
 				"";
 			var engine = new Engine();
 			engine.Execute(code);
-			var scope = engine.DefaultScope;
+			var scope = engine.Global;
 			object a = scope.GetVariable("イ");
 			object b = scope.GetVariable("ロ");
 			object c = scope.GetVariable("ハ");
