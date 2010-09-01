@@ -45,16 +45,28 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <returns>実行結果</returns>
 		public object Execute(string code) {
-			return Execute(new StringReader(code), Global);
+			return ExecuteCore(new StringReader(code), Global);
 		}
 
 		/// <summary>
-		/// 与えられたプログラムを実行する。
+		/// 与えられたファイルを実行する。
 		/// </summary>
-		/// <param name="code">プログラム</param>
+		/// <param name="path">ファイルのパス</param>
 		/// <returns>実行結果</returns>
-		public object Execute(StreamReader code) {
-			return Execute(code, Global);
+		public object ExecuteFile(string path) {
+			return ExecuteFile(path, Global);
+		}
+
+		/// <summary>
+		/// 与えられたファイルを実行する。
+		/// </summary>
+		/// <param name="path">ファイルのパス</param>
+		/// <returns>実行結果</returns>
+		public virtual object ExecuteFile(string path, Scope scope) {
+			using (var file = File.Open(path, FileMode.Open, FileAccess.Read))
+			using (var stream = new StreamReader(file, Encoding)) {
+				return ExecuteCore(stream, scope);
+			}
 		}
 
 		/// <summary>
@@ -63,7 +75,7 @@ namespace Kurogane {
 		/// <param name="code">プログラム</param>
 		/// <param name="scope">スコープ</param>
 		/// <returns>実行結果</returns>
-		internal object Execute(TextReader code, Scope scope) {
+		private object ExecuteCore(TextReader code, Scope scope) {
 			Stopwatch sw = new Stopwatch();
 
 			sw.Reset();

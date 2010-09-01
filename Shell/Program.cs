@@ -25,10 +25,8 @@ namespace Kurogane.Shell {
 				Console.Error.WriteLine("ファイル「{0}」が存在しません。", filepath);
 				Environment.Exit(-1);
 			}
-			using (var reader = new StreamReader(filepath, Encoding.Default)) {
-				var engine = new Engine();
-				engine.Execute(reader);
-			}
+			var engine = new Engine();
+			engine.ExecuteFile(filepath);
 		}
 
 		/// <summary>

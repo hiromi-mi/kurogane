@@ -53,7 +53,7 @@ namespace Kurogane.Libraries {
 			try {
 				if (File.Exists(path)) {
 					if (Scope.Included.Contains(path)) return fail;
-					return Engine.Execute(new StreamReader(File.Open(path, FileMode.Open, FileAccess.Read), Engine.Encoding), Scope);
+					return Engine.ExecuteFile(path, Scope);
 				}
 				return fail;
 			}
