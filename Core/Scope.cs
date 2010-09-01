@@ -4,7 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Linq.Expressions;
-using Kurogane.Dynamic;
+using Kurogane.Dynamics;
 
 namespace Kurogane {
 

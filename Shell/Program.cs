@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Kurogane.Compiler;
 using System.IO;
-using Kurogane.Runtime;
 
 namespace Kurogane.Shell {
 	public class Program {

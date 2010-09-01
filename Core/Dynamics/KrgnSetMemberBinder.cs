@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 
-namespace Kurogane.Dynamic {
+namespace Kurogane.Dynamics {
 
 	public class KrgnSetMemberBinder : SetMemberBinder {
 

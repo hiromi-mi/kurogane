@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Kurogane.Compilers;
 using Kurogane.Libraries;
-using Kurogane.Dynamic;
+using Kurogane.Dynamics;
 
 namespace Kurogane {
 

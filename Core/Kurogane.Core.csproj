@@ -43,11 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilers\LexicalScope.cs" />
     <Compile Include="ConstantNames.cs" />
-    <Compile Include="Dynamic\ScopeMetaObject.cs" />
-    <Compile Include="Dynamic\KrgnInvokeMemberBinder.cs" />
-    <Compile Include="Dynamic\KrgnSetMemberBinder.cs" />
+    <Compile Include="Dynamics\ScopeMetaObject.cs" />
+    <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />
+    <Compile Include="Dynamics\KrgnSetMemberBinder.cs" />
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Libraries\StandardLibrary.cs" />
@@ -60,15 +59,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>KrgnFunc.tt</DependentUpon>
     </Compile>
-    <Compile Include="Dynamic\MetaObjectLoader.cs" />
-    <Compile Include="Dynamic\PairMetaObject.cs" />
+    <Compile Include="Dynamics\MetaObjectLoader.cs" />
+    <Compile Include="Dynamics\PairMetaObject.cs" />
     <Compile Include="Types\Maybe.cs" />
     <Compile Include="Types\Nil.cs" />
     <Compile Include="Types\Pair.cs" />
     <Compile Include="Compilers\Ast.cs" />
-    <Compile Include="Dynamic\KrgnExpressionBinder.cs" />
-    <Compile Include="Dynamic\KrgnGetMemberBinder.cs" />
-    <Compile Include="Dynamic\KrgnInvokeBinder.cs" />
+    <Compile Include="Dynamics\KrgnExpressionBinder.cs" />
+    <Compile Include="Dynamics\KrgnGetMemberBinder.cs" />
+    <Compile Include="Dynamics\KrgnInvokeBinder.cs" />
     <Compile Include="Compilers\ExpressionGenerator.cs" />
     <Compile Include="Compilers\Lexer.cs" />
     <Compile Include="Compilers\Parser.cs" />

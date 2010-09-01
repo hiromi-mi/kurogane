@@ -6,7 +6,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using Kurogane.Types;
 
-namespace Kurogane.Dynamic {
+namespace Kurogane.Dynamics {
 
 	class PairMetaObject : DynamicMetaObject {
 
