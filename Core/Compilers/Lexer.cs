@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compilers {
 	/// <summary>
@@ -16,11 +18,9 @@ namespace Kurogane.Compilers {
 		private const char kanaEnd = 'ん';
 
 		private static readonly char[] OperatorCharacter = {
-			'+', '-', '*', '/', '%', '^', '&', '|', '!', '<', '>', '=',
+			'+', '-', '*', '/', '&', '|', '!', '<', '>', '=',
 			'＋', '－', '×', '÷', // 四則演算
 			'＜', '≦', '＝', '≧', '＞', '≠', // 比較
-			'￢','∧','∨', // 真偽
-			'⊆', '⊇', '∈', '∋', '⊂', '⊃', '∪', '∩', // 集合
 		};
 
 		private static readonly ISet<char> OperatorCharacterSet;
@@ -47,7 +47,17 @@ namespace Kurogane.Compilers {
 
 		private readonly TextReader _reader;
 
-		private int _CurrentChar;
+		private int _CurrentChar = 0;
+
+		/// <summary>読み取り中の行数</summary>
+		private int line = 1;
+
+		/// <summary>読み取り中の行の何文字目</summary>
+		private int ch = 0;
+
+		/// <summary>Windowsの改行で2カウントしないためのフラグ</summary>
+		private bool flagLF = false;
+
 		private Stack<Token> _stack = new Stack<Token>();
 
 		public Lexer(TextReader reader) {
@@ -64,6 +74,29 @@ namespace Kurogane.Compilers {
 			return NextToken();
 		}
 
+		/// <summary>文字を一つ読み進める。</summary>
+		private int _NextChar() {
+			switch (_CurrentChar) {
+			case '\r':
+				flagLF = true;
+				line++;
+				ch = 1;
+				break;
+			case '\n':
+				if (flagLF == false) {
+					flagLF = false;
+					line++;
+					ch = 1;
+				}
+				break;
+			default:
+				flagLF = false;
+				ch++;
+				break;
+			}
+			return (_CurrentChar = _reader.Read());
+		}
+
 
 		/// <summary>
 		/// 入力を読み進め、次のトークンを返します。
@@ -76,9 +109,6 @@ namespace Kurogane.Compilers {
 			switch (_CurrentChar) {
 			case -1:
 				return new NullToken(this);
-
-			case '[':
-				return ReadSymbolToken();
 
 			case '「':
 				return ReadLiteralToken();
@@ -106,27 +136,8 @@ namespace Kurogane.Compilers {
 			throw new LexicalException();
 		}
 
-		private int _NextChar() {
-			return (_CurrentChar = _reader.Read());
-		}
-
 		#region 各Tokenに対するReadメソッド
 
-		private SymbolToken ReadSymbolToken() {
-			var buff = new StringBuilder();
-			while (true) {
-				int c = _NextChar();
-				if (c == -1) {
-					throw new LexicalException(
-						"最後まで読みましたが、文字 \"]\" が発見できませんでした。");
-				}
-				else if (c == ']') {
-					_NextChar();
-					return new SymbolToken(this, buff.ToString());
-				}
-				buff.Append((char)c);
-			}
-		}
 
 		private LiteralToken ReadLiteralToken() {
 			var buff = new StringBuilder();
@@ -134,7 +145,7 @@ namespace Kurogane.Compilers {
 				int c = _NextChar();
 				if (c == -1) {
 					throw new LexicalException(
-						"最後まで読みましたが、文字 \"]\" が発見できませんでした。");
+						"\"「\"に対応する \"」\" が見つかりませんでした。");
 				}
 				else if (c == '」') {
 					_NextChar();
@@ -145,19 +156,37 @@ namespace Kurogane.Compilers {
 		}
 
 		private NumberToken ReadNumberToken() {
-			int num = _CurrentChar - '0';
+			int num = 0;
 			while (true) {
-				int n = _NextChar() - '0';
-				if (n < 0 || 9 < n) break;
-				num = num * 10 + n;
+				int c = _CurrentChar;
+				if ('0' <= c && c <= '9') {
+					num = num * 10 + c - '0';
+				}
+				else if ('０' <= c && c <= '９') {
+					num = num * 10 + c - '０';
+				}
+				else {
+					break;
+				}
+				_NextChar();
 			}
-			if (_CurrentChar == '.') {
+
+			if (_CurrentChar == '.' || _CurrentChar == '．') {
 				// 小数の処理
 				int denom = 1;
 				int numer = 0;
 				while (true) {
-					int n = _NextChar() - '0';
-					if (n < 0 || 9 < n) break;
+					int c = _NextChar();
+					int n = 0;
+					if ('0' <= c && c <= '9') {
+						n = c - '0';
+					}
+					else if ('０' <= c && c <= '９') {
+						n = c - '０';
+					}
+					else {
+						break;
+					}
 					numer = numer * 10 + n;
 					denom *= 10;
 				}
@@ -185,7 +214,18 @@ namespace Kurogane.Compilers {
 		private PunctuationToken ReadPunctuationToken() {
 			char c = (char)_CurrentChar;
 			_NextChar();
-			return new PunctuationToken(this, c.ToString());
+			switch (c) {
+			case ',':
+			case '，':
+			case '、':
+				return new CommaToken(this, c.ToString());
+			case '。':
+			case '．':
+			case '.':
+				return new PeriodToken(this, c.ToString());
+			}
+			Debug.Assert(false, "未到達エラー");
+			return null;
 		}
 
 		/// <summary>
@@ -219,7 +259,7 @@ namespace Kurogane.Compilers {
 		}
 
 		private Token ReadPostPositionToken() {
-			if (_CurrentChar == (int)'と') {
+			if (_CurrentChar == 'と') {
 				_NextChar();
 				return new PostPositionToken(this, "と");
 			}
@@ -262,13 +302,6 @@ namespace Kurogane.Compilers {
 				}
 				else if (_CurrentChar == '。' || _CurrentChar == '．') {
 					const string word = "する";
-					if (str.EndsWith(word)) {
-						execFlag = true;
-						execWord = word;
-					}
-				}
-				else {
-					const string word = "したもの";
 					if (str.EndsWith(word)) {
 						execFlag = true;
 						execWord = word;

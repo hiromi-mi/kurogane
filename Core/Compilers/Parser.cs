@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Kurogane.Types;
 
 namespace Kurogane.Compilers {
+
 	public class Parser {
 
 		/// <summary>
@@ -229,19 +230,19 @@ namespace Kurogane.Compilers {
 		private bool IsExecKeyword(Token token) {
 			return token
 				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "して")
-				.Match((PunctuationToken t) => t.Value == "," || t.Value == "、" || t.Value == "，")
+				.Match((CommaToken t) => true)
 				|| token
 				.MatchFlow((ReservedToken t) => t.Value == "する")
-				.Match((PunctuationToken t) => t.Value == "。" || t.Value == "．");
+				.Match((PeriodToken t) => true);
 		}
 
 		private bool IsTryExecKeyword(Token token) {
 			return token
 				.MatchFlow((ReservedToken t) => t.Value == "してみて")
-				.Match((PunctuationToken t) => t.Value == "," || t.Value == "、" || t.Value == "，")
+				.Match((CommaToken t) => true)
 				|| token
 				.MatchFlow((ReservedToken t) => t.Value == "してみる")
-				.Match((PunctuationToken t) => t.Value == "。" || t.Value == "．");
+				.Match((PeriodToken t) => true);
 		}
 
 		#endregion

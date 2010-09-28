@@ -14,8 +14,8 @@ namespace Kurogane.Dynamics {
 	public class MetaObjectLoader {
 
 		public static DynamicMetaObject Create(object obj, Expression expr) {
-			if (obj is Pair)
-				return new PairMetaObject((Pair)obj, expr);
+			if (obj is Tuple<object,object>)
+				return new PairMetaObject((Tuple<object, object>)obj, expr);
 
 			return null;
 		}

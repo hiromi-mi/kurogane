@@ -9,7 +9,7 @@ using Kurogane;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			MyabeMonad();
+			List();
 		}
 
 		static void MyabeMonad() {
@@ -136,8 +136,8 @@ namespace ConsoleTest {
 				"	他なら" +
 				"		計算する。" +
 				"以上。" +
-				"1と2と3と4と5とを0から加算で集約し、Aに代入する。" +
-				"1と2と3と4と5とを1から乗算で集約し、Bに代入する。" +
+				"1と3と5と7と9とを11から加算で集約し、Aに代入する。" +
+				"2と2と2と2と2とを2から乗算で集約し、Bに代入する。" +
 				"AとBを表示する。";
 
 			var engine = new Engine();

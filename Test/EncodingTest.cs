@@ -13,7 +13,6 @@ namespace Kurogane.Test {
 		readonly Encoding S_JIS = Encoding.GetEncoding("shift-jis");
 		readonly Encoding EUC_JP = Encoding.GetEncoding("euc-jp");
 		readonly Encoding UTF8 = Encoding.UTF8;
-		readonly Encoding UTF16LE = Encoding.Unicode;
 
 		[TestMethod]
 		public void JISを判定できる() {

@@ -224,9 +224,9 @@ namespace Kurogane.Compilers {
 						PairParam pairParam = (PairParam)param;
 						var paramExpr = Expression.Parameter(typeof(object), pairParam.Head);
 						var assign = Expression.Assign(paramExpr,
-							Expression.Property(Expression.Convert(parent, typeof(Pair)), "Head"));
+							Expression.Property(Expression.Convert(parent, typeof(Tuple<object, object>)), "Item1"));
 						param = pairParam.Tail;
-						parent = Expression.Property(Expression.Convert(parent, typeof(Pair)), "Tail");
+						parent = Expression.Property(Expression.Convert(parent, typeof(Tuple<object, object>)), "Item2");
 						innerParamExpr.Add(Tuple.Create(paramExpr, assign));
 					}
 					var normalParam = (NormalParam)param;
@@ -369,7 +369,7 @@ namespace Kurogane.Compilers {
 		}
 
 		private Expression Convert(TuppleExpression node) {
-			var ctorInfo = typeof(Pair).GetConstructor(new[] { typeof(object), typeof(object) });
+			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
 			return Expression.New(ctorInfo, Convert(node.Head), Convert(node.Tail));
 		}
 
@@ -379,10 +379,6 @@ namespace Kurogane.Compilers {
 				if (expr != null) return expr;
 			}
 			return Expression.Dynamic(KrgnGetMemberBinder.Create(name), typeof(object), _globalScope);
-			//return Expression.Call(
-			//    _globalScope,
-			//    typeof(Scope).GetMethod("GetVariable"),
-			//    Expression.Constant(name));
 		}
 
 		private Expression Convert(LiteralExpression literal) {

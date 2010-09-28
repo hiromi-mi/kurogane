@@ -63,7 +63,6 @@
     <Compile Include="Dynamics\PairMetaObject.cs" />
     <Compile Include="Types\Maybe.cs" />
     <Compile Include="Types\Nil.cs" />
-    <Compile Include="Types\Pair.cs" />
     <Compile Include="Compilers\Ast.cs" />
     <Compile Include="Dynamics\KrgnExpressionBinder.cs" />
     <Compile Include="Dynamics\KrgnGetMemberBinder.cs" />

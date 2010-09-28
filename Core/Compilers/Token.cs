@@ -173,7 +173,7 @@ namespace Kurogane.Compilers {
 	/// <summary>
 	/// 句読点を示すトークン
 	/// </summary>
-	public class PunctuationToken : Token {
+	public abstract class PunctuationToken : Token {
 		private readonly string _value;
 
 		public PunctuationToken(Lexer lexer, string value)
@@ -182,6 +182,24 @@ namespace Kurogane.Compilers {
 		}
 
 		public override string Value { get { return _value; } }
+	}
+
+	/// <summary>
+	/// 句点を示すトークン
+	/// </summary>
+	public class PeriodToken : PunctuationToken {
+		public PeriodToken(Lexer lexer, string value)
+			: base(lexer, value) {
+		}
+	}
+
+	/// <summary>
+	/// 読点を示すトークン
+	/// </summary>
+	public class CommaToken : PunctuationToken {
+		public CommaToken(Lexer lexer, string value)
+			: base(lexer, value) {
+		}
 	}
 
 	/// <summary>
