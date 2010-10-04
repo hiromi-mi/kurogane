@@ -120,9 +120,23 @@ namespace Kurogane.Compilers {
 				return ReadPunctuationToken();
 
 			case '(':
+			case '（':
 				return ReadOpenParenthesisToken();
 			case ')':
+			case'）':
 				return ReadCloseParenthesisToken();
+			case '[':
+			case '［':
+				return ReadOpenBracketToken();
+			case ']':
+			case '］':
+				return ReadCloseBracketToken();
+			case '{':
+			case '｛':
+				return ReadOpenBraceToken();
+			case '}':
+			case '｝':
+				return ReadCloseBraceToken();
 
 			default:
 				if (Char.IsDigit((char)_CurrentChar))
@@ -384,15 +398,45 @@ namespace Kurogane.Compilers {
 			}
 		}
 
-		private OpenParenthesisToken ReadOpenParenthesisToken() {
+		#region ReadBrackets
+
+		private OpenParenthesisToken ReadOpenParenthesisToken()
+		{
 			_NextChar();
 			return new OpenParenthesisToken(this);
 		}
 
-		private CloseParenthesisToken ReadCloseParenthesisToken() {
+		private CloseParenthesisToken ReadCloseParenthesisToken()
+		{
 			_NextChar();
 			return new CloseParenthesisToken(this);
 		}
+
+		private OpenBracketToken ReadOpenBracketToken()
+		{
+			_NextChar();
+			return new OpenBracketToken(this);
+		}
+
+		private CloseBracketToken ReadCloseBracketToken()
+		{
+			_NextChar();
+			return new CloseBracketToken(this);
+		}
+
+		private OpenBraceToken ReadOpenBraceToken()
+		{
+			_NextChar();
+			return new OpenBraceToken(this);
+		}
+
+		private CloseBraceToken ReadCloseBraceToken()
+		{
+			_NextChar();
+			return new CloseBraceToken(this);
+		}
+
+		#endregion
 
 		#endregion
 

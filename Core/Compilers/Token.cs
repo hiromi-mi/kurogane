@@ -202,11 +202,13 @@ namespace Kurogane.Compilers {
 		}
 	}
 
+	#region 括弧群
+
 	/// <summary>
 	/// 開き括弧を示すトークン
 	/// </summary>
-	public class OpenParenthesisToken : Token {
-		public const char Char = '(';
+	public class OpenParenthesisToken : Token
+	{
 		public override string Value { get { return "("; } }
 
 		public OpenParenthesisToken(Lexer lexer) : base(lexer) { }
@@ -215,10 +217,53 @@ namespace Kurogane.Compilers {
 	/// <summary>
 	/// 閉じ括弧を示すトークン
 	/// </summary>
-	public class CloseParenthesisToken : Token {
-		public const char Char = ')';
+	public class CloseParenthesisToken : Token
+	{
 		public override string Value { get { return ")"; } }
 
 		public CloseParenthesisToken(Lexer lexer) : base(lexer) { }
 	}
+
+	/// <summary>
+	/// 開き大括弧を示すトークン
+	/// </summary>
+	public class OpenBracketToken : Token
+	{
+		public override string Value { get { return "["; } }
+
+		public OpenBracketToken(Lexer lexer) : base(lexer) { }
+	}
+
+	/// <summary>
+	/// 閉じ大括弧を示すトークン
+	/// </summary>
+	public class CloseBracketToken : Token
+	{
+		public override string Value { get { return "]"; } }
+
+		public CloseBracketToken(Lexer lexer) : base(lexer) { }
+	}
+
+	/// <summary>
+	/// 開き波括弧を示すトークン
+	/// </summary>
+	public class OpenBraceToken : Token
+	{
+		public override string Value { get { return "{"; } }
+
+		public OpenBraceToken(Lexer lexer) : base(lexer) { }
+	}
+
+	/// <summary>
+	/// 閉じ波括弧を示すトークン
+	/// </summary>
+	public class CloseBraceToken : Token
+	{
+		public override string Value { get { return "}"; } }
+
+		public CloseBraceToken(Lexer lexer) : base(lexer) { }
+	}
+
+	#endregion
+
 }
