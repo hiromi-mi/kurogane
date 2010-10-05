@@ -406,11 +406,5 @@ namespace Kurogane.Compilers
 			_reader.Dispose();
 		}
 	}
-
-	public class LexicalException : Exception
-	{
-		public LexicalException() : base() { }
-		public LexicalException(string message) : base(message) { }
-	}
 }
 

@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilers\AnotherParser.cs" />
+    <Compile Include="Compilers\CompilerException.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamics\ScopeMetaObject.cs" />
     <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />

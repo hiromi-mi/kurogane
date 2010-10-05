@@ -22,12 +22,10 @@ namespace Kurogane.Compilers
 	public class IfStatement : IStatement
 	{
 		public readonly IList<CondThenPair> Thens;
-		public readonly INormalStatement Else;
 
-		public IfStatement(IList<CondThenPair> thens, INormalStatement elseStmt)
+		public IfStatement(IList<CondThenPair> thens)
 		{
 			this.Thens = thens;
-			this.Else = elseStmt;
 		}
 	}
 

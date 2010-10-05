@@ -476,11 +476,4 @@ namespace Kurogane.Compilers {
 
 		#endregion
 	}
-
-	public class SemanticException : Exception {
-		public SemanticException(string message)
-			: base(message) {
-
-		}
-	}
 }
