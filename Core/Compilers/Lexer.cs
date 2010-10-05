@@ -6,13 +6,17 @@ using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compilers
+{
 	/// <summary>
 	/// 字句解析を行うクラス
 	/// </summary>
-	public class Lexer {
+	public class Lexer
+	{
 
 		#region static
+
+		private const string NoFile = "-- no file --";
 
 		private const char kanaBegin = 'ぁ';
 		private const char kanaEnd = 'ん';
@@ -23,10 +27,20 @@ namespace Kurogane.Compilers {
 			'＜', '≦', '＝', '≧', '＞', '≠', // 比較
 		};
 
+		private static readonly char[] PunctuationToken = {
+			',', '，', '、', '.', '．', '。'
+		};
+
+		private static readonly char[] Brackets = {
+			'(', '{', '[', '（', '｛', '［',
+			')', '}', ']', '）', '｝', '］'
+		};
+
 		private static readonly ISet<char> OperatorCharacterSet;
 		private static readonly ISet<char> BreakTokenSet;
 
-		static Lexer() {
+		static Lexer()
+		{
 			OperatorCharacterSet = new HashSet<char>(OperatorCharacter);
 
 			var set = new HashSet<char>(OperatorCharacter);
@@ -55,27 +69,37 @@ namespace Kurogane.Compilers {
 		/// <summary>読み取り中の行の何文字目</summary>
 		private int ch = 0;
 
+		// これらはTokenをnewする時に書き換えること。
+		public int LineNumber { get; private set; }
+		public int CharCount { get; private set; }
+
+		private string _FileName;
+
 		/// <summary>Windowsの改行で2カウントしないためのフラグ</summary>
 		private bool flagLF = false;
 
 		private Stack<Token> _stack = new Stack<Token>();
 
-		public Lexer(TextReader reader) {
+		public Lexer(TextReader reader, string filename)
+		{
 			_reader = reader;
 			_NextChar();
+			_FileName = filename ?? NoFile;
 		}
 
 		/// <summary>
 		/// 次のトークン
 		/// </summary>
-		public Token Next() {
+		public Token Next()
+		{
 			if (_stack.Count > 0)
 				return _stack.Pop();
 			return NextToken();
 		}
 
 		/// <summary>文字を一つ読み進める。</summary>
-		private int _NextChar() {
+		private int _NextChar()
+		{
 			switch (_CurrentChar) {
 			case '\r':
 				flagLF = true;
@@ -84,9 +108,11 @@ namespace Kurogane.Compilers {
 				break;
 			case '\n':
 				if (flagLF == false) {
-					flagLF = false;
 					line++;
 					ch = 1;
+				}
+				else {
+					flagLF = false;
 				}
 				break;
 			default:
@@ -104,56 +130,46 @@ namespace Kurogane.Compilers {
 		/// それ以外は null を返しません。
 		/// </summary>
 		/// <returns></returns>
-		private Token NextToken() {
+		private Token NextToken()
+		{
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 			if (_CurrentChar == '※') SkipComment();
-			switch (_CurrentChar) {
-			case -1:
+
+			if (_CurrentChar == -1)
 				return new NullToken(this);
 
-			case '「':
+			char c = (char)_CurrentChar;
+
+			if (c == '「')
 				return ReadLiteralToken();
 
-			case '，':
-			case '、':
-			case '。':
-			case '．':
+			if (Array.IndexOf(PunctuationToken, c) >= 0)
 				return ReadPunctuationToken();
 
-			case '(':
-			case '（':
-				return ReadOpenParenthesisToken();
-			case ')':
-			case'）':
-				return ReadCloseParenthesisToken();
-			case '[':
-			case '［':
-				return ReadOpenBracketToken();
-			case ']':
-			case '］':
-				return ReadCloseBracketToken();
-			case '{':
-			case '｛':
-				return ReadOpenBraceToken();
-			case '}':
-			case '｝':
-				return ReadCloseBraceToken();
+			if (Array.IndexOf(Brackets, c) >= 0)
+				return ReadBracketsToken();
 
-			default:
-				if (Char.IsDigit((char)_CurrentChar))
-					return ReadNumberToken();
-				if (OperatorCharacterSet.Contains((char)_CurrentChar))
-					return ReadOperatorToken();
+			if (Char.IsDigit(c))
+				return ReadNumberToken();
 
-				return ReadPostPositionOrReservedToken();
-			}
+			if (Array.IndexOf(OperatorCharacter, c) >= 0)
+				return ReadOperatorToken();
 
-			throw new LexicalException();
+			if (kanaBegin <= c && c <= kanaEnd)
+				return ReadPostPositionToken();
+
+			if (Char.IsLetter(c))
+				return ReadSymbolLetterToken();
+
+			throw new LexicalException(String.Format(
+				"{0}の{1}行{2}文字目に，未知のトークンが出現しました。",
+				_FileName, LineNumber, CharCount));
 		}
 
-		private void SkipComment() {
+		private void SkipComment()
+		{
 			Debug.Assert(_CurrentChar == '※');
-			int[] endChar = { '。', '.', '．'};
+			int[] endChar = { '。', '.', '．' };
 			int c = _NextChar();
 			switch (c) {
 			case '(':
@@ -183,7 +199,11 @@ namespace Kurogane.Compilers {
 		#region 各Tokenに対するReadメソッド
 
 
-		private LiteralToken ReadLiteralToken() {
+		private LiteralToken ReadLiteralToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+
 			var buff = new StringBuilder();
 			while (true) {
 				int c = _NextChar();
@@ -199,7 +219,11 @@ namespace Kurogane.Compilers {
 			}
 		}
 
-		private NumberToken ReadNumberToken() {
+		private NumberToken ReadNumberToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+
 			int num = 0;
 			while (true) {
 				int c = _CurrentChar;
@@ -241,21 +265,27 @@ namespace Kurogane.Compilers {
 			}
 		}
 
-		private OperatorToken ReadOperatorToken() {
+		private OperatorToken ReadOperatorToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {
-				int c = _NextChar();
-				if (OperatorCharacterSet.Contains((char)c)) {
-					buff.Append((char)c);
-				}
-				else {
+				char c = (char)_NextChar();
+				if (Array.IndexOf(OperatorCharacter, c) >= 0)
+					buff.Append(c);
+				else
 					return new OperatorToken(this, buff.ToString());
-				}
 			}
 		}
 
-		private PunctuationToken ReadPunctuationToken() {
+		private PunctuationToken ReadPunctuationToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+
 			char c = (char)_CurrentChar;
 			_NextChar();
 			switch (c) {
@@ -268,23 +298,15 @@ namespace Kurogane.Compilers {
 			case '.':
 				return new PeriodToken(this, c.ToString());
 			}
-			Debug.Assert(false, "未到達エラー");
+			Debug.Assert(false, "到達不可能" + Environment.NewLine + "プログラムを見直すこと。");
 			return null;
 		}
 
-		/// <summary>
-		/// 助詞トークン、あるいは予約語トークンを読み取る
-		/// </summary>
-		/// <returns></returns>
-		private Token ReadPostPositionOrReservedToken() {
-			if (kanaBegin <= (char)_CurrentChar && (char)_CurrentChar <= kanaEnd)
-				return ReadPostPositionToken();
-			else if (Char.IsLetter((char)_CurrentChar))
-				return ReadSymbolLetterToken();
-			throw new NotImplementedException();
-		}
+		private Token ReadSymbolLetterToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
 
-		private Token ReadSymbolLetterToken() {
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {
@@ -302,7 +324,13 @@ namespace Kurogane.Compilers {
 				return new SymbolToken(this, buff.ToString());
 		}
 
-		private Token ReadPostPositionToken() {
+		private Token ReadPostPositionToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+			int soLine = -1;
+			int soCh = -1;
+
 			if (_CurrentChar == 'と') {
 				_NextChar();
 				return new PostPositionToken(this, "と");
@@ -311,8 +339,13 @@ namespace Kurogane.Compilers {
 			buff.Append((char)_CurrentChar);
 			while (true) {
 				char c = (char)_NextChar();
-				if (kanaBegin <= c && c <= kanaEnd)
+				if (kanaBegin <= c && c <= kanaEnd) {
 					buff.Append(c);
+					if (ch == 'そ') {
+						soLine = line;
+						soCh = ch;
+					}
+				}
 				else
 					break;
 			}
@@ -320,162 +353,62 @@ namespace Kurogane.Compilers {
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
-			else
-				return new PostPositionToken(this, str);
-		}
 
-		/// <summary>
-		/// 助詞と推定されたトークンから予約語を切り出す。
-		/// </summary>
-		/// <returns></returns>
-		private Token SplitReservedToken(string str) {
-			// 「もし」
-			const string ifWord = "もし";
-			if (str == ifWord) {
-				return new ReservedToken(this, ifWord);
+			const string mapKeyword = "それぞれ";
+			if (str.EndsWith(mapKeyword)) {
+				var token = new PostPositionToken(this, str);
+				LineNumber = soLine;
+				CharCount = soCh;
+				var soToken = new ReservedToken(this, mapKeyword);
+				_stack.Push(soToken);
+				return token;
 			}
-			{	// ～し、～する。～したもの。
-				bool execFlag = false;
-				string execWord = null;
-				if (_CurrentChar == '、' || _CurrentChar == '，') {
-					const string word = "し";
-					if (str.EndsWith(word)) {
-						execFlag = true;
-						execWord = word;
-					}
-				}
-				else if (_CurrentChar == '。' || _CurrentChar == '．') {
-					const string word = "する";
-					if (str.EndsWith(word)) {
-						execFlag = true;
-						execWord = word;
-					}
-				}
-				if (execFlag) {
-					return SplitReservedTokenEnding(str, execWord);
-				}
-			}
-			{	// 以上、以下
-				const string wordStart = "以下";
-				const string wordEnd = "以上";
-				if (str.StartsWith(wordStart)) {
-					return SplitReservedTokenStarting(str, wordStart);
-				}
-				if (str == wordEnd) {
-					return new ReservedToken(this, wordEnd);
-				}
-			}
-			{	// 手順
-				const string wordProc = "手順";
-				if (str.Contains(wordProc)) {
-					var sideWords = str.Split(new[] { wordProc }, 2, StringSplitOptions.None);
-					if (sideWords.Length != 2) {
-						throw new LexicalException("うまく「手順」のキーワードを切り取れませんでした。");
-					}
-					if (sideWords[1].Length > 0) {
-						_stack.Push(SplitReservedToken(sideWords[1]));
-					}
-					var token = new ReservedToken(this, wordProc);
-					if (sideWords[0].Length > 0) {
-						_stack.Push(token);
-						return SplitReservedToken(sideWords[0]);
-					}
-					else {
-						return token;
-					}
-				}
-			}
-			{	// もし
-				const string wordIfStart = "もし";
-				if (str.StartsWith(wordIfStart)) {
-					return SplitReservedTokenStarting(str, wordIfStart);
-				}
-				const string wordIfEnd = "なら";
-				if (str.EndsWith(wordIfEnd)) {
-					return SplitReservedTokenEnding(str, wordIfEnd);
-				}
-				const string wordElse = "他";
-				if (str.StartsWith(wordElse)) {
-					return SplitReservedTokenStarting(str, wordElse);
-				}
-			}
-			// 何も無い場合
+
 			return new PostPositionToken(this, str);
 		}
 
-		/// <summary>
-		/// 予約語 "reserved" で始まる文字列を分割
-		/// </summary>
-		private Token SplitReservedTokenStarting(string str, string reserved) {
-			var token = new ReservedToken(this, reserved);
-			if (str.Length > reserved.Length) {
-				_stack.Push(SplitReservedToken(str.Substring(reserved.Length, str.Length - reserved.Length)));
+
+		private Token ReadBracketsToken()
+		{
+			LineNumber = line;
+			CharCount = ch;
+
+			char c = (char)_CurrentChar;
+			_NextChar();
+			switch (c) {
+			case '(':
+			case '（':
+				return new OpenParenthesisToken(this);
+			case ')':
+			case '）':
+				return new CloseParenthesisToken(this);
+			case '[':
+			case '［':
+				return new OpenBracketToken(this);
+			case ']':
+			case '］':
+				return new CloseBracketToken(this);
+			case '{':
+			case '｛':
+				return new OpenBraceToken(this);
+			case '}':
+			case '｝':
+				return new CloseBraceToken(this);
 			}
-			return token;
-		}
-
-		/// <summary>
-		/// 予約語 "reserved" で終わる文字列を分割
-		/// </summary>
-		private Token SplitReservedTokenEnding(string str, string reserved) {
-			var token = new ReservedToken(this, reserved);
-			if (str.Length > reserved.Length) {
-				_stack.Push(token);
-				return SplitReservedToken(str.Substring(0, str.Length - reserved.Length));
-			}
-			else {
-				return token;
-			}
-		}
-
-		#region ReadBrackets
-
-		private OpenParenthesisToken ReadOpenParenthesisToken()
-		{
-			_NextChar();
-			return new OpenParenthesisToken(this);
-		}
-
-		private CloseParenthesisToken ReadCloseParenthesisToken()
-		{
-			_NextChar();
-			return new CloseParenthesisToken(this);
-		}
-
-		private OpenBracketToken ReadOpenBracketToken()
-		{
-			_NextChar();
-			return new OpenBracketToken(this);
-		}
-
-		private CloseBracketToken ReadCloseBracketToken()
-		{
-			_NextChar();
-			return new CloseBracketToken(this);
-		}
-
-		private OpenBraceToken ReadOpenBraceToken()
-		{
-			_NextChar();
-			return new OpenBraceToken(this);
-		}
-
-		private CloseBraceToken ReadCloseBraceToken()
-		{
-			_NextChar();
-			return new CloseBraceToken(this);
+			Debug.Assert(false, "到着不可能フロー" + Environment.NewLine + "プログラムを見直すこと。");
+			throw new NotImplementedException();
 		}
 
 		#endregion
 
-		#endregion
-
-		public void Dispose() {
+		public void Dispose()
+		{
 			_reader.Dispose();
 		}
 	}
 
-	public class LexicalException : Exception {
+	public class LexicalException : Exception
+	{
 		public LexicalException() : base() { }
 		public LexicalException(string message) : base(message) { }
 	}

@@ -17,7 +17,7 @@ namespace Kurogane.Compilers {
 		/// <param name="code">プログラム</param>
 		/// <returns></returns>
 		public static Token Tokenize(TextReader code) {
-			var lexer = new Lexer(code);
+			var lexer = new Lexer(code, null);
 			return lexer.Next();
 		}
 

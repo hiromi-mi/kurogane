@@ -20,6 +20,9 @@ namespace Kurogane.Compilers {
 
 		public abstract string Value { get; }
 
+		public readonly int LineNumber;
+		public readonly int CharCount;
+
 		/// <summary>
 		/// 次のトークン
 		/// </summary>
@@ -36,6 +39,8 @@ namespace Kurogane.Compilers {
 
 		public Token(Lexer lexer) {
 			_lexer = lexer;
+			this.LineNumber = lexer.LineNumber;
+			this.CharCount = lexer.CharCount;
 		}
 
 		public override string ToString() {
