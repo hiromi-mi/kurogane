@@ -158,7 +158,7 @@ namespace Kurogane.Compilers {
 			switch (c) {
 			case '(':
 			case '（':
-				endChar = new int[] { '}', '｝' };
+				endChar = new int[] { ')', '）' };
 				break;
 			case '{':
 			case '｛':
@@ -166,7 +166,7 @@ namespace Kurogane.Compilers {
 				break;
 			case '[':
 			case '［':
-				endChar = new int[] { '}', '｝' };
+				endChar = new int[] { ']', '］' };
 				break;
 			case '「':
 				endChar = new int[] { '」' };
@@ -175,6 +175,8 @@ namespace Kurogane.Compilers {
 			while (c != -1 && Array.IndexOf(endChar, c) == -1) {
 				c = _NextChar();
 			}
+			if (c != -1)
+				_NextChar();
 			return;
 		}
 

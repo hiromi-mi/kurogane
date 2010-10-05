@@ -32,6 +32,20 @@ namespace Kurogane.Test {
 		}
 
 		[TestMethod]
+		public void コメントを読み飛ばす()
+		{
+			string code =
+				"※これは、コメントです。" +
+				"1をパスする。" +
+				"※（括弧で囲むよ。複数でもOK！。。。）" +
+				"3をパスする。";
+			var engine = new Engine();
+			object num = engine.Execute(code);
+			Assert.IsInstanceOfType(num, typeof(int));
+			Assert.AreEqual((int)num, 3);
+		}
+
+		[TestMethod]
 		public void フィボナッチ数を計算する() {
 			string code =
 				"以下の手順でNをFIB変換する。" +
