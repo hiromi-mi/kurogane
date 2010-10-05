@@ -106,6 +106,7 @@ namespace Kurogane.Compilers {
 		/// <returns></returns>
 		private Token NextToken() {
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
+			if (_CurrentChar == '※') SkipComment();
 			switch (_CurrentChar) {
 			case -1:
 				return new NullToken(this);
@@ -148,6 +149,33 @@ namespace Kurogane.Compilers {
 			}
 
 			throw new LexicalException();
+		}
+
+		private void SkipComment() {
+			Debug.Assert(_CurrentChar == '※');
+			int[] endChar = { '。', '.', '．'};
+			int c = _NextChar();
+			switch (c) {
+			case '(':
+			case '（':
+				endChar = new int[] { '}', '｝' };
+				break;
+			case '{':
+			case '｛':
+				endChar = new int[] { '}', '｝' };
+				break;
+			case '[':
+			case '［':
+				endChar = new int[] { '}', '｝' };
+				break;
+			case '「':
+				endChar = new int[] { '」' };
+				break;
+			}
+			while (c != -1 && Array.IndexOf(endChar, c) == -1) {
+				c = _NextChar();
+			}
+			return;
 		}
 
 		#region 各Tokenに対するReadメソッド

@@ -235,6 +235,14 @@ namespace Kurogane.Compilers
 		}
 	}
 
+	public class NullLiteral : Literal
+	{
+		public NullLiteral()
+		{
+
+		}
+	}
+
 	#endregion
 
 	#region 式
