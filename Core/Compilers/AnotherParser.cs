@@ -219,31 +219,123 @@ namespace Kurogane.Compilers
 		/// orExpr  ::= cmpExpr |  orExpr AndOp cmpExpr
 		/// cmpExpr ::= addExpr | cmpExpr CmpOp addExpr
 		/// addExpr ::= mltExpr | addExpr AddOp mltExpr
-		/// mltExpr ::= Element | mltExpr MltOp Element
+		/// mltExpr ::= ukExpr  | mltExpr MltOp unExpr
+		/// unExpr  ::= unary   |  unExpr UnknownOp unary
 		private IPair<Element> ParseBinaryExpr(Token token)
 		{
-			throw new NotImplementedException();
+			IPair<Element> pair = ParseAndExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is OrOpToken) {
+					var opToken = (OrOpToken)token;
+					var rightPair = ParseAndExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
 		}
 
 		private IPair<Element> ParseAndExpr(Token token)
 		{
-			throw new NotImplementedException();
+			IPair<Element> pair = ParseCompareExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is AndOpToken) {
+					var opToken = (AndOpToken)token;
+					var rightPair = ParseCompareExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
 		}
 
 		private IPair<Element> ParseCompareExpr(Token token)
 		{
-			throw new NotImplementedException();
+			IPair<Element> pair = ParseAddExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is EqualOpToken || token is NotEqualOpToken
+					|| token is LessThanOpToken || token is LessThanEqualOpToken
+					|| token is GreaterThanOpToken || token is GreaterThanEqualOpToken) {
+
+					var opToken = (AbstractOperatorToken)token;
+					var rightPair = ParseAddExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
 		}
 
 		private IPair<Element> ParseAddExpr(Token token)
 		{
-			throw new NotImplementedException();
+			IPair<Element> pair = ParseMultipleExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is AddOpToken || token is SubOpToken) {
+					var opToken = (AbstractOperatorToken)token;
+					var rightPair = ParseMultipleExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
 		}
 
 		private IPair<Element> ParseMultipleExpr(Token token)
 		{
-			throw new NotImplementedException();
+			IPair<Element> pair = ParseUnknownMultipleExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is MultipleOpToken || token is DivideOpToken || token is ModuloOpToken) {
+					var opToken = (AbstractOperatorToken)token;
+					var rightPair = ParseUnknownMultipleExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
+		}
 
+		private IPair<Element> ParseUnknownMultipleExpr(Token token)
+		{
+			IPair<Element> pair = ParseUnaryExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			while (true) {
+				if (token is UnknownOperatorToken) {
+					var opToken = (UnknownOperatorToken)token;
+					var rightPair = ParseUnaryExpr(token.Next);
+					if (rightPair == null)
+						ThrowError("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+				}
+				break;
+			}
+			return pair;
 		}
 
 		#endregion
