@@ -9,27 +9,22 @@ namespace Kurogane.Compilers
 	public class AnotherParser
 	{
 
-		#region static
-
-		public static Block Parse(Token token)
+		public static Block Parse(Token token, string filename)
 		{
-			var p = new AnotherParser(null);
+			var p = new AnotherParser(filename);
 			var pair = p.ParseBlock(token);
-			if (pair.Token is NullToken) {
-				// 成功
-			}
-			else {
-				// 失敗
-			}
 
-			throw new NotImplementedException();
+			if (pair.Token is NullToken)
+				return pair.Node;
+			else
+				throw new SyntaxException(
+					"プログラムを最後まで読み取ることができませんでした。",
+					filename, pair.Token.LineNumber, pair.Token.CharCount);
 		}
-
-		#endregion
 
 		private readonly string _FileName;
 
-		public AnotherParser(string filename)
+		private AnotherParser(string filename)
 		{
 			_FileName = filename;
 		}
@@ -62,7 +57,7 @@ namespace Kurogane.Compilers
 			var ret =
 				TryParseDefun(token) ??
 				TryParseBlockExecute(token) ??
-				ParseCall(token);
+				TryParseCall(token);
 			if (ret == null)
 				ThrowError("解析できないトークンが現れました。", token);
 
@@ -179,7 +174,7 @@ namespace Kurogane.Compilers
 			return MakePair(new BlockExecute(blockPair.Node), blockPair.Token);
 		}
 
-		private IPair<INormalStatement> ParseCall(Token token)
+		private IPair<INormalStatement> TryParseCall(Token token)
 		{
 			throw new NotImplementedException();
 		}
@@ -218,34 +213,59 @@ namespace Kurogane.Compilers
 			return MakePair(new ListLiteral(elemList), token.Next);
 		}
 
+		#region BinaryExpr
+
+		/// binExpr ::= andExpr | binExpr OrOp  andExpr
+		/// orExpr  ::= cmpExpr |  orExpr AndOp cmpExpr
+		/// cmpExpr ::= addExpr | cmpExpr CmpOp addExpr
+		/// addExpr ::= mltExpr | addExpr AddOp mltExpr
+		/// mltExpr ::= Element | mltExpr MltOp Element
 		private IPair<Element> ParseBinaryExpr(Token token)
 		{
-			var leftPair = ParseUnaryExpr(token);
-			if (leftPair.Token.Match((OperatorToken t) => true)) {
-				var op = ((OperatorToken)leftPair.Token).Value;
-				var rightPair = ParseUnaryExpr(leftPair.Token.Next);
-				return MakePair(new BinaryExpr(leftPair.Node, op, rightPair.Node), rightPair.Token);
-			}
-			else {
-				return leftPair;
-			}
+			throw new NotImplementedException();
 		}
+
+		private IPair<Element> ParseAndExpr(Token token)
+		{
+			throw new NotImplementedException();
+		}
+
+		private IPair<Element> ParseCompareExpr(Token token)
+		{
+			throw new NotImplementedException();
+		}
+
+		private IPair<Element> ParseAddExpr(Token token)
+		{
+			throw new NotImplementedException();
+		}
+
+		private IPair<Element> ParseMultipleExpr(Token token)
+		{
+			throw new NotImplementedException();
+
+		}
+
+		#endregion
 
 		private IPair<Element> ParseUnaryExpr(Token token)
 		{
 			string op = null;
-			if (token.Match((OperatorToken t) => true)) {
-				op = ((OperatorToken)token).Value;
+			if (token.Match((AbstractOperatorToken t) => true)) {
+				op = ((AbstractOperatorToken)token).Value;
+				token = token.Next;
 			}
-			var propPair = ParseProperty(token);
+			var propPair = TryParseProperty(token);
 			if (op == null)
 				return propPair;
 			return MakePair(new UnaryExpr(op, propPair.Node), propPair.Token);
 		}
 
-		private IPair<Element> ParseProperty(Token token)
+		private IPair<Element> TryParseProperty(Token token)
 		{
-			IPair<Element> pair = ParseUnit(token);
+			IPair<Element> pair = TryParseUnit(token);
+			if (pair == null)
+				return null;
 			while (true) {
 				var nextToken = pair.Token
 					.MatchFlow((SuffixToken t) => t.Value == "の")
@@ -258,9 +278,12 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseUnit(Token token)
+		private IPair<Element> TryParseUnit(Token token)
 		{
-			throw new NotImplementedException();
+			return
+				TryParseSymbol(token) ??
+				TryParseParenthesisExpr(token) ??
+				TryParseLiteral(token);
 		}
 
 		private IPair<Element> TryParseParenthesisExpr(Token token)

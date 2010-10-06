@@ -61,7 +61,7 @@ namespace Kurogane.Test.Compiler {
 				.MatchFlow((ReservedToken t) => t.Value == "もし")
 				.MatchFlow((OpenParenthesisToken t) => true)
 				.MatchFlow((IntegerToken t) => t.IntValue == 1)
-				.MatchFlow((OperatorToken t) => t.Value == "≦")
+				.MatchFlow((AbstractOperatorToken t) => t.Value == "≦")
 				.MatchFlow((SymbolToken t) => t.Value == "N")
 				.MatchFlow((CloseParenthesisToken t) => true)
 				.MatchFlow((ReservedToken t) => t.Value == "なら");

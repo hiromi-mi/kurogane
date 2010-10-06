@@ -254,11 +254,11 @@ namespace Kurogane.Compilers {
 		private IPair<ExpressionNode> ParseExpression(Token token) {
 			if (token is OpenParenthesisToken) {
 				var maybeOP = token.Next; // 開き括弧を飛ばす
-				if (maybeOP is OperatorToken) {
+				if (maybeOP is AbstractOperatorToken) {
 					// 単項演算子
 					var pair = ParseExpression(maybeOP.Next);
 					if (pair == null) Throw("式が見つかりません。");
-					var unary = new UnaryExpression(((OperatorToken)maybeOP).Value, pair.Node);
+					var unary = new UnaryExpression(((AbstractOperatorToken)maybeOP).Value, pair.Node);
 					if (pair.Token is CloseParenthesisToken)
 						token = pair.Token.Next;
 					else
@@ -269,7 +269,7 @@ namespace Kurogane.Compilers {
 					// 二項演算子
 					var pairLeft = ParseExpression(token.Next);
 					if (pairLeft == null) Throw("左辺式が見つかりません。");
-					var opToken = (OperatorToken)pairLeft.Token;
+					var opToken = (AbstractOperatorToken)pairLeft.Token;
 					var pairRight = ParseExpression(opToken.Next);
 					if (pairRight == null) Throw("右辺式が見つかりません。");
 					var binary = new BinaryExpression(pairLeft.Node, opToken.Value, pairRight.Node);

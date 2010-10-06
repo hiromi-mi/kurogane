@@ -22,9 +22,10 @@ namespace Kurogane.Compilers
 		private const char kanaEnd = 'ん';
 
 		private static readonly char[] OperatorCharacter = {
-			'+', '-', '*', '/', '&', '|', '!', '<', '>', '=',
-			'＋', '－', '×', '÷', // 四則演算
-			'＜', '≦', '＝', '≧', '＞', '≠', // 比較
+			'+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '=',
+			'＋', '－', '×', '＊', '÷', '／', '％', // 四則演算
+			'＜', '≦', '＝', '≧', '＞', '≠', // 比較演算
+			'∧', '∨', '￢', // 論理演算
 		};
 
 		private static readonly char[] PunctuationToken = {
@@ -35,27 +36,6 @@ namespace Kurogane.Compilers
 			'(', '{', '[', '（', '｛', '［',
 			')', '}', ']', '）', '｝', '］'
 		};
-
-		private static readonly ISet<char> OperatorCharacterSet;
-		private static readonly ISet<char> BreakTokenSet;
-
-		static Lexer()
-		{
-			OperatorCharacterSet = new HashSet<char>(OperatorCharacter);
-
-			var set = new HashSet<char>(OperatorCharacter);
-			char[] anotherBreakToken = {
-				'「', '[', '、', '，', '。', '．', '(', ')'
-			};
-			foreach (var c in anotherBreakToken) {
-				set.Add(c);
-			}
-			for (int i = 0; i <= 9; i++) {
-				set.Add((char)(i + '0'));
-			}
-
-			BreakTokenSet = set;
-		}
 
 		#endregion
 
@@ -265,7 +245,7 @@ namespace Kurogane.Compilers
 			}
 		}
 
-		private OperatorToken ReadOperatorToken()
+		private AbstractOperatorToken ReadOperatorToken()
 		{
 			LineNumber = line;
 			CharCount = ch;
@@ -274,10 +254,64 @@ namespace Kurogane.Compilers
 			buff.Append((char)_CurrentChar);
 			while (true) {
 				char c = (char)_NextChar();
-				if (Array.IndexOf(OperatorCharacter, c) >= 0)
-					buff.Append(c);
-				else
-					return new OperatorToken(this, buff.ToString());
+				if (Array.IndexOf(OperatorCharacter, c) == -1)
+					break;
+				buff.Append(c);
+			}
+			var op = buff.ToString();
+			switch (op) {
+			case "+":
+			case "＋":
+				return new AddOpToken(this);
+			case "-":
+			case "－":
+				return new SubOpToken(this);
+			case "*":
+			case "＊":
+			case "×":
+				return new MultipleOpToken(this);
+			case "/":
+			case "／":
+			case "÷":
+				return new DivideOpToken(this);
+			case "%":
+			case "％":
+				return new ModuloOpToken(this);
+
+			case "=":
+			case "＝":
+				return new EqualOpToken(this);
+			case "!=":
+			case "≠":
+				return new NotEqualOpToken(this);
+			case "<":
+			case "＜":
+				return new LessThanOpToken(this);
+			case "<=":
+			case "≦":
+				return new LessThanEqualOpToken(this);
+			case ">=":
+			case "≧":
+				return new GreaterThanEqualOpToken(this);
+			case ">":
+			case "＞":
+				return new GreaterThanOpToken(this);
+
+			case "&":
+			case "＆":
+			case "∧":
+				return new AndOpToken(this);
+			case "|":
+			case "｜":
+			case "∨":
+				return new OrOpToken(this);
+			case "!":
+			case "！":
+			case "￢":
+				return new NotOpToken(this);
+
+			default:
+				return new UnknownOperatorToken(this, op);
 			}
 		}
 
