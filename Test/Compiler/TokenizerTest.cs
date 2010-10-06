@@ -16,9 +16,9 @@ namespace Kurogane.Test.Compiler {
 
 			Assert.IsTrue(token
 				.MatchFlow((SymbolToken t) => t.Value == "A")
-				.MatchFlow((PostPositionToken t) => t.Value == "を")
+				.MatchFlow((SuffixToken t) => t.Value == "を")
 				.MatchFlow((SymbolToken t) => t.Value == "B")
-				.MatchFlow((PostPositionToken t) => t.Value == "に")
+				.MatchFlow((SuffixToken t) => t.Value == "に")
 				.MatchFlow((SymbolToken t) => t.Value == "C")
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFinish((PunctuationToken t) => t.Value == "。"));
@@ -33,14 +33,14 @@ namespace Kurogane.Test.Compiler {
 			var token = Tokenizer.Tokenize(code);
 			Assert.IsTrue(token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
-				.MatchFlow((PostPositionToken t) => t.Value == "の")
+				.MatchFlow((SuffixToken t) => t.Value == "の")
 				.MatchFlow((ReservedToken t) => t.Value == "手順")
-				.MatchFlow((PostPositionToken t) => t.Value == "で")
+				.MatchFlow((SuffixToken t) => t.Value == "で")
 				.MatchFlow((SymbolToken t) => t.Value == "処理")
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFlow((PunctuationToken t) => t.Value == "。")
 				.MatchFlow((LiteralToken t) => t.Value == "こんにちは")
-				.MatchFlow((PostPositionToken t) => t.Value == "を")
+				.MatchFlow((SuffixToken t) => t.Value == "を")
 				.MatchFlow((SymbolToken t) => t.Value == "表示")
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFlow((PunctuationToken t) => t.Value == "。")
@@ -68,7 +68,7 @@ namespace Kurogane.Test.Compiler {
 
 			var token3 = token2
 				.MatchFlow((LiteralToken t) => t.Value == "正しい")
-				.MatchFlow((PostPositionToken t) => t.Value == "を")
+				.MatchFlow((SuffixToken t) => t.Value == "を")
 				.MatchFlow((SymbolToken t) => t.Value == "表示")
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFlow((PunctuationToken t) => t.Value == "。");
@@ -79,7 +79,7 @@ namespace Kurogane.Test.Compiler {
 
 			var end = token4
 				.MatchFlow((LiteralToken t) => t.Value == "間違い")
-				.MatchFlow((PostPositionToken t) => t.Value == "を")
+				.MatchFlow((SuffixToken t) => t.Value == "を")
 				.MatchFlow((SymbolToken t) => t.Value == "表示")
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFinish((PunctuationToken t) => t.Value == "。");

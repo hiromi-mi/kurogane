@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Kurogane.Compilers
 {
@@ -13,7 +14,7 @@ namespace Kurogane.Compilers
 		public static Block Parse(Token token)
 		{
 			var p = new AnotherParser(null);
-			var pair = p.ParseBlockInternal(token);
+			var pair = p.ParseBlock(token);
 			if (pair.Token is NullToken) {
 				// 成功
 			}
@@ -35,7 +36,7 @@ namespace Kurogane.Compilers
 
 		#region Parse
 
-		private IPair<Block> ParseBlockInternal(Token token)
+		private IPair<Block> ParseBlock(Token token)
 		{
 			List<IStatement> stmtList = new List<IStatement>();
 			while (true) {
@@ -50,7 +51,7 @@ namespace Kurogane.Compilers
 
 		private IPair<IStatement> ParseIStatement(Token token)
 		{
-			var ifPair = ParseIfStatement(token);
+			var ifPair = TryParseIfStatement(token);
 			if (ifPair != null)
 				return ifPair;
 			return ParseINormalStatement(token);
@@ -59,18 +60,18 @@ namespace Kurogane.Compilers
 		private IPair<INormalStatement> ParseINormalStatement(Token token)
 		{
 			var ret =
-				ParseDefun(token) ??
-				ParseBlock(token) ??
+				TryParseDefun(token) ??
+				TryParseBlockExecute(token) ??
 				ParseCall(token);
 			if (ret == null)
-				throw new SyntaxException("解析できないトークンが現れました。" + ErrorLocation(token));
+				ThrowError("解析できないトークンが現れました。", token);
 
 			return ret;
 		}
 
-		#region IF文
+		#region もし文
 
-		private IPair<IfStatement> ParseIfStatement(Token token)
+		private IPair<IfStatement> TryParseIfStatement(Token token)
 		{
 			token = token.MatchFlow((ReservedToken t) => t.Value == "もし");
 			if (token == null)
@@ -80,19 +81,18 @@ namespace Kurogane.Compilers
 
 			var thens = new List<CondThenPair>();
 			while (true) {
-				var pair = ParseCondThenPair(token);
+				var pair = TryParseCondThenPair(token);
 				if (pair == null)
 					break;
 				token = pair.Token;
 				thens.Add(pair.Node);
 			}
-			if (thens.Count == 0) {
-				throw new SyntaxException("「もし」の後ろがありません。" + ErrorLocation(token));
-			}
+			if (thens.Count == 0)
+				ThrowError("「もし」の後ろがありません。", token);
 			return MakePair(new IfStatement(thens), token);
 		}
 
-		private IPair<CondThenPair> ParseCondThenPair(Token token)
+		private IPair<CondThenPair> TryParseCondThenPair(Token token)
 		{
 			var condPair = ParseElement(token);
 			if (condPair == null)
@@ -104,25 +104,79 @@ namespace Kurogane.Compilers
 
 			var thenPair = ParseINormalStatement(token);
 			if (thenPair == null)
-				throw new SyntaxException("「なら」の後ろが正しく解析できませんでした。" + ErrorLocation(token));
+				ThrowError("「なら」の後ろが正しく解析できません。", token);
 
 			return MakePair(new CondThenPair(condPair.Node, thenPair.Node), thenPair.Token);
 		}
 
 		#endregion
 
-		#region Defun
+		#region 関数定義
 
-		private IPair<Defun> ParseDefun(Token token)
+		private IPair<Defun> TryParseDefun(Token token)
 		{
-			throw new NotImplementedException();
+			var keywordSkipped = token
+				.MatchFlow((ReservedToken t) => t.Value == "以下")
+				.MatchFlow((SuffixToken t) => t.Value == "の")
+				.MatchFlow((ReservedToken t) => t.Value == "手順")
+				.MatchFlow((SuffixToken t) => t.Value == "で");
+			if (keywordSkipped == null)
+				return null;
+			token = keywordSkipped.MatchFlow((CommaToken) => true) ?? keywordSkipped;
+			var paramList = new List<ParamSuffixPair>();
+			while (true) {
+				var paramPair = TryParseParamSuffixPair(token);
+				if (paramPair == null)
+					break;
+				paramList.Add(paramPair.Node);
+				token = paramPair.Token;
+			}
+			var blockToken = token
+				.MatchFlow((SymbolToken t) => true)
+				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.MatchFlow((PeriodToken t) => true);
+			if (blockToken == null)
+				ThrowError("正しく関数が定義出来ていません。", token);
+			var name = ((SymbolToken)token).Value;
+			var blockPair = ParseBlock(token);
+			var lastToken = blockPair.Token
+				.MatchFlow((ReservedToken t) => t.Value == "以上")
+				.MatchFlow((PeriodToken t) => true);
+			if (lastToken == null)
+				ThrowError("関数のブロックが正しく閉じられていません。", blockPair.Token);
+			return MakePair(new Defun(name, paramList, blockPair.Node), lastToken);
+		}
+
+		private IPair<ParamSuffixPair> TryParseParamSuffixPair(Token token)
+		{
+			var lastToken = token
+				.MatchFlow((SymbolToken t) => true)
+				.MatchFlow((SuffixToken t) => true);
+			if (lastToken == null)
+				return null;
+			var name = ((SymbolToken)token).Value;
+			var sfx = ((SuffixToken)token.Next).Value;
+			return MakePair(new ParamSuffixPair(name, sfx), lastToken);
 		}
 
 		#endregion
 
-		private IPair<Block> ParseBlock(Token token)
+		private IPair<BlockExecute> TryParseBlockExecute(Token token)
 		{
-			throw new NotImplementedException();
+			var blockToken = token
+				.MatchFlow((ReservedToken t) => t.Value == "以下")
+				.MatchFlow((SuffixToken t) => t.Value == "を")
+				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.MatchFlow((PeriodToken t) => true);
+			if (blockToken == null)
+				return null;
+			var blockPair = ParseBlock(blockToken);
+			var lastToken = blockPair.Token
+				.MatchFlow((ReservedToken t) => t.Value == "以上")
+				.MatchFlow((PeriodToken t) => true);
+			if (lastToken == null)
+				ThrowError("関数が正しく閉じられていません。", blockPair.Token);
+			return MakePair(new BlockExecute(blockPair.Node), blockPair.Token);
 		}
 
 		private IPair<INormalStatement> ParseCall(Token token)
@@ -137,7 +191,7 @@ namespace Kurogane.Compilers
 			throw new NotImplementedException();
 		}
 
-		private IPair<ListLiteral> ParseList(Token token)
+		private IPair<ListLiteral> TryParseList(Token token)
 		{
 			token = token.MatchFlow((OpenBracketToken) => true);
 			if (token == null)
@@ -148,30 +202,120 @@ namespace Kurogane.Compilers
 					break;
 				var elemPair = ParseElement(token);
 				if (elemPair == null)
-					throw new SyntaxException("リストの要素が解析できませんでした。" + ErrorLocation(token));
+					ThrowError("リストの要素が解析できません。", token);
 
 				elemList.Add(elemPair.Node);
 				token = elemPair.Token;
 
-				if (token.Match((CommaToken t) => true))
+				if (token.Match((CommaToken t) => true)) {
+					token = token.Next;
 					continue;
+				}
 				if (token.Match((CloseBracketToken t) => true))
 					break;
-				throw new SyntaxException("リストの要素が解析できませんでした。" + ErrorLocation(token));
+				ThrowError("リストの要素が解析できません。", token);
 			}
 			return MakePair(new ListLiteral(elemList), token.Next);
 		}
 
-		#endregion
+		private IPair<Element> ParseBinaryExpr(Token token)
+		{
+			var leftPair = ParseUnaryExpr(token);
+			if (leftPair.Token.Match((OperatorToken t) => true)) {
+				var op = ((OperatorToken)leftPair.Token).Value;
+				var rightPair = ParseUnaryExpr(leftPair.Token.Next);
+				return MakePair(new BinaryExpr(leftPair.Node, op, rightPair.Node), rightPair.Token);
+			}
+			else {
+				return leftPair;
+			}
+		}
 
+		private IPair<Element> ParseUnaryExpr(Token token)
+		{
+			string op = null;
+			if (token.Match((OperatorToken t) => true)) {
+				op = ((OperatorToken)token).Value;
+			}
+			var propPair = ParseProperty(token);
+			if (op == null)
+				return propPair;
+			return MakePair(new UnaryExpr(op, propPair.Node), propPair.Token);
+		}
+
+		private IPair<Element> ParseProperty(Token token)
+		{
+			IPair<Element> pair = ParseUnit(token);
+			while (true) {
+				var nextToken = pair.Token
+					.MatchFlow((SuffixToken t) => t.Value == "の")
+					.MatchFlow((SymbolToken t) => true);
+				if (nextToken == null)
+					break;
+				var propName = ((SymbolToken)pair.Token.Next).Value;
+				pair = MakePair(new PropertyAccess(pair.Node, propName), nextToken);
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseUnit(Token token)
+		{
+			throw new NotImplementedException();
+		}
+
+		private IPair<Element> TryParseParenthesisExpr(Token token)
+		{
+			token = token.MatchFlow((OpenParenthesisToken t) => true);
+			if (token == null)
+				return null;
+			var elemPair = ParseElement(token);
+			var lastToken = elemPair.Token
+				.MatchFlow((CloseParenthesisToken t) => true);
+			if (lastToken == null)
+				ThrowError("閉じ括弧が出現していません。", elemPair.Token);
+			return MakePair(elemPair.Node, lastToken);
+		}
+
+		private IPair<Symbol> TryParseSymbol(Token token)
+		{
+			var symToken = token as SymbolToken;
+			if (symToken == null)
+				return null;
+			else
+				return MakePair(new Symbol(symToken.Value), token.Next);
+		}
+
+		private IPair<Literal> TryParseLiteral(Token token)
+		{
+			var nextToken = token.Next;
+			if (token is LiteralToken) {
+				var value = ((LiteralToken)token).Value;
+				return MakePair(new StringLiteral(value), nextToken);
+			}
+			if (token is IntegerToken) {
+				int value = ((IntegerToken)token).IntValue;
+				return MakePair(new IntLiteral(value), nextToken);
+			}
+			if (token is DecimalToken) {
+				double value = ((DecimalToken)token).DecimalValue;
+				return MakePair(new RealLiteral(value), nextToken);
+			}
+			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText)) {
+				return MakePair(new NullLiteral(), nextToken);
+			}
+			return null;
+		}
+
+		#endregion
 
 		#endregion
 
 		#region Util
 
-		private string ErrorLocation(Token token)
+		[DebuggerStepThrough]
+		private void ThrowError(string message, Token token)
 		{
-			return Environment.NewLine + String.Format("{0}の{1}行{2}文字目。", _FileName, token.LineNumber, token.CharCount);
+			throw new SyntaxException(message, _FileName, token.LineNumber, token.CharCount);
 		}
 
 		private static IPair<T> MakePair<T>(T node, Token token)
@@ -199,6 +343,7 @@ namespace Kurogane.Compilers
 				_token = token;
 			}
 		}
+
 
 		#endregion
 

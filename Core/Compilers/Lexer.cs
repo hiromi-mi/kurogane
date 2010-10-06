@@ -316,7 +316,7 @@ namespace Kurogane.Compilers
 				else
 					break;
 			}
-			string[] reserved = { "手順", "以上", "以下", "他", "無", "失敗" };
+			string[] reserved = { "手順", "以上", "以下", "他", ConstantNames.NullText };
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
@@ -333,7 +333,7 @@ namespace Kurogane.Compilers
 
 			if (_CurrentChar == 'と') {
 				_NextChar();
-				return new PostPositionToken(this, "と");
+				return new SuffixToken(this, "と");
 			}
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
@@ -356,7 +356,7 @@ namespace Kurogane.Compilers
 
 			const string mapKeyword = "それぞれ";
 			if (str.EndsWith(mapKeyword)) {
-				var token = new PostPositionToken(this, str);
+				var token = new SuffixToken(this, str);
 				LineNumber = soLine;
 				CharCount = soCh;
 				var soToken = new ReservedToken(this, mapKeyword);
@@ -364,7 +364,7 @@ namespace Kurogane.Compilers
 				return token;
 			}
 
-			return new PostPositionToken(this, str);
+			return new SuffixToken(this, str);
 		}
 
 

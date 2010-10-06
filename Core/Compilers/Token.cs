@@ -135,10 +135,10 @@ namespace Kurogane.Compilers {
 	/// <summary>
 	/// 助詞を示すトークン
 	/// </summary>
-	public class PostPositionToken : Token {
+	public class SuffixToken : Token {
 		private readonly string _value;
 
-		public PostPositionToken(Lexer lexer, string value)
+		public SuffixToken(Lexer lexer, string value)
 			: base(lexer) {
 			_value = value;
 		}

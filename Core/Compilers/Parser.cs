@@ -106,9 +106,9 @@ namespace Kurogane.Compilers {
 		private IPair<DefunNode> ParseDefun(Token token) {
 			var next = token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
-				.MatchFlow((PostPositionToken t) => t.Value == "の")
+				.MatchFlow((SuffixToken t) => t.Value == "の")
 				.MatchFlow((ReservedToken t) => t.Value == "手順")
-				.MatchFlow((PostPositionToken t) => t.Value == "で");
+				.MatchFlow((SuffixToken t) => t.Value == "で");
 			if (next == null) return null;
 			var decPair = ParseFuncDeclare(next);
 			if (decPair == null) Throw("関数定義がありません。");
@@ -142,8 +142,8 @@ namespace Kurogane.Compilers {
 		private IPair<ParamPair> ParseParam(Token token) {
 			var namePair = ParseRef(token);
 			if (namePair == null) return null;
-			if (!(namePair.Token is PostPositionToken)) return null;
-			var ppToken = (PostPositionToken)namePair.Token;
+			if (!(namePair.Token is SuffixToken)) return null;
+			var ppToken = (SuffixToken)namePair.Token;
 			var pp = ppToken.Value;
 			if (pp != "と") {
 				return MakePair(new ParamPair(new NormalParam(namePair.Node.Name), pp), ppToken.Next);
@@ -206,8 +206,8 @@ namespace Kurogane.Compilers {
 				}
 				var expPair = ParseExpression(token);
 				if (expPair == null) return null;
-				if (expPair.Token is PostPositionToken) {
-					var ppToken = (PostPositionToken)expPair.Token;
+				if (expPair.Token is SuffixToken) {
+					var ppToken = (SuffixToken)expPair.Token;
 					args.Add(new ArgumentPair(expPair.Node, ppToken.Value));
 					token = ppToken.Next;
 					continue;
@@ -285,9 +285,9 @@ namespace Kurogane.Compilers {
 
 		private IPair<ExpressionNode> ParseTuple(Token token) {
 			var pair = ParseProperty(token);
-			if (pair != null && pair.Token is PostPositionToken && ((PostPositionToken)pair.Token).Value == "と") {
+			if (pair != null && pair.Token is SuffixToken && ((SuffixToken)pair.Token).Value == "と") {
 				var next = pair.Token.Next;
-				if (next is PostPositionToken) { // 「と」の直後が助詞なら「無」を補う
+				if (next is SuffixToken) { // 「と」の直後が助詞なら「無」を補う
 					return MakePair(new TuppleExpression(pair.Node, LiteralNil), next);
 				}
 				if (IsExecKeyword(next)) {
@@ -303,7 +303,7 @@ namespace Kurogane.Compilers {
 
 		private IPair<ExpressionNode> ParseProperty(Token token) {
 			var pair = ParseUnit(token);
-			while (pair != null && pair.Token is PostPositionToken && ((PostPositionToken)pair.Token).Value == "の") {
+			while (pair != null && pair.Token is SuffixToken && ((SuffixToken)pair.Token).Value == "の") {
 				var after = ParseUnit(pair.Token.Next);
 				if (after == null) break;
 				if (after.Node is ReferenceExpression) {
@@ -369,8 +369,8 @@ namespace Kurogane.Compilers {
 			var next = token.Next;
 			ExpressionNode node = new ReferenceExpression(token.Value);
 			while (true) {
-				if (next is PostPositionToken) {
-					var pp = (PostPositionToken)next;
+				if (next is SuffixToken) {
+					var pp = (SuffixToken)next;
 					if (pp.Value == "の") {
 
 					}

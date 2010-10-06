@@ -168,7 +168,17 @@ namespace Kurogane.Compilers
 		}
 	}
 
-	public class Block : IPhrase
+	public class BlockExecute : IPhrase
+	{
+		public readonly Block Block;
+
+		public BlockExecute(Block block)
+		{
+			this.Block = block;
+		}
+	}
+
+	public class Block
 	{
 		public readonly IList<IStatement> Statements;
 
@@ -190,7 +200,7 @@ namespace Kurogane.Compilers
 
 	#region リテラル値
 
-	public interface Literal { }
+	public interface Literal : Element { }
 
 	public class StringLiteral : Literal
 	{
@@ -291,6 +301,16 @@ namespace Kurogane.Compilers
 		public PropertyAccess(Element value, string name)
 		{
 			this.Value = value;
+			this.Name = name;
+		}
+	}
+
+	public class Symbol : Element
+	{
+		public readonly string Name;
+
+		public Symbol(string name)
+		{
 			this.Name = name;
 		}
 	}

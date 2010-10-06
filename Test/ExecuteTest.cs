@@ -165,43 +165,43 @@ namespace Kurogane.Test {
 
 		}
 
-		[TestMethod]
-		public void してみる() {
-			string code =
-				"以下の手順で甲する。" +
-				"	「A」をイに代入する。" +
-				"	失敗をパスする。" +
-				"以上。" +
-				"以下の手順で乙する。" +
-				"	「B」をロに代入する。" +
-				"以上。" +
-				"以下の手順で丙する。" +
-				"	「C」をハに代入する。" +
-				"	失敗をパスする。" +
-				"以上。" +
-				"以下の手順で丁する。" +
-				"	「D」をニに代入する。" +
-				"以上。" +
-				"甲して、乙する。" +
-				"丙して、丁してみる。" +
-				"甲して、ホに代入する。" +
-				"甲して、ヘに代入してみる。" +
-				"";
-			var engine = new Engine();
-			engine.Execute(code);
-			var scope = engine.Global;
-			object a = scope.GetVariable("イ");
-			object b = scope.GetVariable("ロ");
-			object c = scope.GetVariable("ハ");
-			bool d = scope.HasVariable("ニ");
-			object e = scope.GetVariable("ホ");
-			bool f = scope.HasVariable("ヘ");
-			Assert.AreEqual("A", a);
-			Assert.AreEqual("B", b);
-			Assert.AreEqual("C", c);
-			Assert.IsFalse(d);
-			Assert.AreEqual(Nothing<object>.Instance, e);
-			Assert.IsFalse(f);
-		}
+		//[TestMethod]
+		//public void してみる() {
+		//    string code =
+		//        "以下の手順で甲する。" +
+		//        "	「A」をイに代入する。" +
+		//        "	失敗をパスする。" +
+		//        "以上。" +
+		//        "以下の手順で乙する。" +
+		//        "	「B」をロに代入する。" +
+		//        "以上。" +
+		//        "以下の手順で丙する。" +
+		//        "	「C」をハに代入する。" +
+		//        "	失敗をパスする。" +
+		//        "以上。" +
+		//        "以下の手順で丁する。" +
+		//        "	「D」をニに代入する。" +
+		//        "以上。" +
+		//        "甲して、乙する。" +
+		//        "丙して、丁してみる。" +
+		//        "甲して、ホに代入する。" +
+		//        "甲して、ヘに代入してみる。" +
+		//        "";
+		//    var engine = new Engine();
+		//    engine.Execute(code);
+		//    var scope = engine.Global;
+		//    object a = scope.GetVariable("イ");
+		//    object b = scope.GetVariable("ロ");
+		//    object c = scope.GetVariable("ハ");
+		//    bool d = scope.HasVariable("ニ");
+		//    object e = scope.GetVariable("ホ");
+		//    bool f = scope.HasVariable("ヘ");
+		//    Assert.AreEqual("A", a);
+		//    Assert.AreEqual("B", b);
+		//    Assert.AreEqual("C", c);
+		//    Assert.IsFalse(d);
+		//    Assert.AreEqual(Nothing<object>.Instance, e);
+		//    Assert.IsFalse(f);
+		//}
 	}
 }
