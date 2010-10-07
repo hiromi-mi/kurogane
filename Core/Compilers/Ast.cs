@@ -207,7 +207,9 @@ namespace Kurogane.Compilers
 	public interface IExpr { }
 
 	/// <summary>要素</summary>
-	public interface Element : IExpr { }
+	public interface Element : IExpr	{
+
+	}
 
 	#region リテラル値
 

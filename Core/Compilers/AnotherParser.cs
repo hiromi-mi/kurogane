@@ -97,14 +97,15 @@ namespace Kurogane.Compilers
 		private IPair<INormalStatement> ParseINormalStatement(Token token)
 		{
 			var ret =
+				TryParseExprBlock(token) ??
 				TryParseDefun(token) ??
 				TryParseBlockExecute(token) ??
-				TryParseCall(token);
+				TryParsePhraseChain(token) as IPair<INormalStatement>;
 			if (ret == null)
 				ThrowError("解析できないトークンが現れました。", token);
-
 			return ret;
 		}
+
 		#region 関数定義
 
 		private IPair<Defun> TryParseDefun(Token token)
@@ -173,7 +174,39 @@ namespace Kurogane.Compilers
 			return MakePair(new BlockExecute(blockPair.Node), blockPair.Token);
 		}
 
-		private IPair<INormalStatement> TryParseCall(Token token)
+		#region PhraseChain
+
+		private IPair<PhraseChain> TryParsePhraseChain(Token token)
+		{
+			var list = new List<IPhrase>();
+			while (true) {
+				var pair = TryParsePhrase(token);
+				if (pair == null)
+					return null;
+				list.Add(pair.Node);
+				if (pair.Token is CommaToken) {
+					token = pair.Token.Next;
+					continue;
+				}
+				if (pair.Token is PeriodToken) {
+					token = pair.Token.Next;
+					break;
+				}
+				return null;
+			}
+			if (list.Count == 0)
+				return null;
+			return MakePair(new PhraseChain(list), token);
+		}
+
+		private IPair<IPhrase> TryParsePhrase(Token token)
+		{
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		private IPair<ExprBlock> TryParseExprBlock(Token token)
 		{
 			throw new NotImplementedException();
 		}
