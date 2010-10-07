@@ -11,10 +11,12 @@ namespace Kurogane.Compilers
 	#region 文
 
 	/// <summary>文</summary>
-	public interface IStatement
-	{
+	public interface IStatement { }
 
-	}
+	/// <summary>
+	/// If文の中身になれる文
+	/// </summary>
+	public interface INormalStatement : IStatement { }
 
 	#region もし文
 
@@ -40,13 +42,6 @@ namespace Kurogane.Compilers
 			this.Condition = cond;
 			this.Statement = stmt;
 		}
-	}
-
-	/// <summary>
-	/// If文の中身になれる文
-	/// </summary>
-	public interface INormalStatement : IStatement
-	{
 	}
 
 	#endregion
@@ -85,14 +80,41 @@ namespace Kurogane.Compilers
 
 	#endregion
 
+	public class BlockExecute : INormalStatement
+	{
+		public readonly Block Block;
+
+		public BlockExecute(Block block)
+		{
+			this.Block = block;
+		}
+	}
+
+	public class ExprBlock : INormalStatement, IExpr
+	{
+		public readonly IList<IExpr> Exprs;
+
+		public ExprBlock(IList<IExpr> exprs)
+		{
+			this.Exprs = exprs;
+		}
+	}
+
+	public class PhraseChain : INormalStatement
+	{
+		public readonly IList<IPhrase> Phrases;
+
+		public PhraseChain(IList<IPhrase> phrases)
+		{
+			this.Phrases = phrases;
+		}
+	}
+
 	#endregion
 
 	#region 句
 
-	public interface IPhrase : INormalStatement
-	{
-
-	}
+	public interface IPhrase { }
 
 	#region 関数呼び出し
 
@@ -168,16 +190,6 @@ namespace Kurogane.Compilers
 		}
 	}
 
-	public class BlockExecute : IPhrase
-	{
-		public readonly Block Block;
-
-		public BlockExecute(Block block)
-		{
-			this.Block = block;
-		}
-	}
-
 	public class Block
 	{
 		public readonly IList<IStatement> Statements;
@@ -192,11 +204,10 @@ namespace Kurogane.Compilers
 
 	#region 要素
 
-	/// <summary>要素</summary>
-	public interface Element
-	{
+	public interface IExpr { }
 
-	}
+	/// <summary>要素</summary>
+	public interface Element : IExpr { }
 
 	#region リテラル値
 

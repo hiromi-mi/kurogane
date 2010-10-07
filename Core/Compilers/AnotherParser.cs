@@ -52,18 +52,6 @@ namespace Kurogane.Compilers
 			return ParseINormalStatement(token);
 		}
 
-		private IPair<INormalStatement> ParseINormalStatement(Token token)
-		{
-			var ret =
-				TryParseDefun(token) ??
-				TryParseBlockExecute(token) ??
-				TryParseCall(token);
-			if (ret == null)
-				ThrowError("解析できないトークンが現れました。", token);
-
-			return ret;
-		}
-
 		#region もし文
 
 		private IPair<IfStatement> TryParseIfStatement(Token token)
@@ -106,6 +94,17 @@ namespace Kurogane.Compilers
 
 		#endregion
 
+		private IPair<INormalStatement> ParseINormalStatement(Token token)
+		{
+			var ret =
+				TryParseDefun(token) ??
+				TryParseBlockExecute(token) ??
+				TryParseCall(token);
+			if (ret == null)
+				ThrowError("解析できないトークンが現れました。", token);
+
+			return ret;
+		}
 		#region 関数定義
 
 		private IPair<Defun> TryParseDefun(Token token)
