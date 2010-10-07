@@ -256,6 +256,18 @@ namespace Kurogane.Compilers
 		}
 	}
 
+	public class TupleLiteral : Literal
+	{
+		public readonly Element Head;
+		public readonly Element Tail;
+
+		public TupleLiteral(Element head, Element tail)
+		{
+			this.Head = head;
+			this.Tail = tail;
+		}
+	}
+
 	public class NullLiteral : Literal
 	{
 		public NullLiteral()

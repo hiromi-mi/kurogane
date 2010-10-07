@@ -77,7 +77,7 @@ namespace Kurogane.Compilers
 
 		private IPair<CondThenPair> TryParseCondThenPair(Token token)
 		{
-			var condPair = ParseElement(token);
+			var condPair = TryParseElement(token);
 			if (condPair == null)
 				return null;
 			token = condPair.Token
@@ -201,7 +201,125 @@ namespace Kurogane.Compilers
 
 		private IPair<IPhrase> TryParsePhrase(Token token)
 		{
+			var lst = new List<ArgSuffixPair>();
+			bool isMap = false;
+			ArgSuffixPair mappedArg = null;
+			while (true) {
+				if (token.Match((ReservedToken t) => t.Value == "それぞれ")) {
+					if (isMap)
+						ThrowError("「それぞれ」を二箇所で使うことはできません。", token);
+					if (lst.Count > 1)
+						ThrowError("「それぞれ」に対して、二つ以上の引数を与えることはできません。", token);
+					isMap = true;
+					if (lst.Count == 1)
+						mappedArg = lst[0];
+				}
+				var argPair = TryParseArgSfxPair(token);
+				if (argPair == null)
+					break;
+				lst.Add(argPair.Node);
+				token = argPair.Token;
+				if (token.Match((SuffixToken t) => true)) {
+					var sfx = ((SuffixToken)token).Value;
+					lst.Add(new ArgSuffixPair(new NullLiteral(), sfx));
+					token = token.Next;
+				}
+			}
+			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
+				var dfn = CreateDefine(lst);
+				if (dfn == null)
+					ThrowError("引数が正しくありません。", token);
+				return MakePair(dfn, token.Next);
+			}
+			var last = token
+				.MatchFlow((SymbolToken t) => true)
+				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "する");
+			if (last != null) {
+				string verb = ((SymbolToken)token).Value;
+				if (verb == "代入") {
+					var assign = CreateAssign(lst);
+					if (assign == null)
+						return null;
+					return MakePair(assign, last);
+				}
+			}
 			throw new NotImplementedException();
+		}
+
+		private DefineValue CreateDefine(List<ArgSuffixPair> args)
+		{
+			if (args.Count == 0)
+				return null;
+			var last = args.Last();
+			if (last.Suffix != "と")
+				return null;
+			var symbol = last.Argument as Symbol;
+			if (symbol == null)
+				return null;
+			var name = symbol.Name;
+			args.RemoveAt(args.Count - 1);
+			if (args.Count == 0)
+				return new DefineValue(name, null);
+			if (args.Last().Suffix != "を")
+				return null;
+			var tuple = CreateTuple(args);
+			if (tuple == null)
+				return null;
+			return new DefineValue(name, tuple);
+		}
+
+		private Assign CreateAssign(List<ArgSuffixPair> lst)
+		{
+			if (lst.Count == 0)
+				return null;
+			Func<ArgSuffixPair, string> getName = pair => {
+				if (pair.Suffix != "に")
+					return null;
+				var sym = pair.Argument as Symbol;
+				if (sym == null)
+					return null;
+				return sym.Name;
+			};
+			var name = getName(lst[lst.Count - 1]);
+			if (name != null) {
+				lst.RemoveAt(lst.Count - 1);
+				var value = CreateTuple(lst);
+				if (value == null)
+					return null;
+				return new Assign(name, value);
+			}
+			name = getName(lst[0]);
+			if (name != null) {
+				lst.RemoveAt(0);
+				var value = CreateTuple(lst);
+				if (value == null)
+					return null;
+				return new Assign(name, value);
+			}
+			return null;
+		}
+
+		private Element CreateTuple(List<ArgSuffixPair> args)
+		{
+			var tuple = args.Last().Argument;
+			for (int i = args.Count - 2; i >= 0; i--) {
+				var elem = args[i];
+				if (elem.Suffix != "の")
+					return null;
+				tuple = new TupleLiteral(elem.Argument, tuple);
+			}
+			return tuple;
+		}
+
+		private IPair<ArgSuffixPair> TryParseArgSfxPair(Token token)
+		{
+			var elemPair = TryParseElement(token);
+			if (elemPair == null)
+				return null;
+			var sfxToken = elemPair.Token as SuffixToken;
+			if (sfxToken == null)
+				return null;
+			return MakePair(new ArgSuffixPair(elemPair.Node, sfxToken.Value), sfxToken.Next);
 		}
 
 		#endregion
@@ -213,7 +331,7 @@ namespace Kurogane.Compilers
 
 		#region 要素
 
-		private IPair<Element> ParseElement(Token token)
+		private IPair<Element> TryParseElement(Token token)
 		{
 			throw new NotImplementedException();
 		}
@@ -227,7 +345,7 @@ namespace Kurogane.Compilers
 			while (true) {
 				if (token.Match((CloseBracketToken t) => true))
 					break;
-				var elemPair = ParseElement(token);
+				var elemPair = TryParseElement(token);
 				if (elemPair == null)
 					ThrowError("リストの要素が解析できません。", token);
 
@@ -415,7 +533,7 @@ namespace Kurogane.Compilers
 			token = token.MatchFlow((OpenParenthesisToken t) => true);
 			if (token == null)
 				return null;
-			var elemPair = ParseElement(token);
+			var elemPair = TryParseElement(token);
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseParenthesisToken t) => true);
 			if (lastToken == null)
