@@ -29,7 +29,7 @@ namespace Kurogane.Compilers
 		};
 
 		private static readonly char[] PunctuationToken = {
-			',', '，', '、', '.', '．', '。'
+			',', '，', '、', '.', '．', '。', ';', '；'
 		};
 
 		private static readonly char[] Brackets = {
@@ -331,6 +331,9 @@ namespace Kurogane.Compilers
 			case '．':
 			case '.':
 				return new PeriodToken(this, c.ToString());
+			case ';':
+			case '；':
+				return new SemicolonToken(this);
 			}
 			Debug.Assert(false, "到達不可能" + Environment.NewLine + "プログラムを見直すこと。");
 			return null;

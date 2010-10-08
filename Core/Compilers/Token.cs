@@ -349,6 +349,11 @@ namespace Kurogane.Compilers
 		}
 	}
 
+	public class SemicolonToken : PunctuationToken
+	{
+		public SemicolonToken(Lexer lexer) : base(lexer, ";") { }
+	}
+
 	#region 括弧群
 
 	/// <summary>

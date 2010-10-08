@@ -36,7 +36,7 @@ namespace Kurogane.Compilers
 			List<IStatement> stmtList = new List<IStatement>();
 			while (true) {
 				var pair = ParseIStatement(token);
-				if (pair.Token != null)
+				if (pair == null)
 					break;
 				token = pair.Token;
 				stmtList.Add(pair.Node);
@@ -49,7 +49,7 @@ namespace Kurogane.Compilers
 			var ifPair = TryParseIfStatement(token);
 			if (ifPair != null)
 				return ifPair;
-			return ParseINormalStatement(token);
+			return TryParseINormalStatement(token);
 		}
 
 		#region もし文
@@ -85,7 +85,7 @@ namespace Kurogane.Compilers
 			if (token == null)
 				return null;
 
-			var thenPair = ParseINormalStatement(token);
+			var thenPair = TryParseINormalStatement(token);
 			if (thenPair == null)
 				ThrowError("「なら」の後ろが正しく解析できません。", token);
 
@@ -94,16 +94,13 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		private IPair<INormalStatement> ParseINormalStatement(Token token)
+		private IPair<INormalStatement> TryParseINormalStatement(Token token)
 		{
-			var ret =
+			return
 				TryParseExprBlock(token) ??
 				TryParseDefun(token) ??
 				TryParseBlockExecute(token) ??
 				TryParsePhraseChain(token) as IPair<INormalStatement>;
-			if (ret == null)
-				ThrowError("解析できないトークンが現れました。", token);
-			return ret;
 		}
 
 		#region 関数定義
@@ -221,7 +218,7 @@ namespace Kurogane.Compilers
 				token = argPair.Token;
 				if (token.Match((SuffixToken t) => true)) {
 					var sfx = ((SuffixToken)token).Value;
-					lst.Add(new ArgSuffixPair(new NullLiteral(), sfx));
+					lst.Add(new ArgSuffixPair(NullLiteral.Instant, sfx));
 					token = token.Next;
 				}
 			}
@@ -234,6 +231,15 @@ namespace Kurogane.Compilers
 			var last = token
 				.MatchFlow((SymbolToken t) => true)
 				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "する");
+			bool isMaybe = false;
+			if (last == null) {
+				last = token
+					.MatchFlow((SymbolToken t) => true)
+					.MatchFlow((ReservedToken t) => t.Value == "してみ" || t.Value == "してみて");
+				if (last == null)
+					return null;
+				isMaybe = true;
+			}
 			if (last != null) {
 				string verb = ((SymbolToken)token).Value;
 				if (verb == "代入") {
@@ -242,8 +248,12 @@ namespace Kurogane.Compilers
 						return null;
 					return MakePair(assign, last);
 				}
+				if (isMap)
+					return MakePair(new MapCall(verb, mappedArg, lst, isMaybe), last);
+				else
+					return MakePair(new Call(verb, lst, isMaybe), last);
 			}
-			throw new NotImplementedException();
+			return null;
 		}
 
 		private DefineValue CreateDefine(List<ArgSuffixPair> args)
@@ -326,19 +336,49 @@ namespace Kurogane.Compilers
 
 		private IPair<ExprBlock> TryParseExprBlock(Token token)
 		{
-			throw new NotImplementedException();
+			token = token.MatchFlow((OpenBraceToken t) => true);
+			if (token == null)
+				return null;
+			var list = new List<IExpr>();
+			while (true) {
+				var exprPair = TryParseExpr(token);
+				if (exprPair == null)
+					return null;
+				token = exprPair.Token;
+				var semi = token as SemicolonToken;
+				if (semi != null)
+					token = semi.Next;
+				var close = token as CloseBraceToken;
+				if (close != null) {
+					token = close.Next;
+					break;
+				}
+				if (semi != null)
+					continue;
+				return null;
+			}
+			return MakePair(new ExprBlock(list), token);
+		}
+
+		private IPair<IExpr> TryParseExpr(Token token)
+		{
+			return
+				TryParseExprBlock(token) ??
+				TryParseElement(token) as IPair<IExpr>;
 		}
 
 		#region 要素
 
 		private IPair<Element> TryParseElement(Token token)
 		{
-			throw new NotImplementedException();
+			return
+				TryParseList(token) ??
+				TryParseUnit(token);
 		}
 
 		private IPair<ListLiteral> TryParseList(Token token)
 		{
-			token = token.MatchFlow((OpenBracketToken) => true);
+			token = token.MatchFlow((OpenBracketToken t) => true);
 			if (token == null)
 				return null;
 			var elemList = new List<Element>();
@@ -563,10 +603,10 @@ namespace Kurogane.Compilers
 			}
 			if (token is DecimalToken) {
 				double value = ((DecimalToken)token).DecimalValue;
-				return MakePair(new RealLiteral(value), nextToken);
+				return MakePair(new FloatLiteral(value), nextToken);
 			}
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText)) {
-				return MakePair(new NullLiteral(), nextToken);
+				return MakePair(NullLiteral.Instant, nextToken);
 			}
 			return null;
 		}

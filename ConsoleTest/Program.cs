@@ -9,7 +9,14 @@ using Kurogane;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			List();
+			AnotherTest();
+		}
+
+		static void AnotherTest()
+		{
+			var code = "「こんにちは」を表示する。";
+			var token = Tokenizer.Tokenize(code);
+			var blcok = AnotherParser.Parse(token, "-- no file --");
 		}
 
 		static void MyabeMonad() {
@@ -118,7 +125,7 @@ namespace ConsoleTest {
 			engine.Execute(code);
 		}
 
-		static void List() {
+		static void AnotherTestList() {
 			var code =
 				"以下の手順でAとBを加算する。" +
 				"	(A＋B)をパスする。" +

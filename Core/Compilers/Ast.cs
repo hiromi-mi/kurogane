@@ -215,37 +215,6 @@ namespace Kurogane.Compilers
 
 	public interface Literal : Element { }
 
-	public class StringLiteral : Literal
-	{
-		public readonly string Value;
-
-		public StringLiteral(string value)
-		{
-			this.Value = value;
-
-		}
-	}
-
-	public class IntLiteral : Literal
-	{
-		public readonly int Value;
-
-		public IntLiteral(int value)
-		{
-			this.Value = value;
-		}
-	}
-
-	public class RealLiteral : Literal
-	{
-		public readonly double Value;
-
-		public RealLiteral(double value)
-		{
-			this.Value = value;
-		}
-	}
-
 	public class ListLiteral : Literal
 	{
 		public readonly IList<Element> Elements;
@@ -268,12 +237,55 @@ namespace Kurogane.Compilers
 		}
 	}
 
-	public class NullLiteral : Literal
+	public class StringLiteral : Literal
 	{
-		public NullLiteral()
+		public readonly string Value;
+
+		public StringLiteral(string value)
 		{
+			this.Value = value;
 
 		}
+	}
+
+	public class IntLiteral : Literal
+	{
+		public readonly int Value;
+
+		public IntLiteral(int value)
+		{
+			this.Value = value;
+		}
+	}
+
+	public class FloatLiteral : Literal
+	{
+		public readonly double Value;
+
+		public FloatLiteral(double value)
+		{
+			this.Value = value;
+		}
+	}
+
+	public sealed class BoolLiteral : Literal
+	{
+		public static readonly BoolLiteral True = new BoolLiteral(true);
+		public static readonly BoolLiteral False = new BoolLiteral(false);
+
+		public readonly bool Value;
+
+		private BoolLiteral(bool value)
+		{
+			this.Value = value;
+		}
+	}
+
+	public sealed class NullLiteral : Literal
+	{
+		public static readonly NullLiteral Instant = new NullLiteral();
+
+		private NullLiteral() { }
 	}
 
 	#endregion
