@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Compilers\AnotherParser.cs" />
     <Compile Include="Compilers\CompilerException.cs" />
+    <Compile Include="Compilers\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamics\ScopeMetaObject.cs" />
     <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="Libraries\StandardLibrary.cs" />
     <Compile Include="Libraries\LibraryAttribute.cs" />
     <Compile Include="Libraries\LibraryLoader.cs" />
+    <Compile Include="NewEngine.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Types\IInspectable.cs" />
     <Compile Include="Types\KrgnFunc1.cs">

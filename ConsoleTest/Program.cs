@@ -5,11 +5,21 @@ using System.Linq;
 using System.Text;
 using Kurogane.Compilers;
 using Kurogane;
+using Kurogane.Types;
 
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			AnotherTest();
+			NewEngineTest();
+		}
+
+		static void NewEngineTest()
+		{
+			var code = "挨拶する。";
+			var engine = new NewEngine();
+			var greet = KrgnFunc.Create(()=>{Console.WriteLine("こんにちは"); return null; });
+			engine.Global.SetVariable("挨拶", greet);
+			engine.Execute(code);
 		}
 
 		static void AnotherTest()

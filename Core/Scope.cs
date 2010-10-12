@@ -7,7 +7,6 @@ using System.Linq.Expressions;
 using Kurogane.Dynamics;
 
 namespace Kurogane {
-
 	public class Scope : IDynamicMetaObjectProvider {
 
 		private readonly IDictionary<string, dynamic> _values = new Dictionary<string, dynamic>();
@@ -16,18 +15,15 @@ namespace Kurogane {
 		public bool HasVariable(string name) {
 			return _values.ContainsKey(name);
 		}
-
-		public dynamic GetVariable(string name) {
+		public object GetVariable(string name) {
 			if (_values.ContainsKey(name)) {
 				return _values[name];
 			}
 			throw new KrgnRuntimeException(String.Format("変数「{0}」が存在しません。", name)); ;
 		}
-
-		public dynamic SetVariable(string name, dynamic value) {
+		public object SetVariable(string name, object value) {
 			return _values[name] = value;
 		}
-
 		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
 			return new ScopeMetaObject(this, parameter);
 		}
