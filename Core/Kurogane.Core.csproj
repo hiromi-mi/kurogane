@@ -23,7 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -50,6 +50,7 @@
     <Compile Include="Dynamics\ScopeMetaObject.cs" />
     <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />
     <Compile Include="Dynamics\KrgnSetMemberBinder.cs" />
+    <Compile Include="ExpressionUtil.cs" />
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Libraries\StandardLibrary.cs" />
@@ -80,7 +81,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Scope.cs" />
-    <Compile Include="Util.cs" />
+    <Compile Include="EncodeUtil.cs" />
+    <Compile Include="Types\SuffixFunc.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Types\KrgnFunc.tt">

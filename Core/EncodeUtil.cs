@@ -8,7 +8,7 @@ namespace Kurogane {
 	/// <summary>
 	/// 補助用クラス
 	/// </summary>
-	public static class Util {
+	internal static class EncodeUtil {
 
 		/// <summary>
 		/// byte列から，文字コードを判定する。

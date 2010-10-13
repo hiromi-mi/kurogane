@@ -10,20 +10,27 @@ using Kurogane.Types;
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			NewEngineTest();
+			SfxFuncTest();
 		}
 
-		static void NewEngineTest()
-		{
+		static void NewEngineTest() {
 			var code = "挨拶する。";
 			var engine = new NewEngine();
-			var greet = KrgnFunc.Create(()=>{Console.WriteLine("こんにちは"); return null; });
+			var greet = KrgnFunc.Create(() => { Console.WriteLine("こんにちは"); return null; });
 			engine.Global.SetVariable("挨拶", greet);
 			engine.Execute(code);
 		}
 
-		static void AnotherTest()
-		{
+		static void SfxFuncTest() {
+			var func = new SuffixFunc<Func<object, object, object>>(
+				(a, b) => (object)((int)a + (int)b),
+				new[] { "に", "を" });
+			dynamic add = func;
+			int ret = add(2, を: 1);
+			Console.WriteLine(ret);
+		}
+
+		static void AnotherTest() {
 			var code = "「こんにちは」を表示する。";
 			var token = Tokenizer.Tokenize(code);
 			var blcok = AnotherParser.Parse(token, "-- no file --");

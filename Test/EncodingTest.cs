@@ -18,7 +18,7 @@ namespace Kurogane.Test {
 		public void JISを判定できる() {
 			var txt = "ソース";
 			byte[] bytes = JIS.GetBytes(txt);
-			var enc = Util.DelectEncoding(bytes);
+			var enc = EncodeUtil.DelectEncoding(bytes);
 			Assert.AreEqual(JIS, enc);
 		}
 
@@ -26,7 +26,7 @@ namespace Kurogane.Test {
 		public void S_JISを判定できる() {
 			var txt = "ソース";
 			byte[] bytes = S_JIS.GetBytes(txt);
-			var enc = Util.DelectEncoding(bytes);
+			var enc = EncodeUtil.DelectEncoding(bytes);
 			Assert.AreEqual(S_JIS, enc);
 		}
 
@@ -34,7 +34,7 @@ namespace Kurogane.Test {
 		public void EUCを判定できる() {
 			var txt = "EUCですよ";
 			byte[] bytes = EUC_JP.GetBytes(txt);
-			var enc = Util.DelectEncoding(bytes);
+			var enc = EncodeUtil.DelectEncoding(bytes);
 			Assert.AreEqual(EUC_JP, enc);
 		}
 
@@ -42,7 +42,7 @@ namespace Kurogane.Test {
 		public void UTF8を判定できる() {
 			var txt = "UTF8か～";
 			byte[] bytes = UTF8.GetBytes(txt);
-			var enc = Util.DelectEncoding(bytes);
+			var enc = EncodeUtil.DelectEncoding(bytes);
 			Assert.AreEqual(UTF8, enc);
 		}
 	}
