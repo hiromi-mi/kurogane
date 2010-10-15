@@ -97,13 +97,20 @@ namespace Kurogane.Types {
 					prmR = prmL;
 				}
 				// 正しく並びかえられたかチェック
-				foreach (var p in parameters)
-					if (p == null)
-						throw new InvalidOperationException(
-							"助詞から正しく引数を並び替えることができませんでした。" + Environment.NewLine +
-							"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
-							"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames)
-				);
+				foreach (var p in parameters) {
+					if (p == null) {
+						return new DynamicMetaObject(
+							Expression.Throw(Expression.New(
+								typeof(ArgumentException).GetConstructor(new[]{typeof(string)}),
+								Expression.Constant(
+									"助詞が正しくありません。" + Environment.NewLine +
+									"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
+									"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames)
+									)),
+								typeof(object)),
+							GetRestrictions());
+					}
+				}
 				// create bindings
 				string propName = ReflectionHelper.PropertyName((SuffixFunc<T> func) => func.Func);
 				var funcExpr = Expression.PropertyOrField(this.Expression, propName);

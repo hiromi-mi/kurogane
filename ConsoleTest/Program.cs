@@ -26,7 +26,7 @@ namespace ConsoleTest {
 				(a, b) => (object)((int)a + (int)b),
 				new[] { "に", "を" });
 			dynamic add = func;
-			int ret = add(2, を: 1);
+			object ret = add(2, げ: 1);
 			Console.WriteLine(ret);
 		}
 
