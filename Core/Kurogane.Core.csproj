@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilers\AnotherParser.cs" />
+    <Compile Include="Compilers\Parser.cs" />
     <Compile Include="Compilers\CompilerException.cs" />
     <Compile Include="Compilers\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
@@ -53,7 +53,7 @@
     <Compile Include="ExpressionUtil.cs" />
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnRuntimeException.cs" />
-    <Compile Include="NewEngine.cs" />
+    <Compile Include="Engine.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="Dynamics\MetaObjectLoader.cs" />
     <Compile Include="Dynamics\PairMetaObject.cs" />
