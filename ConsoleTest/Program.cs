@@ -3,14 +3,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Kurogane.Compilers;
 using Kurogane;
+using Kurogane.Compilers;
 using Kurogane.Types;
 
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
 			SfxFuncTest();
+		}
+
+		static void BasicTest() {
+			var code =
+				"「こんにちは」を出力する。※改行は出力されないことに注意。 " +
+				"改行を出力する。" +
+				"「さようなら」を出力する。" +
+				"改行を出力する。";
+			var e = new NewEngine();
+			e.Execute(code);
 		}
 
 		static void NewEngineTest() {
@@ -26,14 +36,8 @@ namespace ConsoleTest {
 				(a, b) => (object)((int)a + (int)b),
 				new[] { "に", "を" });
 			dynamic add = func;
-			object ret = add(2, げ: 1);
+			object ret = add(を:2, げ: 3);
 			Console.WriteLine(ret);
-		}
-
-		static void AnotherTest() {
-			var code = "「こんにちは」を表示する。";
-			var token = Tokenizer.Tokenize(code);
-			var blcok = AnotherParser.Parse(token, "-- no file --");
 		}
 
 		static void MyabeMonad() {
@@ -203,7 +207,5 @@ namespace ConsoleTest {
 			var engine = new Engine();
 			engine.Execute(code);
 		}
-
-
 	}
 }

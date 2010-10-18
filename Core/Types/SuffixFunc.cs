@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace Kurogane.Types {
 	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
@@ -51,7 +51,7 @@ namespace Kurogane.Types {
 				var cInfo = binder.CallInfo;
 				int offset = cInfo.ArgumentCount - cInfo.ArgumentNames.Count;
 				if (offset >= 2)
-					throw new InvalidOperationException("助詞無しで渡された引数が多すぎます。");
+					return ThrowArgumentException("助詞無しで渡された引数が多すぎます。");
 
 				string[] prmSfx = Value.Suffix.Split(new[] { Separator }, StringSplitOptions.None);
 				// ordering parameters
@@ -97,20 +97,12 @@ namespace Kurogane.Types {
 					prmR = prmL;
 				}
 				// 正しく並びかえられたかチェック
-				foreach (var p in parameters) {
-					if (p == null) {
-						return new DynamicMetaObject(
-							Expression.Throw(Expression.New(
-								typeof(ArgumentException).GetConstructor(new[]{typeof(string)}),
-								Expression.Constant(
-									"助詞が正しくありません。" + Environment.NewLine +
-									"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
-									"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames)
-									)),
-								typeof(object)),
-							GetRestrictions());
-					}
-				}
+				foreach (var p in parameters)
+					if (p == null)
+						return ThrowArgumentException(
+							"引数または助詞が合っていません。" + Environment.NewLine +
+							"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
+							"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames));
 				// create bindings
 				string propName = ReflectionHelper.PropertyName((SuffixFunc<T> func) => func.Func);
 				var funcExpr = Expression.PropertyOrField(this.Expression, propName);
@@ -124,6 +116,16 @@ namespace Kurogane.Types {
 				var combine = Expression.AndAlso(typeExpr, equalExpr);
 				return BindingRestrictions.GetExpressionRestriction(combine);
 			}
+
+			private DynamicMetaObject ThrowArgumentException(string message) {
+				return new DynamicMetaObject(
+					Expression.Throw(Expression.New(
+							typeof(ArgumentException).GetConstructor(new[] { typeof(string) }),
+							Expression.Constant(message)),
+						typeof(object)),
+					GetRestrictions());
+			}
+
 		}
 
 		#endregion

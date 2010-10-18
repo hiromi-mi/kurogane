@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Kurogane.Compilers;
+using Kurogane.Types;
 
-namespace Kurogane
-{
-	public class NewEngine
-	{
+namespace Kurogane {
+	public class NewEngine {
+		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
+
 		/// <summary>グローバルスコープ</summary>
-		public Scope Global { get; private set; }
+		public Scope Global { get; protected set; }
 
 		/// <summary>入力先</summary>
 		public TextReader In { get; set; }
@@ -18,22 +19,36 @@ namespace Kurogane
 		/// <summary>出力先</summary>
 		public TextWriter Out { get; set; }
 
+		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
+		/// <summary>通常のコンストラクタ</summary>
 		public NewEngine()
-		{
-			// プログラムにとっての標準入出力を設定。
-			In = Console.In;
-			Out = Console.Out;
-			Global = new Scope();
+			: this(new Scope()) {
+			InitLibrary();
 		}
 
-		public object Execute(string code)
-		{
+		/// <summary>継承して、特殊なグローバルスコープを利用する場合、こちらを利用すること。</summary>
+		/// <param name="global">呼ばれるグローバルスコープ</param>
+		protected NewEngine(Scope global) {
+			In = Console.In;
+			Out = Console.Out;
+			Global = global;
+		}
+
+		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
+		public object Execute(string code) {
 			var token = Tokenizer.Tokenize(code);
 			var ast = AnotherParser.Parse(token, null);
 			var expr = Generator.Generate(ast);
 			var func = expr.Compile();
 			return func(this.Global);
+		}
+
+		private void InitLibrary() {
+			Global.SetVariable("入力", new SuffixFunc<Func<object>>(this.In.ReadLine));
+			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
+				obj => { this.Out.Write(obj); return obj; }, "を"));
+			Global.SetVariable("改行", Environment.NewLine);
 		}
 	}
 }

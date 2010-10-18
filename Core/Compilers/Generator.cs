@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Linq.Expressions;
-using Kurogane.Dynamics;
 using System.Dynamic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using Kurogane.Dynamics;
 
 namespace Kurogane.Compilers {
 	public class Generator {
@@ -51,19 +51,39 @@ namespace Kurogane.Compilers {
 		}
 		private Expression ConvertCall(Call call) {
 			var func = ConvertSymbol(call.Name);
-			var argList = new List<Expression>();
+			var argList = new List<Expression>(call.Arguments.Count + 1);
+			argList.Add(func);
+			var sfxList = new List<string>(call.Arguments.Count);
 			foreach (var argPair in call.Arguments) {
 				argList.Add(ConvertElement(argPair.Argument));
+				sfxList.Add(argPair.Suffix);
 			}
-			var info = new CallInfo(0);
-			return Expression.Dynamic(new KrgnInvokeBinder(info), typeof(object), func);
+			var nArg = call.Arguments.Count;
+			var info = new CallInfo(nArg, sfxList);
+			return Expression.Dynamic(new KrgnInvokeBinder(info), typeof(object), argList);
 		}
+
+		#region ConvertElement
+
 		private Expression ConvertElement(Element elem) {
+			if (elem is Symbol)
+				return ConvertSymbol(((Symbol)elem).Name);
+			if (elem is Literal)
+				return ConvertLiteral((Literal)elem);
 			throw new NotImplementedException();
 		}
+
 		private Expression ConvertSymbol(string name) {
 			return Expression.Dynamic(KrgnGetMemberBinder.Create(name), typeof(object), _global);
 		}
+
+		private Expression ConvertLiteral(Element lit) {
+			if (lit is StringLiteral)
+				return Expression.Constant(((StringLiteral)lit).Value);
+			throw new NotImplementedException();
+		}
+
+		#endregion
 
 		#region Util
 

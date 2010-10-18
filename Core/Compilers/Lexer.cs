@@ -114,6 +114,7 @@ namespace Kurogane.Compilers
 		{
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 			if (_CurrentChar == '※') SkipComment();
+			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 
 			if (_CurrentChar == -1)
 				return new NullToken(this);
