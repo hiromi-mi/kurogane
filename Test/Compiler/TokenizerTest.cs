@@ -1,9 +1,5 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Kurogane.Compiler;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Kurogane.Compilers;
 
 namespace Kurogane.Test.Compiler {
 	[TestClass]

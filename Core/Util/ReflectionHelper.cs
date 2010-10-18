@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Linq.Expressions;
 
-namespace Kurogane {
+namespace Kurogane.Util {
 
 	internal static class ReflectionHelper {
 

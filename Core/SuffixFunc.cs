@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using Kurogane.Util;
 
 namespace Kurogane {
 
@@ -16,42 +17,46 @@ namespace Kurogane {
 
 		// ----- ----- ----- ----- ----- Generic Func ----- ----- ----- ----- -----
 
-		public static SuffixFunc<Func<TResult>> Create<TResult>(Func<TResult> func, params string[] suffix) {
+		public static SuffixFunc<Func<TResult>> Create<TResult>(Func<TResult> func) {
+			return Create(func);
+		}
+
+		public static SuffixFunc<Func<T1, TResult>> Create<T1, TResult>(Func<T1, TResult> func, string suffix) {
 			return Create(func, suffix);
 		}
 
-		public static SuffixFunc<Func<T1, TResult>> Create<T1, TResult>(Func<T1, TResult> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<T1, T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func, string suffix1, string suffix2) {
+			return Create(func, suffix1, suffix2);
 		}
 
-		public static SuffixFunc<Func<T1, T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<T1, T2, T3, TResult>> Create<T1, T2, T3, TResult>(
+			Func<T1, T2, T3, TResult> func, string suffix1, string suffix2, string suffix3) {
+			return Create(func, suffix1, suffix2, suffix3);
 		}
 
-		public static SuffixFunc<Func<T1, T2, T3, TResult>> Create<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> func, params string[] suffix) {
-			return Create(func, suffix);
-		}
-
-		public static SuffixFunc<Func<T1, T2, T3, T4, TResult>> Create<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<T1, T2, T3, T4, TResult>> Create<T1, T2, T3, T4, TResult>(
+			Func<T1, T2, T3, T4, TResult> func, string suffix1, string suffix2, string suffix3, string suffix4) {
+			return Create(func, suffix1, suffix2, suffix3, suffix4);
 		}
 
 		// ----- ----- ----- ----- ----- Object Func ----- ----- ----- ----- -----
 
-		public static SuffixFunc<Func<object>> Create(Func<object> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<object>> Create(Func<object> func) {
+			return Create(func);
 		}
 
-		public static SuffixFunc<Func<object, object>> Create(Func<object, object> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<object, object>> Create(Func<object, object> func, string suffix1, string suffix2) {
+			return Create(func, suffix1, suffix2);
 		}
 
-		public static SuffixFunc<Func<object, object, object>> Create(Func<object, object, object> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<object, object, object>> Create(
+			Func<object, object, object> func, string suffix1, string suffix2, string suffix3) {
+			return Create(func, suffix1, suffix2, suffix3);
 		}
 
-		public static SuffixFunc<Func<object, object, object, object>> Create(Func<object, object, object, object> func, params string[] suffix) {
-			return Create(func, suffix);
+		public static SuffixFunc<Func<object, object, object, object>> Create(
+			Func<object, object, object, object> func, string suffix1, string suffix2, string suffix3) {
+			return Create(func, suffix1, suffix2, suffix3);
 		}
 
 	}
@@ -154,6 +159,7 @@ namespace Kurogane {
 				return new DynamicMetaObject(Expression.Invoke(funcExpr, parameters), GetRestrictions());
 			}
 
+			/// <summary>SuffixFuncのGeneric型と助詞からBindingRestrictionsを作成する。</summary>
 			private BindingRestrictions GetRestrictions() {
 				string propName = ReflectionHelper.PropertyName((SuffixFunc<T> func) => func.Suffix);
 				var equalExpr = Expression.Equal(Expression.Field(this.Expression, propName), Expression.Constant(Value.Suffix));
@@ -162,6 +168,8 @@ namespace Kurogane {
 				return BindingRestrictions.GetExpressionRestriction(combine);
 			}
 
+			/// <summary>ArgumentExceptionを投げる式木を返す。</summary>
+			/// <param name="message">例外のメッセージ</param>
 			private DynamicMetaObject ThrowArgumentException(string message) {
 				return new DynamicMetaObject(
 					Expression.Throw(Expression.New(

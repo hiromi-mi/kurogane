@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 	public class Parser {
-
 		public static Block Parse(Token token, string filename) {
 			var p = new Parser(filename);
 			var pair = p.ParseBlock(token);

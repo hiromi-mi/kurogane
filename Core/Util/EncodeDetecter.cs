@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane {
+namespace Kurogane.Util {
 
 	/// <summary>
 	/// 補助用クラス
 	/// </summary>
-	internal static class EncodeUtil {
+	internal static class EncodeDetecter {
 
 		/// <summary>
 		/// byte列から，文字コードを判定する。
@@ -17,7 +17,7 @@ namespace Kurogane {
 		/// </summary>
 		/// <param name="bytes">テキストを表すbyte列</param>
 		/// <returns>byte列のエンコード。判定出来なかった場合はnull。</returns>
-		public static Encoding DelectEncoding(byte[] bytes) {
+		public static Encoding Delect(byte[] bytes) {
 
 			const byte bEscape = 0x1B;
 			const byte bAt = 0x40;

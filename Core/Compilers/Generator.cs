@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Dynamic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using Kurogane.Dynamics;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 	public class Generator {
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
-		public static Expression<Func<Scope, object>> Generate(Block block) {
-			var gen = new Generator();
+		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory) {
+			var gen = new Generator(factory);
 			var expr = gen.ConvertBlock(block);
 			return Expression.Lambda<Func<Scope, object>>(expr, gen._global);
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
 		private ParameterExpression _global = Expression.Parameter(typeof(Scope));
+		private BinderFactory _factory;
+
+		// ----- ----- ----- ----- methods ----- ----- ----- -----
+		private Generator(BinderFactory factory) {
+			Contract.Requires<ArgumentNullException>(factory != null);
+			_factory = factory;
+		}
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
 		private Expression ConvertBlock(Block block) {
@@ -65,7 +70,7 @@ namespace Kurogane.Compilers {
 			}
 			var nArg = call.Arguments.Count;
 			var info = new CallInfo(nArg, sfxList);
-			return Expression.Dynamic(new KrgnInvokeBinder(info), typeof(object), argList);
+			return Expression.Dynamic(_factory.InvokeBinder(info), typeof(object), argList);
 		}
 
 		#region ConvertElement
@@ -79,7 +84,7 @@ namespace Kurogane.Compilers {
 		}
 
 		private Expression ConvertSymbol(string name) {
-			return Expression.Dynamic(KrgnGetMemberBinder.Create(name), typeof(object), _global);
+			return Expression.Dynamic(_factory.GetMemberBinder(name), typeof(object), _global);
 		}
 
 		private Expression ConvertLiteral(Element lit) {

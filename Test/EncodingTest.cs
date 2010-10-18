@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Kurogane.Util;
 
 namespace Kurogane.Test {
 
@@ -18,7 +19,7 @@ namespace Kurogane.Test {
 		public void JISを判定できる() {
 			var txt = "ソース";
 			byte[] bytes = JIS.GetBytes(txt);
-			var enc = EncodeUtil.DelectEncoding(bytes);
+			var enc = EncodeDetecter.Delect(bytes);
 			Assert.AreEqual(JIS, enc);
 		}
 
@@ -26,7 +27,7 @@ namespace Kurogane.Test {
 		public void S_JISを判定できる() {
 			var txt = "ソース";
 			byte[] bytes = S_JIS.GetBytes(txt);
-			var enc = EncodeUtil.DelectEncoding(bytes);
+			var enc = EncodeDetecter.Delect(bytes);
 			Assert.AreEqual(S_JIS, enc);
 		}
 
@@ -34,7 +35,7 @@ namespace Kurogane.Test {
 		public void EUCを判定できる() {
 			var txt = "EUCですよ";
 			byte[] bytes = EUC_JP.GetBytes(txt);
-			var enc = EncodeUtil.DelectEncoding(bytes);
+			var enc = EncodeDetecter.Delect(bytes);
 			Assert.AreEqual(EUC_JP, enc);
 		}
 
@@ -42,7 +43,7 @@ namespace Kurogane.Test {
 		public void UTF8を判定できる() {
 			var txt = "UTF8か～";
 			byte[] bytes = UTF8.GetBytes(txt);
-			var enc = EncodeUtil.DelectEncoding(bytes);
+			var enc = EncodeDetecter.Delect(bytes);
 			Assert.AreEqual(UTF8, enc);
 		}
 	}

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 
 	/// <summary>
 	/// 入力をトークンで分割するクラス

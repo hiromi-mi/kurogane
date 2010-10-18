@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Kurogane;
-using Kurogane.Compilers;
+using Kurogane.Dynamic;
 
 namespace ConsoleTest {
 	class Program {

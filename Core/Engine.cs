@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Kurogane.Compilers;
+using Kurogane.Dynamic;
+using System.Diagnostics.Contracts;
+using Kurogane.Compiler;
 
 namespace Kurogane {
 	public class Engine {
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
 
+		private BinderFactory _factory;
+
 		/// <summary>グローバルスコープ</summary>
-		public Scope Global { get; protected set; }
+		public Scope Global { get; private set; }
 
 		/// <summary>入力先</summary>
 		public TextReader In { get; set; }
@@ -22,23 +26,27 @@ namespace Kurogane {
 
 		/// <summary>通常のコンストラクタ</summary>
 		public Engine()
-			: this(new Scope()) {
+			: this(new Scope(), new BinderFactory()) {
 			InitLibrary();
 		}
 
 		/// <summary>継承して、特殊なグローバルスコープを利用する場合、こちらを利用すること。</summary>
 		/// <param name="global">呼ばれるグローバルスコープ</param>
-		protected Engine(Scope global) {
+		protected Engine(Scope global, BinderFactory factory) {
+			Contract.Requires<ArgumentNullException>(global != null);
+			Contract.Requires<ArgumentNullException>(factory != null);
+			_factory = factory;
+			Global = global;
 			In = Console.In;
 			Out = Console.Out;
-			Global = global;
 		}
 
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
+
 		public object Execute(string code) {
 			var token = Tokenizer.Tokenize(code);
 			var ast = Parser.Parse(token, null);
-			var expr = Generator.Generate(ast);
+			var expr = Generator.Generate(ast, _factory);
 			var func = expr.Compile();
 			return func(this.Global);
 		}

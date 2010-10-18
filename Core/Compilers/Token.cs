@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 
 	public interface IToken<out T> where T : IToken<T> {
 		T Next { get; }

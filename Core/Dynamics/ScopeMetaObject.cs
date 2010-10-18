@@ -5,7 +5,7 @@ using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Kurogane.Dynamics {
+namespace Kurogane.Dynamic {
 
 	internal class ScopeMetaObject : DynamicMetaObject {
 

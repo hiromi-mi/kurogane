@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 
 	/// <summary>
 	/// TokenをMaybeMonadのようにテストするための拡張クラス

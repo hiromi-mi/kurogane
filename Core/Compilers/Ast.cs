@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
 
 	#region 文
 

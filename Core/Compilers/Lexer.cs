@@ -6,7 +6,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
-namespace Kurogane.Compilers {
+namespace Kurogane.Compiler {
+
 	/// <summary>
 	/// 字句解析を行うクラス
 	/// </summary>
