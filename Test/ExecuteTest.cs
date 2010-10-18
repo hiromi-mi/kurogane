@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Kurogane.Types;
 
 namespace Kurogane.Test {
 
@@ -21,7 +20,7 @@ namespace Kurogane.Test {
 				"「C」に「B」を「A」がテストする。"};
 			var engine = new Engine();
 			var scope = engine.Global;
-			scope.SetVariable("テスト", KrgnFunc.Create(
+			scope.SetVariable("テスト", new SuffixFunc<Func<object, object, object, object>>(
 				(a, b, c) => ((string)a == "A" && (string)b == "B" && (string)c == "C"),
 				"が", "を", "に"));
 			foreach (var code in codes) {
@@ -32,8 +31,7 @@ namespace Kurogane.Test {
 		}
 
 		[TestMethod]
-		public void コメントを読み飛ばす()
-		{
+		public void コメントを読み飛ばす() {
 			string code =
 				"※これは、コメントです。" +
 				"1をパスする。" +

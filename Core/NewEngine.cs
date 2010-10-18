@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Kurogane.Compilers;
-using Kurogane.Types;
 
 namespace Kurogane {
-	public class NewEngine {
+	public class Engine {
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
 
 		/// <summary>グローバルスコープ</summary>
@@ -22,14 +21,14 @@ namespace Kurogane {
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
 		/// <summary>通常のコンストラクタ</summary>
-		public NewEngine()
+		public Engine()
 			: this(new Scope()) {
 			InitLibrary();
 		}
 
 		/// <summary>継承して、特殊なグローバルスコープを利用する場合、こちらを利用すること。</summary>
 		/// <param name="global">呼ばれるグローバルスコープ</param>
-		protected NewEngine(Scope global) {
+		protected Engine(Scope global) {
 			In = Console.In;
 			Out = Console.Out;
 			Global = global;
@@ -38,7 +37,7 @@ namespace Kurogane {
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
 		public object Execute(string code) {
 			var token = Tokenizer.Tokenize(code);
-			var ast = AnotherParser.Parse(token, null);
+			var ast = Parser.Parse(token, null);
 			var expr = Generator.Generate(ast);
 			var func = expr.Compile();
 			return func(this.Global);
@@ -49,6 +48,10 @@ namespace Kurogane {
 			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
 				obj => { this.Out.Write(obj); return obj; }, "を"));
 			Global.SetVariable("改行", Environment.NewLine);
+		}
+
+		public void ExecuteFile(string filepath) {
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using Kurogane;
 using Kurogane.Compilers;
-using Kurogane.Types;
 
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			SfxFuncTest();
+			BasicTest();
 		}
 
 		static void BasicTest() {
@@ -19,14 +18,14 @@ namespace ConsoleTest {
 				"改行を出力する。" +
 				"「さようなら」を出力する。" +
 				"改行を出力する。";
-			var e = new NewEngine();
+			var e = new Engine();
 			e.Execute(code);
 		}
 
 		static void NewEngineTest() {
 			var code = "挨拶する。";
-			var engine = new NewEngine();
-			var greet = KrgnFunc.Create(() => { Console.WriteLine("こんにちは"); return null; });
+			var engine = new Engine();
+			var greet = SuffixFunc.Create(() => { Console.WriteLine("こんにちは"); return null; });
 			engine.Global.SetVariable("挨拶", greet);
 			engine.Execute(code);
 		}

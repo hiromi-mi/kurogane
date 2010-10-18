@@ -4,14 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Kurogane.Compilers
-{
-	public class AnotherParser
-	{
+namespace Kurogane.Compilers {
+	public class Parser {
 
-		public static Block Parse(Token token, string filename)
-		{
-			var p = new AnotherParser(filename);
+		public static Block Parse(Token token, string filename) {
+			var p = new Parser(filename);
 			var pair = p.ParseBlock(token);
 
 			if (pair.Token is NullToken)
@@ -24,15 +21,13 @@ namespace Kurogane.Compilers
 
 		private readonly string _FileName;
 
-		private AnotherParser(string filename)
-		{
+		private Parser(string filename) {
 			_FileName = filename;
 		}
 
 		#region Parse
 
-		private IPair<Block> ParseBlock(Token token)
-		{
+		private IPair<Block> ParseBlock(Token token) {
 			List<IStatement> stmtList = new List<IStatement>();
 			while (true) {
 				var pair = ParseIStatement(token);
@@ -44,8 +39,7 @@ namespace Kurogane.Compilers
 			return MakePair(new Block(stmtList), token);
 		}
 
-		private IPair<IStatement> ParseIStatement(Token token)
-		{
+		private IPair<IStatement> ParseIStatement(Token token) {
 			var ifPair = TryParseIfStatement(token);
 			if (ifPair != null)
 				return ifPair;
@@ -54,8 +48,7 @@ namespace Kurogane.Compilers
 
 		#region もし文
 
-		private IPair<IfStatement> TryParseIfStatement(Token token)
-		{
+		private IPair<IfStatement> TryParseIfStatement(Token token) {
 			token = token.MatchFlow((ReservedToken t) => t.Value == "もし");
 			if (token == null)
 				return null;
@@ -75,8 +68,7 @@ namespace Kurogane.Compilers
 			return MakePair(new IfStatement(thens), token);
 		}
 
-		private IPair<CondThenPair> TryParseCondThenPair(Token token)
-		{
+		private IPair<CondThenPair> TryParseCondThenPair(Token token) {
 			var condPair = TryParseElement(token);
 			if (condPair == null)
 				return null;
@@ -94,8 +86,7 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		private IPair<INormalStatement> TryParseINormalStatement(Token token)
-		{
+		private IPair<INormalStatement> TryParseINormalStatement(Token token) {
 			return
 				TryParseExprBlock(token) ??
 				TryParseDefun(token) ??
@@ -105,8 +96,7 @@ namespace Kurogane.Compilers
 
 		#region 関数定義
 
-		private IPair<Defun> TryParseDefun(Token token)
-		{
+		private IPair<Defun> TryParseDefun(Token token) {
 			var keywordSkipped = token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
 				.MatchFlow((SuffixToken t) => t.Value == "の")
@@ -139,8 +129,7 @@ namespace Kurogane.Compilers
 			return MakePair(new Defun(name, paramList, blockPair.Node), lastToken);
 		}
 
-		private IPair<ParamSuffixPair> TryParseParamSuffixPair(Token token)
-		{
+		private IPair<ParamSuffixPair> TryParseParamSuffixPair(Token token) {
 			var lastToken = token
 				.MatchFlow((SymbolToken t) => true)
 				.MatchFlow((SuffixToken t) => true);
@@ -153,8 +142,7 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		private IPair<BlockExecute> TryParseBlockExecute(Token token)
-		{
+		private IPair<BlockExecute> TryParseBlockExecute(Token token) {
 			var blockToken = token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
 				.MatchFlow((SuffixToken t) => t.Value == "を")
@@ -173,8 +161,7 @@ namespace Kurogane.Compilers
 
 		#region PhraseChain
 
-		private IPair<PhraseChain> TryParsePhraseChain(Token token)
-		{
+		private IPair<PhraseChain> TryParsePhraseChain(Token token) {
 			var list = new List<IPhrase>();
 			while (true) {
 				var pair = TryParsePhrase(token);
@@ -196,8 +183,7 @@ namespace Kurogane.Compilers
 			return MakePair(new PhraseChain(list), token);
 		}
 
-		private IPair<IPhrase> TryParsePhrase(Token token)
-		{
+		private IPair<IPhrase> TryParsePhrase(Token token) {
 			var lst = new List<ArgSuffixPair>();
 			bool isMap = false;
 			ArgSuffixPair mappedArg = null;
@@ -256,8 +242,7 @@ namespace Kurogane.Compilers
 			return null;
 		}
 
-		private DefineValue CreateDefine(List<ArgSuffixPair> args)
-		{
+		private DefineValue CreateDefine(List<ArgSuffixPair> args) {
 			if (args.Count == 0)
 				return null;
 			var last = args.Last();
@@ -278,8 +263,7 @@ namespace Kurogane.Compilers
 			return new DefineValue(name, tuple);
 		}
 
-		private Assign CreateAssign(List<ArgSuffixPair> lst)
-		{
+		private Assign CreateAssign(List<ArgSuffixPair> lst) {
 			if (lst.Count == 0)
 				return null;
 			Func<ArgSuffixPair, string> getName = pair => {
@@ -309,8 +293,7 @@ namespace Kurogane.Compilers
 			return null;
 		}
 
-		private Element CreateTuple(List<ArgSuffixPair> args)
-		{
+		private Element CreateTuple(List<ArgSuffixPair> args) {
 			var tuple = args.Last().Argument;
 			for (int i = args.Count - 2; i >= 0; i--) {
 				var elem = args[i];
@@ -321,8 +304,7 @@ namespace Kurogane.Compilers
 			return tuple;
 		}
 
-		private IPair<ArgSuffixPair> TryParseArgSfxPair(Token token)
-		{
+		private IPair<ArgSuffixPair> TryParseArgSfxPair(Token token) {
 			var elemPair = TryParseElement(token);
 			if (elemPair == null)
 				return null;
@@ -334,8 +316,7 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		private IPair<ExprBlock> TryParseExprBlock(Token token)
-		{
+		private IPair<ExprBlock> TryParseExprBlock(Token token) {
 			token = token.MatchFlow((OpenBraceToken t) => true);
 			if (token == null)
 				return null;
@@ -360,8 +341,7 @@ namespace Kurogane.Compilers
 			return MakePair(new ExprBlock(list), token);
 		}
 
-		private IPair<IExpr> TryParseExpr(Token token)
-		{
+		private IPair<IExpr> TryParseExpr(Token token) {
 			return
 				TryParseExprBlock(token) ??
 				TryParseElement(token) as IPair<IExpr>;
@@ -369,15 +349,13 @@ namespace Kurogane.Compilers
 
 		#region 要素
 
-		private IPair<Element> TryParseElement(Token token)
-		{
+		private IPair<Element> TryParseElement(Token token) {
 			return
 				TryParseList(token) ??
 				TryParseUnit(token);
 		}
 
-		private IPair<ListLiteral> TryParseList(Token token)
-		{
+		private IPair<ListLiteral> TryParseList(Token token) {
 			token = token.MatchFlow((OpenBracketToken t) => true);
 			if (token == null)
 				return null;
@@ -411,8 +389,7 @@ namespace Kurogane.Compilers
 		/// addExpr ::= mltExpr | addExpr AddOp mltExpr
 		/// mltExpr ::= ukExpr  | mltExpr MltOp unExpr
 		/// unExpr  ::= unary   |  unExpr UnknownOp unary
-		private IPair<Element> ParseBinaryExpr(Token token)
-		{
+		private IPair<Element> ParseBinaryExpr(Token token) {
 			IPair<Element> pair = ParseAndExpr(token);
 			if (pair == null)
 				return null;
@@ -430,8 +407,7 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseAndExpr(Token token)
-		{
+		private IPair<Element> ParseAndExpr(Token token) {
 			IPair<Element> pair = ParseCompareExpr(token);
 			if (pair == null)
 				return null;
@@ -449,8 +425,7 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseCompareExpr(Token token)
-		{
+		private IPair<Element> ParseCompareExpr(Token token) {
 			IPair<Element> pair = ParseAddExpr(token);
 			if (pair == null)
 				return null;
@@ -471,8 +446,7 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseAddExpr(Token token)
-		{
+		private IPair<Element> ParseAddExpr(Token token) {
 			IPair<Element> pair = ParseMultipleExpr(token);
 			if (pair == null)
 				return null;
@@ -490,8 +464,7 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseMultipleExpr(Token token)
-		{
+		private IPair<Element> ParseMultipleExpr(Token token) {
 			IPair<Element> pair = ParseUnknownMultipleExpr(token);
 			if (pair == null)
 				return null;
@@ -509,8 +482,7 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> ParseUnknownMultipleExpr(Token token)
-		{
+		private IPair<Element> ParseUnknownMultipleExpr(Token token) {
 			IPair<Element> pair = ParseUnaryExpr(token);
 			if (pair == null)
 				return null;
@@ -530,8 +502,7 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		private IPair<Element> ParseUnaryExpr(Token token)
-		{
+		private IPair<Element> ParseUnaryExpr(Token token) {
 			string op = null;
 			if (token.Match((AbstractOperatorToken t) => true)) {
 				op = ((AbstractOperatorToken)token).Value;
@@ -543,8 +514,7 @@ namespace Kurogane.Compilers
 			return MakePair(new UnaryExpr(op, propPair.Node), propPair.Token);
 		}
 
-		private IPair<Element> TryParseProperty(Token token)
-		{
+		private IPair<Element> TryParseProperty(Token token) {
 			IPair<Element> pair = TryParseUnit(token);
 			if (pair == null)
 				return null;
@@ -560,16 +530,14 @@ namespace Kurogane.Compilers
 			return pair;
 		}
 
-		private IPair<Element> TryParseUnit(Token token)
-		{
+		private IPair<Element> TryParseUnit(Token token) {
 			return
 				TryParseSymbol(token) ??
 				TryParseParenthesisExpr(token) ??
 				TryParseLiteral(token);
 		}
 
-		private IPair<Element> TryParseParenthesisExpr(Token token)
-		{
+		private IPair<Element> TryParseParenthesisExpr(Token token) {
 			token = token.MatchFlow((OpenParenthesisToken t) => true);
 			if (token == null)
 				return null;
@@ -581,8 +549,7 @@ namespace Kurogane.Compilers
 			return MakePair(elemPair.Node, lastToken);
 		}
 
-		private IPair<Symbol> TryParseSymbol(Token token)
-		{
+		private IPair<Symbol> TryParseSymbol(Token token) {
 			var symToken = token as SymbolToken;
 			if (symToken == null)
 				return null;
@@ -590,8 +557,7 @@ namespace Kurogane.Compilers
 				return MakePair(new Symbol(symToken.Value), token.Next);
 		}
 
-		private IPair<Literal> TryParseLiteral(Token token)
-		{
+		private IPair<Literal> TryParseLiteral(Token token) {
 			var nextToken = token.Next;
 			if (token is LiteralToken) {
 				var value = ((LiteralToken)token).Value;
@@ -618,37 +584,31 @@ namespace Kurogane.Compilers
 		#region Util
 
 		[DebuggerStepThrough]
-		private void ThrowError(string message, Token token)
-		{
+		private void ThrowError(string message, Token token) {
 			throw new SyntaxException(message, _FileName, token.LineNumber, token.CharCount);
 		}
 
-		private static IPair<T> MakePair<T>(T node, Token token)
-		{
+		private static IPair<T> MakePair<T>(T node, Token token) {
 			return new Pair<T>(node, token);
 		}
 
-		private interface IPair<out T>
-		{
+		private interface IPair<out T> {
 			T Node { get; }
 			Token Token { get; }
 		}
 
-		private class Pair<T> : IPair<T>
-		{
+		private class Pair<T> : IPair<T> {
 			private T _node;
 			private Token _token;
 
 			public T Node { get { return _node; } }
 			public Token Token { get { return _token; } }
 
-			public Pair(T node, Token token)
-			{
+			public Pair(T node, Token token) {
 				_node = node;
 				_token = token;
 			}
 		}
-
 
 		#endregion
 

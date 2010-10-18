@@ -5,13 +5,60 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Kurogane.Types {
+namespace Kurogane {
+
+	/// <summary>SuffixFuncのファクトリクラス</summary>
+	public static class SuffixFunc {
+
+		public static SuffixFunc<T> Create<T>(T func, params string[] suffix) {
+			return new SuffixFunc<T>(func, suffix);
+		}
+
+		// ----- ----- ----- ----- ----- Generic Func ----- ----- ----- ----- -----
+
+		public static SuffixFunc<Func<TResult>> Create<TResult>(Func<TResult> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<T1, TResult>> Create<T1, TResult>(Func<T1, TResult> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<T1, T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<T1, T2, T3, TResult>> Create<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<T1, T2, T3, T4, TResult>> Create<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		// ----- ----- ----- ----- ----- Object Func ----- ----- ----- ----- -----
+
+		public static SuffixFunc<Func<object>> Create(Func<object> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<object, object>> Create(Func<object, object> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<object, object, object>> Create(Func<object, object, object> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+		public static SuffixFunc<Func<object, object, object, object>> Create(Func<object, object, object, object> func, params string[] suffix) {
+			return Create(func, suffix);
+		}
+
+	}
+
 	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
 
 		private const string Separator = "|";
-
-		/// <summary>型パラメタ T が有効な型かどうか</summary>
-		private static readonly bool IsValidType;
 
 		/// <summary>助詞をSeparatorで連結したもの</summary>
 		public readonly string Suffix;
@@ -19,14 +66,12 @@ namespace Kurogane.Types {
 		/// <summary>関数</summary>
 		public readonly T Func;
 
-		static SuffixFunc() {
-			IsValidType = ReflectionHelper.TypeOfFunc.Contains(typeof(T));
-		}
-
+		/// <summary>
+		/// 通常のコンストラクタ
+		/// </summary>
+		/// <param name="func"></param>
+		/// <param name="suffix"></param>
 		public SuffixFunc(T func, params string[] suffix) {
-			if (IsValidType == false) {
-				throw new InvalidOperationException(typeof(T) + "には対応していません。");
-			}
 			this.Func = func;
 			this.Suffix = String.Intern(String.Join(Separator, suffix));
 		}

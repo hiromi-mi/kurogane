@@ -6,13 +6,11 @@ using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
-namespace Kurogane.Compilers
-{
+namespace Kurogane.Compilers {
 	/// <summary>
 	/// 字句解析を行うクラス
 	/// </summary>
-	public class Lexer
-	{
+	public class Lexer {
 
 		#region static
 
@@ -60,8 +58,7 @@ namespace Kurogane.Compilers
 
 		private Stack<Token> _stack = new Stack<Token>();
 
-		public Lexer(TextReader reader, string filename)
-		{
+		public Lexer(TextReader reader, string filename) {
 			_reader = reader;
 			_NextChar();
 			_FileName = filename ?? NoFile;
@@ -70,16 +67,14 @@ namespace Kurogane.Compilers
 		/// <summary>
 		/// 次のトークン
 		/// </summary>
-		public Token Next()
-		{
+		public Token Next() {
 			if (_stack.Count > 0)
 				return _stack.Pop();
 			return NextToken();
 		}
 
 		/// <summary>文字を一つ読み進める。</summary>
-		private int _NextChar()
-		{
+		private int _NextChar() {
 			switch (_CurrentChar) {
 			case '\r':
 				flagLF = true;
@@ -110,8 +105,7 @@ namespace Kurogane.Compilers
 		/// それ以外は null を返しません。
 		/// </summary>
 		/// <returns></returns>
-		private Token NextToken()
-		{
+		private Token NextToken() {
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 			if (_CurrentChar == '※') SkipComment();
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
@@ -147,8 +141,7 @@ namespace Kurogane.Compilers
 				_FileName, LineNumber, CharCount));
 		}
 
-		private void SkipComment()
-		{
+		private void SkipComment() {
 			Debug.Assert(_CurrentChar == '※');
 			int[] endChar = { '。', '.', '．' };
 			int c = _NextChar();
@@ -180,8 +173,7 @@ namespace Kurogane.Compilers
 		#region 各Tokenに対するReadメソッド
 
 
-		private LiteralToken ReadLiteralToken()
-		{
+		private LiteralToken ReadLiteralToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -200,8 +192,7 @@ namespace Kurogane.Compilers
 			}
 		}
 
-		private NumberToken ReadNumberToken()
-		{
+		private NumberToken ReadNumberToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -246,8 +237,7 @@ namespace Kurogane.Compilers
 			}
 		}
 
-		private AbstractOperatorToken ReadOperatorToken()
-		{
+		private AbstractOperatorToken ReadOperatorToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -316,8 +306,7 @@ namespace Kurogane.Compilers
 			}
 		}
 
-		private PunctuationToken ReadPunctuationToken()
-		{
+		private PunctuationToken ReadPunctuationToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -340,8 +329,7 @@ namespace Kurogane.Compilers
 			return null;
 		}
 
-		private Token ReadSymbolLetterToken()
-		{
+		private Token ReadSymbolLetterToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -362,8 +350,7 @@ namespace Kurogane.Compilers
 				return new SymbolToken(this, buff.ToString());
 		}
 
-		private Token ReadPostPositionToken()
-		{
+		private Token ReadPostPositionToken() {
 			LineNumber = line;
 			CharCount = ch;
 			int soLine = -1;
@@ -406,8 +393,7 @@ namespace Kurogane.Compilers
 		}
 
 
-		private Token ReadBracketsToken()
-		{
+		private Token ReadBracketsToken() {
 			LineNumber = line;
 			CharCount = ch;
 
@@ -439,8 +425,7 @@ namespace Kurogane.Compilers
 
 		#endregion
 
-		public void Dispose()
-		{
+		public void Dispose() {
 			_reader.Dispose();
 		}
 	}

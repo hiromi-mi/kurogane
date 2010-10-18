@@ -26,6 +26,7 @@ namespace Kurogane.Compilers {
 			}
 			return Expression.Block(list);
 		}
+
 		private Expression ConvertStatement(IStatement stmt) {
 			if (stmt is IfStatement)
 				return ConvertIf((IfStatement)stmt);
@@ -33,9 +34,11 @@ namespace Kurogane.Compilers {
 				return ConvertPhraseChain((PhraseChain)stmt);
 			throw new NotImplementedException(stmt.GetType().Name);
 		}
+
 		private Expression ConvertIf(IfStatement ifStatement) {
 			throw new NotImplementedException();
 		}
+
 		private Expression ConvertPhraseChain(PhraseChain chain) {
 			var list = new List<Expression>();
 			foreach (var ph in chain.Phrases) {
@@ -43,12 +46,14 @@ namespace Kurogane.Compilers {
 			}
 			return Expression.Block(list);
 		}
+
 		private Expression ConvertPhrase(IPhrase ph) {
 			if (ph is Call)
 				return ConvertCall((Call)ph);
 
 			throw new NotImplementedException();
 		}
+
 		private Expression ConvertCall(Call call) {
 			var func = ConvertSymbol(call.Name);
 			var argList = new List<Expression>(call.Arguments.Count + 1);
@@ -99,6 +104,7 @@ namespace Kurogane.Compilers {
 				this.Vars = vars;
 			}
 		}
+
 		#endregion
 	}
 }
