@@ -5,11 +5,18 @@ using System.Linq;
 using System.Text;
 using Kurogane;
 using Kurogane.Dynamic;
+using System.Linq.Expressions;
+using Kurogane.Util;
 
 namespace ConsoleTest {
 	class Program {
 		static void Main(string[] args) {
-			BasicTest();
+			AppyTest();
+		}
+
+		static void AppyTest() {
+			var param = Expression.Parameter(typeof(int), "hoge");
+			var expr = ExpressionUtil.Apply((int a) => a + a, param);
 		}
 
 		static void BasicTest() {

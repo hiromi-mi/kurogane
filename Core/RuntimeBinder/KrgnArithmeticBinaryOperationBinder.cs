@@ -4,20 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Diagnostics;
 
-namespace Kurogane.Dynamics {
-	class KrgnBinaryOperationBinder {
-	}
+namespace Kurogane.RuntimeBinder {
+	public class KrgnArithmeticBinaryOperationBinder : BinaryOperationBinder {
 
-	public class KrgnAddOperationBinder : BinaryOperationBinder {
+		private readonly string _name;
 
-		public KrgnAddOperationBinder()
-			: base(ExpressionType.Add) {
+		public KrgnArithmeticBinaryOperationBinder(ExpressionType operation, string name)
+			: base(operation) {
+			_name = name;
 		}
+
 
 		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
 			var leftType = target.LimitType;
 			var rightType = target.LimitType;
+
 			if (target.Value == null || arg.Value == null)
 				return FallbackOnNull(target, arg);
 
@@ -28,15 +31,27 @@ namespace Kurogane.Dynamics {
 		}
 
 		private DynamicMetaObject FallbackOnNull(DynamicMetaObject left, DynamicMetaObject right) {
-			string errorMsg = "null参照です。";
-
-			var rest = BindingRestrictions.GetExpressionRestriction(
-				Expression.And(
-					Expression.NotEqual(left.Expression, Expression.Constant(null)),
-					Expression.NotEqual(right.Expression, Expression.Constant(null))));
-			var ctorInfo = typeof(ArgumentNullException).GetConstructor(new[] { typeof(string) });
-			var expr = Expression.Throw(Expression.New(ctorInfo, Expression.Constant(errorMsg)));
-			return new DynamicMetaObject(expr, rest);
+			var nullExpr = Expression.Constant(null);
+			if (left.Value == null && right.Value != null) {
+				var expr = Expression.AndAlso(
+					Expression.Equal(left.Expression, nullExpr),
+					Expression.NotEqual(right.Expression, nullExpr));
+				return new DynamicMetaObject(right.Expression, BindingRestrictions.GetExpressionRestriction(right.Expression));
+			}
+			if (right.Value == null && left.Value != null) {
+				var expr = Expression.AndAlso(
+					Expression.Equal(right.Expression, nullExpr),
+					Expression.NotEqual(left.Expression, nullExpr));
+				return new DynamicMetaObject(left.Expression, BindingRestrictions.GetExpressionRestriction(left.Expression));
+			}
+			Debug.Assert(left.Value == null);
+			Debug.Assert(right.Value == null);
+			{
+				var expr = Expression.And(
+					Expression.Equal(left.Expression, nullExpr),
+					Expression.Equal(right.Expression, nullExpr));
+				return new DynamicMetaObject(nullExpr, BindingRestrictions.GetExpressionRestriction(expr));
+			}
 		}
 
 		private DynamicMetaObject CalcOnSameType(DynamicMetaObject left, DynamicMetaObject right) {
@@ -58,11 +73,8 @@ namespace Kurogane.Dynamics {
 		}
 
 		private BindingRestrictions GetTypeRestriction(DynamicMetaObject left, DynamicMetaObject right) {
-			return BindingRestrictions.GetExpressionRestriction(
-				Expression.And(
-					Expression.TypeIs(left.Expression, left.LimitType),
-					Expression.TypeIs(right.Expression, right.LimitType)));
+			return BindingRestrictions.GetTypeRestriction(left.Expression, left.LimitType)
+				.Merge(BindingRestrictions.GetTypeRestriction(right.Expression, right.LimitType));
 		}
-
 	}
 }

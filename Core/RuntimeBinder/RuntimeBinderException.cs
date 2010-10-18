@@ -1,7 +1,7 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Kurogane.Dynamics {
+namespace Kurogane.RuntimeBinder {
 
 	/// <summary>
 	/// KrgnRuntimeBinderで動的バインドが処理されたときに発生するエラーを表します。

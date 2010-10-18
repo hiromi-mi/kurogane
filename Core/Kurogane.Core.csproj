@@ -49,8 +49,9 @@
     <Compile Include="Compilers\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Compilers\BinderFactory.cs" />
-    <Compile Include="Dynamics\KrgnBinaryOperationBinder.cs" />
-    <Compile Include="Dynamics\KrgnRuntimeBinderException.cs" />
+    <Compile Include="RuntimeBinder\KrgnArithmeticBinaryOperationBinder.cs" />
+    <Compile Include="RuntimeBinder\KrgnBinaryOperationBinder.cs" />
+    <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="Dynamics\ScopeMetaObject.cs" />
     <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />
     <Compile Include="Dynamics\KrgnSetMemberBinder.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="UnaryOperationType.cs" />
+    <Compile Include="Util\ExpressionUtil.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />
     <Compile Include="Dynamics\MetaObjectLoader.cs" />
     <Compile Include="Dynamics\PairMetaObject.cs" />
