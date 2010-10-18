@@ -399,7 +399,7 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseAndExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -417,7 +417,7 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseCompareExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -430,15 +430,20 @@ namespace Kurogane.Compiler {
 				return null;
 			token = pair.Token;
 			while (true) {
-				if (token is EqualOpToken || token is NotEqualOpToken
-					|| token is LessThanOpToken || token is LessThanEqualOpToken
-					|| token is GreaterThanOpToken || token is GreaterThanEqualOpToken) {
+				var opType =
+					token is EqualOpToken ? BinaryOperationType.Equal :
+					token is NotEqualOpToken ? BinaryOperationType.NotEqual :
+					token is LessThanOpToken ? BinaryOperationType.LessThan :
+					token is GreaterThanOpToken ? BinaryOperationType.GreaterThan :
+					token is LessThanEqualOpToken ? BinaryOperationType.LessThanOrEqual:
+					token is GreaterThanEqualOpToken ? BinaryOperationType.GreaterThanOrEqual :
+					BinaryOperationType.Unknown;
 
-					var opToken = (AbstractOperatorToken)token;
+				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseAddExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -451,12 +456,16 @@ namespace Kurogane.Compiler {
 				return null;
 			token = pair.Token;
 			while (true) {
-				if (token is AddOpToken || token is SubOpToken) {
-					var opToken = (AbstractOperatorToken)token;
+				var opType =
+					token is AddOpToken ? BinaryOperationType.Add :
+					token is SubOpToken ? BinaryOperationType.Subtract :
+					BinaryOperationType.Unknown;
+
+				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseMultipleExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -469,12 +478,17 @@ namespace Kurogane.Compiler {
 				return null;
 			token = pair.Token;
 			while (true) {
-				if (token is MultipleOpToken || token is DivideOpToken || token is ModuloOpToken) {
-					var opToken = (AbstractOperatorToken)token;
+				var opType =
+					token is MultipleOpToken ? BinaryOperationType.Multiply :
+					token is DivideOpToken ? BinaryOperationType.Divide :
+					token is ModuloOpToken ? BinaryOperationType.Modulo :
+					BinaryOperationType.Unknown;
+
+				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseUnknownMultipleExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -488,11 +502,10 @@ namespace Kurogane.Compiler {
 			token = pair.Token;
 			while (true) {
 				if (token is UnknownOperatorToken) {
-					var opToken = (UnknownOperatorToken)token;
 					var rightPair = ParseUnaryExpr(token.Next);
 					if (rightPair == null)
 						ThrowError("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opToken.Value, rightPair.Node), rightPair.Token);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node), rightPair.Token);
 				}
 				break;
 			}
@@ -502,15 +515,20 @@ namespace Kurogane.Compiler {
 		#endregion
 
 		private IPair<Element> ParseUnaryExpr(Token token) {
-			string op = null;
+			UnaryOperationType? op = null;
 			if (token.Match((AbstractOperatorToken t) => true)) {
-				op = ((AbstractOperatorToken)token).Value;
+				var opType =
+					token is SubOpToken ? UnaryOperationType.Negate :
+					token is NotOpToken ? UnaryOperationType.Not :
+					UnaryOperationType.Unknown;
+				op = opType;
 				token = token.Next;
 			}
+
 			var propPair = TryParseProperty(token);
 			if (op == null)
 				return propPair;
-			return MakePair(new UnaryExpr(op, propPair.Node), propPair.Token);
+			return MakePair(new UnaryExpr(op.Value, propPair.Node), propPair.Token);
 		}
 
 		private IPair<Element> TryParseProperty(Token token) {

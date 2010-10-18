@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace Kurogane.Compiler {
+
 	public abstract class CompilerException : KrgnException {
 
 		public string FileName { get; private set; }

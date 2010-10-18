@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using Kurogane.Dynamic;
 
 namespace Kurogane.Compiler {
@@ -16,6 +17,10 @@ namespace Kurogane.Compiler {
 			return new KrgnGetMemberBinder(name);
 		}
 
-		
+		public DynamicMetaObjectBinder GetBinaryOperationBinder(BinaryOperationType type) {
+
+
+			throw new NotImplementedException();
+		}
 	}
 }

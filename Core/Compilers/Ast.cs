@@ -253,21 +253,21 @@ namespace Kurogane.Compiler {
 	public class BinaryExpr : Element {
 		public readonly Element Left;
 		public readonly Element Right;
-		public readonly string Operation;
+		public readonly BinaryOperationType Type;
 
-		public BinaryExpr(Element left, string op, Element right) {
+		public BinaryExpr(Element left, BinaryOperationType type, Element right) {
 			this.Left = left;
 			this.Right = right;
-			this.Operation = op;
+			this.Type = type;
 		}
 	}
 
 	public class UnaryExpr : Element {
-		public readonly string Operation;
+		public readonly UnaryOperationType Type;
 		public readonly Element Value;
 
-		public UnaryExpr(string op, Element value) {
-			this.Operation = op;
+		public UnaryExpr(UnaryOperationType type, Element value) {
+			this.Type = type;
 			this.Value = value;
 		}
 	}

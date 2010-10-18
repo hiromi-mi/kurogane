@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Kurogane.Dynamic;
-using System.Diagnostics.Contracts;
 using Kurogane.Compiler;
+using System.Diagnostics;
 
 namespace Kurogane {
 	public class Engine {
@@ -33,8 +33,9 @@ namespace Kurogane {
 		/// <summary>継承して、特殊なグローバルスコープを利用する場合、こちらを利用すること。</summary>
 		/// <param name="global">呼ばれるグローバルスコープ</param>
 		protected Engine(Scope global, BinderFactory factory) {
-			Contract.Requires<ArgumentNullException>(global != null);
-			Contract.Requires<ArgumentNullException>(factory != null);
+			Debug.Assert(global != null, "global is null");
+			Debug.Assert(factory != null, "factory is null");
+
 			_factory = factory;
 			Global = global;
 			In = Console.In;

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Diagnostics;
 
 namespace Kurogane.Compiler {
 	public class Generator {
@@ -19,7 +19,7 @@ namespace Kurogane.Compiler {
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
 		private Generator(BinderFactory factory) {
-			Contract.Requires<ArgumentNullException>(factory != null);
+			Debug.Assert(factory != null, "factory is null");
 			_factory = factory;
 		}
 
