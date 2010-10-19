@@ -51,6 +51,7 @@
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
     <Compile Include="RuntimeBinder\ArithmeticBinder.cs" />
     <Compile Include="RuntimeBinder\ComparingBinder.cs" />
+    <Compile Include="RuntimeBinder\EqualityBinder.cs" />
     <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="Dynamics\ScopeMetaObject.cs" />
     <Compile Include="Dynamics\KrgnInvokeMemberBinder.cs" />

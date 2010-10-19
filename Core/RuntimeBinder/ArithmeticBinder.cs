@@ -110,10 +110,15 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		private BindingRestrictions GetTypeRestriction(DynamicMetaObject left, DynamicMetaObject right) {
+			var nullExpr = Expression.Constant(null);
 			return BindingRestrictions.GetExpressionRestriction(
-				Expression.And(
-					Expression.TypeIs(left.Expression, left.LimitType),
-					Expression.TypeIs(right.Expression, right.LimitType)));
+				Expression.AndAlso(
+					Expression.AndAlso(
+						Expression.NotEqual(left.Expression, nullExpr),
+						Expression.TypeIs(left.Expression, left.LimitType)),
+					Expression.AndAlso(
+						Expression.NotEqual(left.Expression, nullExpr),
+						Expression.TypeIs(right.Expression, right.LimitType))));
 		}
 	}
 }

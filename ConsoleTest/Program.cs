@@ -33,11 +33,11 @@ namespace ConsoleTest {
 		static void AppyTest() {
 			var param1 = Expression.Parameter(typeof(object));
 			var param2 = Expression.Parameter(typeof(object));
-			var binder = new ComparingBinder(ExpressionType.LessThan, "op_LessThan", val => val < 0);
-			var add = Expression.Dynamic(binder, typeof(object), param1, param2);
-			var lambda = Expression.Lambda<Func<object, object, object>>(add, param1, param2);
+			var binder = new BinderFactory().EqualBinder;
+			var bin = Expression.Dynamic(binder, typeof(object), param1, param2);
+			var lambda = Expression.Lambda<Func<object, object, object>>(bin, param1, param2);
 			var func = lambda.Compile();
-			Console.WriteLine(func(null, "hoge"));
+			Console.WriteLine(func("z", "z"));
 		}
 
 		static void BasicTest() {

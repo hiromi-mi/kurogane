@@ -12,7 +12,6 @@ namespace Kurogane.RuntimeBinder {
 	/// <summary>
 	/// 比較演算用のBinderクラス。
 	/// nullと比較した場合，必ずfalseを返す。
-	/// 
 	/// </summary>
 	public class ComparingBinder : BinaryOperationBinder {
 
@@ -105,7 +104,7 @@ namespace Kurogane.RuntimeBinder {
 				Expression.Convert(left.Expression, cmpType),
 				cmpType.GetMethod("CompareTo", new[] { right.LimitType }),
 				Expression.Convert(right.Expression, right.LimitType));
-			var expr = Expression.Convert(ExpressionUtil.Apply(_compareExpr, callExpr), typeof(object));
+			var expr = Expression.Convert(ExpressionUtil.BetaReduction(_compareExpr, callExpr), typeof(object));
 			return new DynamicMetaObject(expr, GetTypeRestriction(left, right));
 		}
 
@@ -119,15 +118,20 @@ namespace Kurogane.RuntimeBinder {
 				comType.GetMethod("Compare", new []{left.LimitType, right.LimitType}),
 				left.Expression,
 				right.Expression);
-			var expr = Expression.Convert(ExpressionUtil.Apply(_compareExpr, callExpr), typeof(object));
+			var expr = Expression.Convert(ExpressionUtil.BetaReduction(_compareExpr, callExpr), typeof(object));
 			return new DynamicMetaObject(expr, GetTypeRestriction(left, right));
 		}
 
 		private BindingRestrictions GetTypeRestriction(DynamicMetaObject left, DynamicMetaObject right) {
+			var nullExpr = Expression.Constant(null);
 			return BindingRestrictions.GetExpressionRestriction(
-				Expression.And(
-					Expression.TypeIs(left.Expression, left.LimitType),
-					Expression.TypeIs(right.Expression, right.LimitType)));
+				Expression.AndAlso(
+					Expression.AndAlso(
+						Expression.NotEqual(left.Expression, nullExpr),
+						Expression.TypeIs(left.Expression, left.LimitType)),
+					Expression.AndAlso(
+						Expression.NotEqual(left.Expression, nullExpr),
+						Expression.TypeIs(right.Expression, right.LimitType))));
 		}
 	}
 }

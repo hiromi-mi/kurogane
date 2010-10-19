@@ -24,7 +24,17 @@ namespace Kurogane.RuntimeBinder {
 		public readonly DynamicMetaObjectBinder DivideBinder = new ArithmeticBinder(ExpressionType.Multiply, "除算", "op_Division");
 		public readonly DynamicMetaObjectBinder ModBinder = new ArithmeticBinder(ExpressionType.Modulo, "剰余算", "op_Modulus");
 
+		public readonly DynamicMetaObjectBinder LessThanBinder =
+			new ComparingBinder(ExpressionType.LessThan, "op_LessThan", val => val < 0);
+		public readonly DynamicMetaObjectBinder GreaterThanBinder =
+			new ComparingBinder(ExpressionType.GreaterThan, "op_GreaterThan", val => val > 0);
+		public readonly DynamicMetaObjectBinder LessThanOrEqualBinder =
+			new ComparingBinder(ExpressionType.LessThanOrEqual, "op_LessThanOrEqual", val => val <= 0);
+		public readonly DynamicMetaObjectBinder GreaterThanOrEqualBinder =
+			new ComparingBinder(ExpressionType.GreaterThanOrEqual, "op_GreaterThanOrEqual", val => val >= 0);
 
+		public readonly DynamicMetaObjectBinder EqualBinder = new EqualityBinder(ExpressionType.Equal, "op_Equality");
+		public readonly DynamicMetaObjectBinder NotEqualBinder = new EqualityBinder(ExpressionType.NotEqual, "op_Inequality");
 
 	}
 }
