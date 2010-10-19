@@ -43,6 +43,7 @@ namespace Kurogane.Test.Util {
 			var lambda = (LambdaExpression)square;
 			var expr = ExpressionUtil.Apply(lambda, param);
 			Assert.AreEqual(Expression.Multiply(param, param).ToString(), expr.ToString());
+			Assert.AreNotEqual(Expression.Multiply(param, param).ToString(), lambda.ToString());
 		}
 	}
 }

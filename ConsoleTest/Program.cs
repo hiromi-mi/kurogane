@@ -33,13 +33,12 @@ namespace ConsoleTest {
 		static void AppyTest() {
 			var param1 = Expression.Parameter(typeof(object));
 			var param2 = Expression.Parameter(typeof(object));
-			var binder = new ArithmeticBinder(ExpressionType.Add, "加算", "op_Addition");
+			var binder = new ComparingBinder(ExpressionType.LessThan, "op_LessThan", val => val < 0);
 			var add = Expression.Dynamic(binder, typeof(object), param1, param2);
 			var lambda = Expression.Lambda<Func<object, object, object>>(add, param1, param2);
 			var func = lambda.Compile();
-			Console.WriteLine(func(new Hoge(1), new Piyo(3)));
+			Console.WriteLine(func(null, "hoge"));
 		}
-
 
 		static void BasicTest() {
 			var code =
