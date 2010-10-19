@@ -48,6 +48,7 @@
     <Compile Include="Compilers\CompilerException.cs" />
     <Compile Include="Compilers\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
+    <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
     <Compile Include="RuntimeBinder\ArithmeticBinder.cs" />
     <Compile Include="RuntimeBinder\ComparingBinder.cs" />

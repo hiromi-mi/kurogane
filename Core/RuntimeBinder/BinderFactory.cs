@@ -36,5 +36,10 @@ namespace Kurogane.RuntimeBinder {
 		public readonly DynamicMetaObjectBinder EqualBinder = new EqualityBinder(ExpressionType.Equal, "op_Equality");
 		public readonly DynamicMetaObjectBinder NotEqualBinder = new EqualityBinder(ExpressionType.NotEqual, "op_Inequality");
 
+		public readonly DynamicMetaObjectBinder AndBinder = new AndOperationBinder();
+		public readonly DynamicMetaObjectBinder OrBinder = new OrOperationBinder();
+
+		public readonly DynamicMetaObjectBinder NotBinder = new NotOperationBinder();
+
 	}
 }
