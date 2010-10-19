@@ -79,6 +79,8 @@ namespace Kurogane.Compiler {
 				return ConvertSymbol(((Symbol)elem).Name);
 			if (elem is Literal)
 				return ConvertLiteral((Literal)elem);
+			if (elem is BinaryExpr)
+				return ConvertBinaryExpr((BinaryExpr)elem);
 			throw new NotImplementedException();
 		}
 
@@ -89,6 +91,52 @@ namespace Kurogane.Compiler {
 		private Expression ConvertLiteral(Element lit) {
 			if (lit is StringLiteral)
 				return Expression.Constant(((StringLiteral)lit).Value);
+			if (lit is IntLiteral)
+				return Expression.Constant(((IntLiteral)lit).Value);
+			throw new NotImplementedException();
+		}
+
+		private Expression ConvertBinaryExpr(BinaryExpr expr) {
+			var binder = FindBinder(expr.Type);
+			var left = ConvertElement(expr.Left);
+			var right = ConvertElement(expr.Right);
+			if (binder == null)
+				throw new NotImplementedException();
+			return Expression.Dynamic(binder, typeof(object), left, right);
+		}
+
+		private DynamicMetaObjectBinder FindBinder(BinaryOperationType type) {
+			switch (type) {
+			case BinaryOperationType.Add:
+				return _factory.AddBinder;
+			case BinaryOperationType.Subtract:
+				return _factory.SubBinder;
+			case BinaryOperationType.Multiply:
+				return _factory.MultBinder;
+			case BinaryOperationType.Divide:
+				return _factory.DivideBinder;
+			case BinaryOperationType.Modulo:
+				return _factory.ModBinder;
+
+			case BinaryOperationType.LessThan:
+				return _factory.LessThanBinder;
+			case BinaryOperationType.LessThanOrEqual:
+				return _factory.LessThanOrEqualBinder;
+			case BinaryOperationType.GreaterThan:
+				return _factory.GreaterThanBinder;
+			case BinaryOperationType.GreaterThanOrEqual:
+				return _factory.GreaterThanOrEqualBinder;
+
+			case BinaryOperationType.Equal:
+				return _factory.EqualBinder;
+			case BinaryOperationType.NotEqual:
+				return _factory.NotEqualBinder;
+
+			case BinaryOperationType.And:
+				return _factory.AndBinder;
+			case BinaryOperationType.Or:
+				return _factory.OrBinder;
+			}
 			throw new NotImplementedException();
 		}
 

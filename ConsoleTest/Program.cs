@@ -11,23 +11,9 @@ using Kurogane.RuntimeBinder;
 
 namespace ConsoleTest {
 
-	class Hoge {
-		public readonly int value;
-		public Hoge(int value) { this.value = value; }
-		public override string  ToString() { return "Hoge:" + value.ToString(); }
-		public static Hoge operator +(Hoge left, Hoge right) { return new Hoge(left.value + right.value); }
-	}
-
-	class Piyo {
-		public readonly int value;
-		public Piyo(int value) { this.value = value; }
-		public override string  ToString() { return "Hoge:" + value.ToString(); }
-		public static Hoge operator +(Hoge left, Piyo right) { return new Hoge(left.value + right.value); }
-	}
-
 	class Program {
 		static void Main(string[] args) {
-			AppyTest();
+			BasicTest();
 		}
 
 		static void AppyTest() {
@@ -44,7 +30,7 @@ namespace ConsoleTest {
 			var code =
 				"「こんにちは」を出力する。※改行は出力されないことに注意。 " +
 				"改行を出力する。" +
-				"「さようなら」を出力する。" +
+				"(1 * 2 + 3 * 4)を出力する。" +
 				"改行を出力する。";
 			var e = new Engine();
 			e.Execute(code);

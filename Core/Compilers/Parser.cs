@@ -39,15 +39,15 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<IStatement> ParseIStatement(Token token) {
-			var ifPair = TryParseIfStatement(token);
+			var ifPair = ParseIfStatement(token);
 			if (ifPair != null)
 				return ifPair;
-			return TryParseINormalStatement(token);
+			return ParseINormalStatement(token);
 		}
 
 		#region もし文
 
-		private IPair<IfStatement> TryParseIfStatement(Token token) {
+		private IPair<IfStatement> ParseIfStatement(Token token) {
 			token = token.MatchFlow((ReservedToken t) => t.Value == "もし");
 			if (token == null)
 				return null;
@@ -56,7 +56,7 @@ namespace Kurogane.Compiler {
 
 			var thens = new List<CondThenPair>();
 			while (true) {
-				var pair = TryParseCondThenPair(token);
+				var pair = ParseCondThenPair(token);
 				if (pair == null)
 					break;
 				token = pair.Token;
@@ -67,8 +67,8 @@ namespace Kurogane.Compiler {
 			return MakePair(new IfStatement(thens), token);
 		}
 
-		private IPair<CondThenPair> TryParseCondThenPair(Token token) {
-			var condPair = TryParseElement(token);
+		private IPair<CondThenPair> ParseCondThenPair(Token token) {
+			var condPair = ParseElement(token);
 			if (condPair == null)
 				return null;
 			token = condPair.Token
@@ -76,7 +76,7 @@ namespace Kurogane.Compiler {
 			if (token == null)
 				return null;
 
-			var thenPair = TryParseINormalStatement(token);
+			var thenPair = ParseINormalStatement(token);
 			if (thenPair == null)
 				ThrowError("「なら」の後ろが正しく解析できません。", token);
 
@@ -85,17 +85,17 @@ namespace Kurogane.Compiler {
 
 		#endregion
 
-		private IPair<INormalStatement> TryParseINormalStatement(Token token) {
+		private IPair<INormalStatement> ParseINormalStatement(Token token) {
 			return
-				TryParseExprBlock(token) ??
-				TryParseDefun(token) ??
-				TryParseBlockExecute(token) ??
-				TryParsePhraseChain(token) as IPair<INormalStatement>;
+				ParseExprBlock(token) ??
+				ParseDefun(token) ??
+				ParseBlockExecute(token) ??
+				ParsePhraseChain(token) as IPair<INormalStatement>;
 		}
 
 		#region 関数定義
 
-		private IPair<Defun> TryParseDefun(Token token) {
+		private IPair<Defun> ParseDefun(Token token) {
 			var keywordSkipped = token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
 				.MatchFlow((SuffixToken t) => t.Value == "の")
@@ -106,7 +106,7 @@ namespace Kurogane.Compiler {
 			token = keywordSkipped.MatchFlow((CommaToken) => true) ?? keywordSkipped;
 			var paramList = new List<ParamSuffixPair>();
 			while (true) {
-				var paramPair = TryParseParamSuffixPair(token);
+				var paramPair = ParseParamSuffixPair(token);
 				if (paramPair == null)
 					break;
 				paramList.Add(paramPair.Node);
@@ -128,7 +128,7 @@ namespace Kurogane.Compiler {
 			return MakePair(new Defun(name, paramList, blockPair.Node), lastToken);
 		}
 
-		private IPair<ParamSuffixPair> TryParseParamSuffixPair(Token token) {
+		private IPair<ParamSuffixPair> ParseParamSuffixPair(Token token) {
 			var lastToken = token
 				.MatchFlow((SymbolToken t) => true)
 				.MatchFlow((SuffixToken t) => true);
@@ -141,7 +141,7 @@ namespace Kurogane.Compiler {
 
 		#endregion
 
-		private IPair<BlockExecute> TryParseBlockExecute(Token token) {
+		private IPair<BlockExecute> ParseBlockExecute(Token token) {
 			var blockToken = token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
 				.MatchFlow((SuffixToken t) => t.Value == "を")
@@ -160,10 +160,10 @@ namespace Kurogane.Compiler {
 
 		#region PhraseChain
 
-		private IPair<PhraseChain> TryParsePhraseChain(Token token) {
+		private IPair<PhraseChain> ParsePhraseChain(Token token) {
 			var list = new List<IPhrase>();
 			while (true) {
-				var pair = TryParsePhrase(token);
+				var pair = ParsePhrase(token);
 				if (pair == null)
 					return null;
 				list.Add(pair.Node);
@@ -182,7 +182,7 @@ namespace Kurogane.Compiler {
 			return MakePair(new PhraseChain(list), token);
 		}
 
-		private IPair<IPhrase> TryParsePhrase(Token token) {
+		private IPair<IPhrase> ParsePhrase(Token token) {
 			var lst = new List<ArgSuffixPair>();
 			bool isMap = false;
 			ArgSuffixPair mappedArg = null;
@@ -196,7 +196,7 @@ namespace Kurogane.Compiler {
 					if (lst.Count == 1)
 						mappedArg = lst[0];
 				}
-				var argPair = TryParseArgSfxPair(token);
+				var argPair = ParseArgSfxPair(token);
 				if (argPair == null)
 					break;
 				lst.Add(argPair.Node);
@@ -303,8 +303,8 @@ namespace Kurogane.Compiler {
 			return tuple;
 		}
 
-		private IPair<ArgSuffixPair> TryParseArgSfxPair(Token token) {
-			var elemPair = TryParseElement(token);
+		private IPair<ArgSuffixPair> ParseArgSfxPair(Token token) {
+			var elemPair = ParseElement(token);
 			if (elemPair == null)
 				return null;
 			var sfxToken = elemPair.Token as SuffixToken;
@@ -315,13 +315,13 @@ namespace Kurogane.Compiler {
 
 		#endregion
 
-		private IPair<ExprBlock> TryParseExprBlock(Token token) {
+		private IPair<ExprBlock> ParseExprBlock(Token token) {
 			token = token.MatchFlow((OpenBraceToken t) => true);
 			if (token == null)
 				return null;
 			var list = new List<IExpr>();
 			while (true) {
-				var exprPair = TryParseExpr(token);
+				var exprPair = ParseExpr(token);
 				if (exprPair == null)
 					return null;
 				token = exprPair.Token;
@@ -340,21 +340,21 @@ namespace Kurogane.Compiler {
 			return MakePair(new ExprBlock(list), token);
 		}
 
-		private IPair<IExpr> TryParseExpr(Token token) {
+		private IPair<IExpr> ParseExpr(Token token) {
 			return
-				TryParseExprBlock(token) ??
-				TryParseElement(token) as IPair<IExpr>;
+				ParseExprBlock(token) ??
+				ParseElement(token) as IPair<IExpr>;
 		}
 
 		#region 要素
 
-		private IPair<Element> TryParseElement(Token token) {
+		private IPair<Element> ParseElement(Token token) {
 			return
-				TryParseList(token) ??
-				TryParseUnit(token);
+				ParseList(token) ??
+				ParseBinaryExpr(token);
 		}
 
-		private IPair<ListLiteral> TryParseList(Token token) {
+		private IPair<ListLiteral> ParseList(Token token) {
 			token = token.MatchFlow((OpenBracketToken t) => true);
 			if (token == null)
 				return null;
@@ -362,7 +362,7 @@ namespace Kurogane.Compiler {
 			while (true) {
 				if (token.Match((CloseBracketToken t) => true))
 					break;
-				var elemPair = TryParseElement(token);
+				var elemPair = ParseElement(token);
 				if (elemPair == null)
 					ThrowError("リストの要素が解析できません。", token);
 
@@ -525,14 +525,14 @@ namespace Kurogane.Compiler {
 				token = token.Next;
 			}
 
-			var propPair = TryParseProperty(token);
+			var propPair = ParseProperty(token);
 			if (op == null)
 				return propPair;
 			return MakePair(new UnaryExpr(op.Value, propPair.Node), propPair.Token);
 		}
 
-		private IPair<Element> TryParseProperty(Token token) {
-			IPair<Element> pair = TryParseUnit(token);
+		private IPair<Element> ParseProperty(Token token) {
+			IPair<Element> pair = ParseUnit(token);
 			if (pair == null)
 				return null;
 			while (true) {
@@ -547,18 +547,18 @@ namespace Kurogane.Compiler {
 			return pair;
 		}
 
-		private IPair<Element> TryParseUnit(Token token) {
+		private IPair<Element> ParseUnit(Token token) {
 			return
-				TryParseSymbol(token) ??
-				TryParseParenthesisExpr(token) ??
-				TryParseLiteral(token);
+				ParseSymbol(token) ??
+				ParseParenthesisExpr(token) ??
+				ParseLiteral(token);
 		}
 
-		private IPair<Element> TryParseParenthesisExpr(Token token) {
+		private IPair<Element> ParseParenthesisExpr(Token token) {
 			token = token.MatchFlow((OpenParenthesisToken t) => true);
 			if (token == null)
 				return null;
-			var elemPair = TryParseElement(token);
+			var elemPair = ParseElement(token);
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseParenthesisToken t) => true);
 			if (lastToken == null)
@@ -566,7 +566,7 @@ namespace Kurogane.Compiler {
 			return MakePair(elemPair.Node, lastToken);
 		}
 
-		private IPair<Symbol> TryParseSymbol(Token token) {
+		private IPair<Symbol> ParseSymbol(Token token) {
 			var symToken = token as SymbolToken;
 			if (symToken == null)
 				return null;
@@ -574,7 +574,7 @@ namespace Kurogane.Compiler {
 				return MakePair(new Symbol(symToken.Value), token.Next);
 		}
 
-		private IPair<Literal> TryParseLiteral(Token token) {
+		private IPair<Literal> ParseLiteral(Token token) {
 			var nextToken = token.Next;
 			if (token is LiteralToken) {
 				var value = ((LiteralToken)token).Value;

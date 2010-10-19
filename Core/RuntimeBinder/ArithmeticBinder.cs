@@ -113,12 +113,8 @@ namespace Kurogane.RuntimeBinder {
 			var nullExpr = Expression.Constant(null);
 			return BindingRestrictions.GetExpressionRestriction(
 				Expression.AndAlso(
-					Expression.AndAlso(
-						Expression.NotEqual(left.Expression, nullExpr),
-						Expression.TypeIs(left.Expression, left.LimitType)),
-					Expression.AndAlso(
-						Expression.NotEqual(left.Expression, nullExpr),
-						Expression.TypeIs(right.Expression, right.LimitType))));
+					Expression.TypeIs(left.Expression, left.LimitType),
+					Expression.TypeIs(right.Expression, right.LimitType)));
 		}
 	}
 }

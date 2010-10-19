@@ -28,6 +28,6 @@ namespace Kurogane {
 		Divide,
 		Modulo,
 
-		Concatemate,
+		Concat,
 	}
 }
