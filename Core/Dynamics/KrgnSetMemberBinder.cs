@@ -8,15 +8,7 @@ namespace Kurogane.Dynamic {
 
 	public class KrgnSetMemberBinder : SetMemberBinder {
 
-		private static Dictionary<string, KrgnSetMemberBinder> cache = new Dictionary<string, KrgnSetMemberBinder>();
-		public static KrgnSetMemberBinder Create(string name) {
-			if (cache.ContainsKey(name)) return cache[name];
-			var binder = new KrgnSetMemberBinder(name);
-			cache[name] = binder;
-			return binder;
-		}
-
-		private KrgnSetMemberBinder(string name)
+		public KrgnSetMemberBinder(string name)
 			: base(name, false) {
 		}
 

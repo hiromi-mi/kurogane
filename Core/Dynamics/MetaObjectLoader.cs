@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 namespace Kurogane.Dynamic {
 
 	/// <summary>
-	/// 型からBinderを引くためのヘルパクラス
+	/// 型からMetaObjectを引くためのヘルパクラス
 	/// </summary>
 	public class MetaObjectLoader {
 

@@ -8,18 +8,19 @@ using Kurogane.RuntimeBinder;
 namespace Kurogane.Compiler {
 	public class Generator {
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
-		public static Expression<Func<Scope, object>> Generate(Block block) {
-			var gen = new Generator();
+		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory) {
+			var gen = new Generator(factory);
 			var expr = gen.ConvertBlock(block);
 			return Expression.Lambda<Func<Scope, object>>(expr, gen._global);
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
-		private ParameterExpression _global = Expression.Parameter(typeof(Scope));
-		private BinderFactory _factory = new BinderFactory();
+		private readonly ParameterExpression _global = Expression.Parameter(typeof(Scope));
+		private readonly BinderFactory _factory;
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
-		private Generator() {
+		private Generator(BinderFactory factory) {
+			_factory = factory;
 		}
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
