@@ -6,12 +6,11 @@ using System.IO;
 using Kurogane.Dynamic;
 using Kurogane.Compiler;
 using System.Diagnostics;
+using Kurogane.RuntimeBinder;
 
 namespace Kurogane {
 	public class Engine {
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
-
-		private BinderFactory _factory;
 
 		/// <summary>グローバルスコープ</summary>
 		public Scope Global { get; private set; }
@@ -26,17 +25,15 @@ namespace Kurogane {
 
 		/// <summary>通常のコンストラクタ</summary>
 		public Engine()
-			: this(new Scope(), new BinderFactory()) {
+			: this(new Scope()) {
 			InitLibrary();
 		}
 
 		/// <summary>継承して、特殊なグローバルスコープを利用する場合、こちらを利用すること。</summary>
 		/// <param name="global">呼ばれるグローバルスコープ</param>
-		protected Engine(Scope global, BinderFactory factory) {
+		protected Engine(Scope global) {
 			Debug.Assert(global != null, "global is null");
-			Debug.Assert(factory != null, "factory is null");
 
-			_factory = factory;
 			Global = global;
 			In = Console.In;
 			Out = Console.Out;
@@ -47,7 +44,7 @@ namespace Kurogane {
 		public object Execute(string code) {
 			var token = Tokenizer.Tokenize(code);
 			var ast = Parser.Parse(token, null);
-			var expr = Generator.Generate(ast, _factory);
+			var expr = Generator.Generate(ast);
 			var func = expr.Compile();
 			return func(this.Global);
 		}

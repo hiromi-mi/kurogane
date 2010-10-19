@@ -48,8 +48,8 @@
     <Compile Include="Compilers\CompilerException.cs" />
     <Compile Include="Compilers\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
-    <Compile Include="Compilers\BinderFactory.cs" />
-    <Compile Include="RuntimeBinder\KrgnArithmeticBinaryOperationBinder.cs" />
+    <Compile Include="RuntimeBinder\BinderFactory.cs" />
+    <Compile Include="RuntimeBinder\ArithmeticBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnBinaryOperationBinder.cs" />
     <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="Dynamics\ScopeMetaObject.cs" />

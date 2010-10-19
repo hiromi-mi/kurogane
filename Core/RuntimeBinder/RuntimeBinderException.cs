@@ -14,10 +14,13 @@ namespace Kurogane.RuntimeBinder {
 		public static DynamicMetaObject CreateMetaObject(string errorMessage, BindingRestrictions restrictions) {
 			var ctorInfo = typeof(RuntimeBinderException).GetConstructor(new[] { typeof(string) });
 			return new DynamicMetaObject(
-				Expression.Throw(Expression.New(ctorInfo, Expression.Constant(errorMessage))),
+				Expression.Throw(Expression.New(ctorInfo, Expression.Constant(errorMessage)), typeof(object)),
 				restrictions);
 		}
 
+		/// <summary>
+		/// 通常のコンストラクタ
+		/// </summary>
 		public RuntimeBinderException(string message)
 			: base(message) {
 		}

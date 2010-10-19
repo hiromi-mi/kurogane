@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Diagnostics;
+using Kurogane.RuntimeBinder;
 
 namespace Kurogane.Compiler {
 	public class Generator {
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
-		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory) {
-			var gen = new Generator(factory);
+		public static Expression<Func<Scope, object>> Generate(Block block) {
+			var gen = new Generator();
 			var expr = gen.ConvertBlock(block);
 			return Expression.Lambda<Func<Scope, object>>(expr, gen._global);
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
 		private ParameterExpression _global = Expression.Parameter(typeof(Scope));
-		private BinderFactory _factory;
+		private BinderFactory _factory = new BinderFactory();
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
-		private Generator(BinderFactory factory) {
-			Debug.Assert(factory != null, "factory is null");
-			_factory = factory;
+		private Generator() {
 		}
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----

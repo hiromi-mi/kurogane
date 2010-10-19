@@ -7,17 +7,39 @@ using Kurogane;
 using Kurogane.Dynamic;
 using System.Linq.Expressions;
 using Kurogane.Util;
+using Kurogane.RuntimeBinder;
 
 namespace ConsoleTest {
+
+	class Hoge {
+		public readonly int value;
+		public Hoge(int value) { this.value = value; }
+		public override string  ToString() { return "Hoge:" + value.ToString(); }
+		public static Hoge operator +(Hoge left, Hoge right) { return new Hoge(left.value + right.value); }
+	}
+
+	class Piyo {
+		public readonly int value;
+		public Piyo(int value) { this.value = value; }
+		public override string  ToString() { return "Hoge:" + value.ToString(); }
+		public static Hoge operator +(Hoge left, Piyo right) { return new Hoge(left.value + right.value); }
+	}
+
 	class Program {
 		static void Main(string[] args) {
 			AppyTest();
 		}
 
 		static void AppyTest() {
-			var param = Expression.Parameter(typeof(int), "hoge");
-			var expr = ExpressionUtil.Apply((int a) => a + a, param);
+			var param1 = Expression.Parameter(typeof(object));
+			var param2 = Expression.Parameter(typeof(object));
+			var binder = new ArithmeticBinder(ExpressionType.Add, "加算", "op_Addition");
+			var add = Expression.Dynamic(binder, typeof(object), param1, param2);
+			var lambda = Expression.Lambda<Func<object, object, object>>(add, param1, param2);
+			var func = lambda.Compile();
+			Console.WriteLine(func(new Hoge(1), new Piyo(3)));
 		}
+
 
 		static void BasicTest() {
 			var code =
