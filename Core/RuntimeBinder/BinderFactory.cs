@@ -64,7 +64,7 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public virtual DynamicMetaObjectBinder InvokeMemberBinder(string name, CallInfo callInfo) {
-			return new KrgnInvokeMemberBinder(name, callInfo);
+			return new KrgnInvokeMemberBinder(name, callInfo, this);
 		}
 
 		public virtual DynamicMetaObjectBinder GetMemberBinder(string name) {

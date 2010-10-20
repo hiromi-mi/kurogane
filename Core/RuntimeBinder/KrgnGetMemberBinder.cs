@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Dynamic;
+using Kurogane.Dynamic;
 
-namespace Kurogane.Dynamic {
+namespace Kurogane.RuntimeBinder {
 
 	public class KrgnGetMemberBinder : GetMemberBinder {
 

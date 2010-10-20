@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Dynamic;
+using Kurogane.Dynamic;
 
-namespace Kurogane.Dynamic {
+namespace Kurogane.RuntimeBinder {
 
 	public class KrgnSetMemberBinder : SetMemberBinder {
 

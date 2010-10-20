@@ -11,52 +11,57 @@ namespace Kurogane {
 	/// <summary>SuffixFuncのファクトリクラス</summary>
 	public static class SuffixFunc {
 
-		public static SuffixFunc<T> Create<T>(T func, params string[] suffix) {
+		/// <summary>無限ループを起こさないように一つメソッドを作成</summary>
+		private static SuffixFunc<T> _Create<T>(T func, params string[] suffix) {
 			return new SuffixFunc<T>(func, suffix);
+		}
+
+		public static SuffixFunc<T> Create<T>(T func, params string[] suffix) {
+			return _Create(func, suffix);
 		}
 
 		// ----- ----- ----- ----- ----- Generic Func ----- ----- ----- ----- -----
 
 		public static SuffixFunc<Func<TResult>> Create<TResult>(Func<TResult> func) {
-			return Create(func);
+			return _Create(func);
 		}
 
 		public static SuffixFunc<Func<T1, TResult>> Create<T1, TResult>(Func<T1, TResult> func, string suffix) {
-			return Create(func, suffix);
+			return _Create(func, suffix);
 		}
 
 		public static SuffixFunc<Func<T1, T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func, string suffix1, string suffix2) {
-			return Create(func, suffix1, suffix2);
+			return _Create(func, suffix1, suffix2);
 		}
 
 		public static SuffixFunc<Func<T1, T2, T3, TResult>> Create<T1, T2, T3, TResult>(
 			Func<T1, T2, T3, TResult> func, string suffix1, string suffix2, string suffix3) {
-			return Create(func, suffix1, suffix2, suffix3);
+			return _Create(func, suffix1, suffix2, suffix3);
 		}
 
 		public static SuffixFunc<Func<T1, T2, T3, T4, TResult>> Create<T1, T2, T3, T4, TResult>(
 			Func<T1, T2, T3, T4, TResult> func, string suffix1, string suffix2, string suffix3, string suffix4) {
-			return Create(func, suffix1, suffix2, suffix3, suffix4);
+			return _Create(func, suffix1, suffix2, suffix3, suffix4);
 		}
 
 		// ----- ----- ----- ----- ----- Object Func ----- ----- ----- ----- -----
 
 		public static SuffixFunc<Func<object>> Create(Func<object> func) {
-			return Create(func);
+			return _Create(func);
 		}
 
 		public static SuffixFunc<Func<object, object>> Create(Func<object, object> func, string suffix1, string suffix2) {
-			return Create(func, suffix1, suffix2);
+			return _Create(func, suffix1, suffix2);
 		}
 
 		public static SuffixFunc<Func<object, object, object>> Create(
 			Func<object, object, object> func, string suffix1, string suffix2, string suffix3) {
-			return Create(func, suffix1, suffix2, suffix3);
+			return _Create(func, suffix1, suffix2, suffix3);
 		}
 
 		public static SuffixFunc<Func<object, object, object, object>> Create(
 			Func<object, object, object, object> func, string suffix1, string suffix2, string suffix3) {
-			return Create(func, suffix1, suffix2, suffix3);
+			return _Create(func, suffix1, suffix2, suffix3);
 		}
 
 	}
@@ -64,6 +69,31 @@ namespace Kurogane {
 	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
 
 		private const string Separator = "|";
+
+		/// <summary>
+		/// Genericな型 T がデリゲート型かどうか。
+		/// </summary>
+		private static readonly bool IsValidType = typeof(T).IsSubclassOf(typeof(Delegate));
+
+		/// <summary>
+		/// Tの型を分解した型。
+		/// 配列の0番目には戻り値の型が入る。
+		/// </summary>
+		private static readonly Type[] Types;
+
+		static SuffixFunc() {
+			var mInfo = typeof(T).GetMethod("Invoke");
+			if (mInfo == null) {
+				Types = null;
+				return;
+			}
+			var pInfos = mInfo.GetParameters();
+			var types = new Type[pInfos.Length + 1];
+			Types = types;
+			types[0] = mInfo.ReturnType;
+			for (int i = 0; i < pInfos.Length; i++)
+				types[i + 1] = pInfos[i].ParameterType;
+		}
 
 		/// <summary>助詞をSeparatorで連結したもの</summary>
 		public readonly string Suffix;
@@ -77,6 +107,11 @@ namespace Kurogane {
 		/// <param name="func"></param>
 		/// <param name="suffix"></param>
 		public SuffixFunc(T func, params string[] suffix) {
+			if (IsValidType == false)
+				throw new ArgumentException("型" + typeof(T).Name + "はデリゲート型ではありません。");
+			if (suffix.Length != Types.Length - 1)
+				throw new ArgumentException("引数の数と助詞の数が一致していません。");
+			
 			this.Func = func;
 			this.Suffix = String.Intern(String.Join(Separator, suffix));
 		}
@@ -129,18 +164,14 @@ namespace Kurogane {
 					int argLen = argR - argL;
 					// arg->param へ 移行
 					if (paramLen == argLen) {
-						for (int i = 0; i < argLen; i++)
-							parameters[prmL + i + 1] = Expression.Convert(args[argL + i + 1 + offset].Expression, typeof(object));
+						for (int i = 1; i <= argLen; i++)
+							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i + 1]);
 					}
 					else if (paramLen > argLen) {
-						for (int i = 0; i < argLen - 1; i++)
-							parameters[prmL + 1] = Expression.Convert(args[argL + 1 + offset].Expression, typeof(object));
 						// arg を param に展開
 						throw new NotImplementedException();
 					}
 					else /* paramLen < argLen */ {
-						for (int i = 0; i < paramLen - 1; i++)
-							parameters[prmL + 1] = Expression.Convert(args[argL + 1 + offset].Expression, typeof(object));
 						// arg を param に集約
 						throw new NotImplementedException();
 					}
@@ -156,7 +187,10 @@ namespace Kurogane {
 				// create bindings
 				string propName = ReflectionHelper.PropertyName((SuffixFunc<T> func) => func.Func);
 				var funcExpr = Expression.PropertyOrField(this.Expression, propName);
-				return new DynamicMetaObject(Expression.Invoke(funcExpr, parameters), GetRestrictions());
+				Expression expr = Expression.Invoke(funcExpr, parameters);
+				if (Types[0].IsValueType)
+					expr = Expression.Convert(expr, typeof(object));
+				return new DynamicMetaObject(expr, GetRestrictions());
 			}
 
 			/// <summary>SuffixFuncのGeneric型と助詞からBindingRestrictionsを作成する。</summary>

@@ -13,7 +13,7 @@ namespace ConsoleTest {
 
 	class Program {
 		static void Main(string[] args) {
-			BasicTest();
+			CalcTest();
 		}
 
 		static void AppyTest() {
@@ -36,6 +36,15 @@ namespace ConsoleTest {
 			e.Execute(code);
 		}
 
+		static void CalcTest() {
+			var code =
+				"1をAに代入する。" +
+				"2をBに代入する。" +
+				"(A+B)を出力する。";
+			var e = new Engine();
+			e.Execute(code);
+		}
+
 		static void NewEngineTest() {
 			var code = "挨拶する。";
 			var engine = new Engine();
@@ -49,7 +58,7 @@ namespace ConsoleTest {
 				(a, b) => (object)((int)a + (int)b),
 				new[] { "に", "を" });
 			dynamic add = func;
-			object ret = add(を:2, げ: 3);
+			object ret = add(を: 2, げ: 3);
 			Console.WriteLine(ret);
 		}
 
