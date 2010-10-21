@@ -38,6 +38,7 @@ namespace Kurogane.Test {
 				"※（括弧で囲むよ。複数でもOK！。。。）" +
 				"3をパスする。";
 			var engine = new Engine();
+			engine.Global.SetVariable("パス", SuffixFunc.Create((object obj) => obj, "を"));
 			object num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 3);
@@ -60,6 +61,23 @@ namespace Kurogane.Test {
 				"10をFIB変換する。";
 			var engine = new Engine();
 			object num = engine.Execute(code);
+			Assert.IsInstanceOfType(num, typeof(int));
+			Assert.AreEqual((int)num, 55);
+
+			code =
+				"以下の手順でNをFIB変換する。" +
+				"	以下の手順でペアをNまでFIB変換する。" +
+				"		ペアの頭をAに代入する。" +
+				"		ペアの体をBに代入する。" +
+				"		もし(N>0)なら" +
+				"			Bと(A+B)を(N-1)までFIB変換する。" +
+				"		他なら" +
+				"			Aをパスする。" +
+				"	以上。" +
+				"	0と1をNまでFIB変換する。" +
+				"以上。" +
+				"1000をFIB変換し、表示する。";
+			num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 55);
 		}
@@ -160,7 +178,30 @@ namespace Kurogane.Test {
 			Assert.AreEqual("おはよう", a);
 			Assert.AreEqual("さようなら", b);
 			Assert.IsFalse(scope.HasVariable("C"));
+		}
 
+		[TestMethod]
+		public void と_によって対が作られる() {
+			var code =
+				"「こんにちは」と「こんばんは」をペアに代入する。" +
+				"ペアの頭をAに代入する。" +
+				"ペアの体をBに代入する。";
+			var engine = new Engine();
+			engine.Execute(code);
+			Assert.AreEqual("こんにちは", engine.Global.GetVariable("A"));
+			Assert.AreEqual("こんばんは", engine.Global.GetVariable("B"));
+		}
+
+		public void もし文が動く() {
+			string code =
+				"3をAに代入する。" +
+				"もし(A＝無)なら" +
+				"	「正しい」を結果に代入する。" +
+				"他なら" +
+				"	「間違い」を結果に代入する。";
+			var engine = new Engine();
+			engine.Execute(code);
+			Assert.AreEqual("正しい", engine.Global.GetVariable("結果"));
 		}
 
 		//[TestMethod]

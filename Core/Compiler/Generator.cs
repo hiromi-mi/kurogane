@@ -116,7 +116,16 @@ namespace Kurogane.Compiler {
 				return ConvertLiteral((Literal)elem);
 			if (elem is BinaryExpr)
 				return ConvertBinaryExpr((BinaryExpr)elem);
+			if (elem is PropertyAccess)
+				return ConvertPropertyGet((PropertyAccess)elem);
 			throw new NotImplementedException();
+		}
+
+		private Expression ConvertPropertyGet(PropertyAccess propertyAccess) {
+			return Expression.Dynamic(
+				_factory.GetMemberBinder(propertyAccess.Name),
+				typeof(object),
+				ConvertElement(propertyAccess.Value));
 		}
 
 		private Expression ConvertSymbol(string name) {
@@ -128,7 +137,16 @@ namespace Kurogane.Compiler {
 				return Expression.Constant(((StringLiteral)lit).Value);
 			if (lit is IntLiteral)
 				return Expression.Constant(((IntLiteral)lit).Value);
+			if (lit is TupleLiteral)
+				return ConvertTuple((TupleLiteral)lit);
 			throw new NotImplementedException();
+		}
+
+		private Expression ConvertTuple(TupleLiteral tuple) {
+			var head = ConvertElement(tuple.Head);
+			var tail = ConvertElement(tuple.Tail);
+			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+			return Expression.New(ctorInfo, head, tail);
 		}
 
 		private Expression ConvertBinaryExpr(BinaryExpr expr) {

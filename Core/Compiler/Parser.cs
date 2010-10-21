@@ -318,7 +318,7 @@ namespace Kurogane.Compiler {
 			var tuple = args.Last().Argument;
 			for (int i = args.Count - 2; i >= 0; i--) {
 				var elem = args[i];
-				if (elem.Suffix != "の")
+				if (elem.Suffix != "と")
 					return null;
 				tuple = new TupleLiteral(elem.Argument, tuple);
 			}
