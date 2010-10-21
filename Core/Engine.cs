@@ -23,6 +23,8 @@ namespace Kurogane {
 		/// <summary>出力先</summary>
 		public TextWriter Out { get; set; }
 
+		public Encoding DefaultEncoding { get; set; }
+
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
 		/// <summary>通常のコンストラクタ</summary>
@@ -38,6 +40,7 @@ namespace Kurogane {
 			Global = new Scope();
 			In = Console.In;
 			Out = Console.Out;
+			DefaultEncoding = Encoding.Default;
 		}
 
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
@@ -50,15 +53,22 @@ namespace Kurogane {
 			return func(this.Global);
 		}
 
+		public object ExecuteFile(string filepath) {
+			using (var file = File.OpenRead(filepath))
+			using (var stream = new StreamReader(file, DefaultEncoding)) {
+				var token = Tokenizer.Tokenize(stream, filepath);
+				var ast = Parser.Parse(token, filepath);
+				var expr = Generator.Generate(ast, this.Factory);
+				var func = expr.Compile();
+				return func(this.Global);
+			}
+		}
+
 		private void InitLibrary() {
 			Global.SetVariable("入力", new SuffixFunc<Func<object>>(this.In.ReadLine));
 			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
 				obj => { this.Out.Write(obj); return obj; }, "を"));
 			Global.SetVariable("改行", Environment.NewLine);
-		}
-
-		public void ExecuteFile(string filepath) {
-			throw new NotImplementedException();
 		}
 	}
 }

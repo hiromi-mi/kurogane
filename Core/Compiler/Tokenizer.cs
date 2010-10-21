@@ -16,13 +16,13 @@ namespace Kurogane.Compiler {
 		/// </summary>
 		/// <param name="code">プログラム</param>
 		/// <returns></returns>
-		public static Token Tokenize(TextReader code) {
-			var lexer = new Lexer(code, null);
+		public static Token Tokenize(TextReader code, string filename) {
+			var lexer = new Lexer(code, filename);
 			return lexer.Next();
 		}
 
 		public static Token Tokenize(string code) {
-			return Tokenize(new StringReader(code));
+			return Tokenize(new StringReader(code), null);
 		}
 	}
 }
