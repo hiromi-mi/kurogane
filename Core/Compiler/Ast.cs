@@ -48,6 +48,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class Defun : INormalStatement {
 		public readonly string Name;
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<ParamSuffixPair> Params;
 		public readonly Block Block;
 
@@ -55,6 +56,10 @@ namespace Kurogane.Compiler {
 			this.Name = name;
 			this.Params = parameters;
 			this.Block = block;
+		}
+
+		public override string ToString() {
+			return "定義 : " + Name + "する";
 		}
 	}
 
@@ -65,6 +70,10 @@ namespace Kurogane.Compiler {
 		public ParamSuffixPair(string name, string sfx) {
 			this.Name = name;
 			this.Suffix = sfx;
+		}
+
+		public override string ToString() {
+			return Name + Suffix;
 		}
 	}
 
@@ -80,6 +89,8 @@ namespace Kurogane.Compiler {
 	}
 
 	public class ExprBlock : INormalStatement, IExpr {
+
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<IExpr> Exprs;
 
 		public ExprBlock(IList<IExpr> exprs) {
@@ -88,10 +99,18 @@ namespace Kurogane.Compiler {
 	}
 
 	public class PhraseChain : INormalStatement {
+
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<IPhrase> Phrases;
 
 		public PhraseChain(IList<IPhrase> phrases) {
 			this.Phrases = phrases;
+		}
+
+		public override string ToString() {
+			if (Phrases.Count == 0)
+				return "-- なにもしない --";
+			return Phrases[Phrases.Count - 1].ToString();
 		}
 	}
 
@@ -105,6 +124,8 @@ namespace Kurogane.Compiler {
 
 	public class Call : IPhrase {
 		public readonly string Name;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<ArgSuffixPair> Arguments;
 		public readonly bool IsMaybe;
 
@@ -112,6 +133,10 @@ namespace Kurogane.Compiler {
 			this.Name = name;
 			this.Arguments = args;
 			this.IsMaybe = isMaybe;
+		}
+
+		public override string ToString() {
+			return Name + "する。";
 		}
 	}
 
@@ -187,9 +212,14 @@ namespace Kurogane.Compiler {
 		public Return(Element value) {
 			this.Value = value;
 		}
+
+		public override string ToString() {
+			return "返す。";
+		}
 	}
 
 	public class Block {
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<IStatement> Statements;
 
 		public Block(IList<IStatement> stmts) {

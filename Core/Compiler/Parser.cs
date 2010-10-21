@@ -103,7 +103,7 @@ namespace Kurogane.Compiler {
 				.MatchFlow((SuffixToken t) => t.Value == "で");
 			if (keywordSkipped == null)
 				return null;
-			token = keywordSkipped.MatchFlow((CommaToken) => true) ?? keywordSkipped;
+			token = keywordSkipped.MatchFlow((CommaToken t) => true) ?? keywordSkipped;
 			var paramList = new List<ParamSuffixPair>();
 			while (true) {
 				var paramPair = ParseParamSuffixPair(token);
@@ -119,7 +119,7 @@ namespace Kurogane.Compiler {
 			if (blockToken == null)
 				ThrowError("正しく関数が定義出来ていません。", token);
 			var name = ((SymbolToken)token).Value;
-			var blockPair = ParseBlock(token);
+			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
 				.MatchFlow((ReservedToken t) => t.Value == "以上")
 				.MatchFlow((PeriodToken t) => true);

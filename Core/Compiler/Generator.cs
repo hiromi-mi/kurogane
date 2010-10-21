@@ -4,27 +4,32 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Diagnostics;
 using Kurogane.RuntimeBinder;
+using Kurogane.Util;
 
 namespace Kurogane.Compiler {
+
 	public class Generator {
+
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
 		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory) {
 			var gen = new Generator(factory);
 			var expr = gen.ConvertBlock(block);
-			return Expression.Lambda<Func<Scope, object>>(expr, gen._global);
+			return Expression.Lambda<Func<Scope, object>>(expr, gen.Global);
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
-		private readonly ParameterExpression _global = Expression.Parameter(typeof(Scope), "global");
+		public ParameterExpression Global { get; set; }
+
 		private readonly BinderFactory _factory;
 
-		// ----- ----- ----- ----- methods ----- ----- ----- -----
-		private Generator(BinderFactory factory) {
+		// ----- ----- ----- ----- ctor ----- ----- ----- -----
+		protected Generator(BinderFactory factory) {
 			_factory = factory;
+			this.Global = Expression.Parameter(typeof(Scope), "global");
 		}
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
-		private Expression ConvertBlock(Block block) {
+		public virtual BlockExpression ConvertBlock(Block block) {
 			var list = new List<Expression>();
 			foreach (var stmt in block.Statements) {
 				list.Add(ConvertStatement(stmt));
@@ -37,11 +42,33 @@ namespace Kurogane.Compiler {
 				return ConvertIf((IfStatement)stmt);
 			if (stmt is PhraseChain)
 				return ConvertPhraseChain((PhraseChain)stmt);
+			if (stmt is Defun)
+				return ConvertDefun((Defun)stmt);
 			throw new NotImplementedException(stmt.GetType().Name);
 		}
 
 		private Expression ConvertIf(IfStatement ifStatement) {
 			throw new NotImplementedException();
+		}
+
+		public virtual Expression ConvertDefun(Defun defun) {
+			var dic = new Dictionary<string, ParameterExpression>();
+			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
+			var funcExpr = Expression.Parameter(sfxFuncType);
+			dic[defun.Name] = funcExpr;
+			foreach (var p in defun.Params)
+				dic[p.Name] = Expression.Parameter(typeof(object), p.Name);
+			var gen = new BlockGenerator(_factory, this, dic);
+			var block = gen.ConvertBlock(defun.Block);
+			dic.Remove(defun.Name);
+			var lambdaExpr = Expression.Lambda(block, dic.Values);
+			var ctorInfo = sfxFuncType.GetConstructor(new[] { funcType, typeof(string[]) });
+			var suffixList = new string[defun.Params.Count];
+			for (int i = 0; i < suffixList.Length; i++)
+				suffixList[i] = defun.Params[i].Suffix;
+			var createExpr = Expression.New(ctorInfo, lambdaExpr, Expression.Constant(suffixList));
+			return SetGlobal(defun.Name, Expression.Block(new[] { funcExpr }, Expression.Assign(funcExpr, createExpr), funcExpr));
 		}
 
 		private Expression ConvertPhraseChain(PhraseChain chain) {
@@ -67,7 +94,15 @@ namespace Kurogane.Compiler {
 				return ConvertPropertySet((PropertySet)ph, ref lastExpr);
 			if (ph is Assign)
 				return ConvertAssign((Assign)ph, ref lastExpr);
+			if (ph is DefineValue)
+				return ConvertDefineValue((DefineValue)ph, ref lastExpr);
 			throw new NotImplementedException();
+		}
+
+		public virtual Expression ConvertDefineValue(DefineValue defineValue, ref Expression lastExpr) {
+			throw new SemanticException(
+				"グローバルで変数を定義することはできません。" + Environment.NewLine +
+				"代入を用いてください。");
 		}
 
 		private Expression ConvertCall(Call call, ref Expression lastExpr) {
@@ -83,7 +118,7 @@ namespace Kurogane.Compiler {
 			var callInfo = new CallInfo(nArg, sfxList);
 			if (func is ParameterExpression)
 				return Expression.Dynamic(_factory.InvokeBinder(callInfo), typeof(object), argList);
-			argList[0] = _global;
+			argList[0] = Global;
 			return Expression.Dynamic(_factory.InvokeMemberBinder(call.Name, callInfo), typeof(object), argList);
 		}
 
@@ -95,21 +130,26 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression ConvertAssign(Assign assign, ref Expression lastExpr) {
-			Expression valueExpr;
-			if (assign.Value == null) {
-				valueExpr = lastExpr;
-				lastExpr = null;
-			}
-			else {
-				valueExpr = ConvertElement(assign.Value);
-			}
-			var binder = _factory.SetMemberBinder(assign.Name);
-			return Expression.Dynamic(binder, typeof(object), _global, valueExpr);
+			if (assign.Value != null)
+				return SetGlobal(assign.Name, ConvertElement(assign.Value));
+			Expression valueExpr = lastExpr;
+			lastExpr = null;
+			return SetGlobal(assign.Name, valueExpr);
+		}
+
+		public Expression SetGlobal(string name, Expression value) {
+			var binder = _factory.SetMemberBinder(name);
+			return Expression.Dynamic(binder, typeof(object), Global, value);
+		}
+
+		public Expression GetGlobal(string name) {
+			var binder = _factory.GetMemberBinder(name);
+			return Expression.Dynamic(binder, typeof(object), Global);
 		}
 
 		#region ConvertElement
 
-		private Expression ConvertElement(Element elem) {
+		public Expression ConvertElement(Element elem) {
 			if (elem is Symbol)
 				return ConvertSymbol(((Symbol)elem).Name);
 			if (elem is Literal)
@@ -128,8 +168,8 @@ namespace Kurogane.Compiler {
 				ConvertElement(propertyAccess.Value));
 		}
 
-		private Expression ConvertSymbol(string name) {
-			return Expression.Dynamic(_factory.GetMemberBinder(name), typeof(object), _global);
+		public virtual Expression ConvertSymbol(string name) {
+			return Expression.Dynamic(_factory.GetMemberBinder(name), typeof(object), Global);
 		}
 
 		private Expression ConvertLiteral(Element lit) {

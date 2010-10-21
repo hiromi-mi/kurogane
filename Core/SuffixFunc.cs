@@ -138,7 +138,7 @@ namespace Kurogane {
 				if (offset >= 2)
 					return ThrowArgumentException("助詞無しで渡された引数が多すぎます。");
 
-				string[] prmSfx = Value.Suffix.Split(new[] { Separator }, StringSplitOptions.None);
+				string[] prmSfx = Value.Suffix.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
 				// ordering parameters
 				var parameters = new Expression[prmSfx.Length];
 				int prmR = prmSfx.Length - 1;

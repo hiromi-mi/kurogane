@@ -13,7 +13,7 @@ namespace ConsoleTest {
 
 	class Program {
 		static void Main(string[] args) {
-			Test();
+			TestGreet();
 		}
 
 		static void BasicTest() {
@@ -31,6 +31,18 @@ namespace ConsoleTest {
 				"「こんにちは」と「こんばんは」をペアに代入する。" +
 				"ペアの頭を出力する。改行を出力する。" +
 				"ペアの体を出力する。改行を出力する。";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
+		static void TestGreet() {
+			var code =
+				"以下の手順で挨拶する。" +
+				"	「こんにちは」を出力する。" +
+				"	改行を出力する。" +
+				"以上。" +
+				"挨拶する。"+
+				"挨拶する。";
 			var engine = new Engine();
 			engine.Execute(code);
 		}
