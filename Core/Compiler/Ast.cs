@@ -155,6 +155,10 @@ namespace Kurogane.Compiler {
 			: base(name, args, isMaybe) {
 			this.FirstArg = firstArg;
 		}
+
+		public override string ToString() {
+			return "それぞれ" + Name + "する。";
+		}
 	}
 
 	public class ArgSuffixPair {

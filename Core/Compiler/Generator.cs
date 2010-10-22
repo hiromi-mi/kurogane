@@ -22,6 +22,8 @@ namespace Kurogane.Compiler {
 
 		private readonly BinderFactory _factory;
 
+		private LabelTarget _ReturnTarget = null;
+
 		// ----- ----- ----- ----- ctor ----- ----- ----- -----
 		protected Generator(BinderFactory factory) {
 			_factory = factory;
@@ -29,12 +31,17 @@ namespace Kurogane.Compiler {
 		}
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
-		public virtual BlockExpression ConvertBlock(Block block) {
+		public virtual Expression ConvertBlock(Block block) {
 			var list = new List<Expression>();
 			foreach (var stmt in block.Statements) {
 				list.Add(ConvertStatement(stmt));
 			}
-			return Expression.Block(list);
+			var blockExpr = Expression.Block(list);
+			if (_ReturnTarget == null)
+				return blockExpr;
+			return Expression.Label(_ReturnTarget, blockExpr);
+			//var ret = Expression.Return(_ReturnTarget, blockExpr, typeof(object));
+			//return Expression.Block(ret, Expression.Label(_ReturnTarget, ));
 		}
 
 		private Expression ConvertStatement(IStatement stmt) {
@@ -61,10 +68,10 @@ namespace Kurogane.Compiler {
 			}
 			for (; ix >= 0; ix--) {
 				var then = thens[ix];
-				lastExpr = Expression.Condition(
-					ToBool(ConvertElement(then.Condition)),
-					ConvertStatement(then.Statement),
-					lastExpr);
+				var execExpr = ConvertStatement(then.Statement);
+				if (execExpr.Type != typeof(object))
+					execExpr = Expression.Convert(execExpr, typeof(object));
+				lastExpr = Expression.Condition(ToBool(ConvertElement(then.Condition)), execExpr, lastExpr);
 			}
 			return lastExpr;
 		}
@@ -125,6 +132,8 @@ namespace Kurogane.Compiler {
 				return ConvertAssign((Assign)ph, ref lastExpr);
 			if (ph is DefineValue)
 				return ConvertDefineValue((DefineValue)ph, ref lastExpr);
+			if (ph is Return)
+				return ConvertReturn((Return)ph, ref lastExpr);
 			throw new NotImplementedException();
 		}
 
@@ -132,6 +141,28 @@ namespace Kurogane.Compiler {
 			throw new SemanticException(
 				"グローバルで変数を定義することはできません。" + Environment.NewLine +
 				"代入を用いてください。");
+		}
+
+		private GotoExpression ConvertReturn(Return ret, ref Expression lastExpr) {
+			Expression value;
+			if (ret.Value != null) {
+				value = ConvertElement(ret.Value);
+			}
+			else if (lastExpr != null) {
+				value = lastExpr;
+				lastExpr = null;
+			}
+			else {
+				value = Expression.Constant(null);
+			}
+			var target = GetReturnTarget();
+			if (value.Type != typeof(object))
+				value = Expression.Convert(value, typeof(object));
+			return Expression.Return(target, value, typeof(object));
+		}
+
+		private LabelTarget GetReturnTarget() {
+			return _ReturnTarget ?? (_ReturnTarget = Expression.Label(typeof(object)));
 		}
 
 		private Expression ConvertCall(Call call, ref Expression lastExpr) {

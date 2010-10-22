@@ -342,8 +342,12 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "手順", "以上", "以下", "他", ConstantNames.NullText };
+			string[] reserved = { "手順", "以上", "以下", ConstantNames.NullText, ConstantNames.NullText };
 			string str = buff.ToString();
+			if (str == "返" && _CurrentChar == 'す') {
+				_NextChar();
+				return new ReservedToken(this, "返す");
+			}
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
 			else

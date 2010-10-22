@@ -25,11 +25,10 @@ namespace Kurogane.Compiler {
 			this.Global = parent.Global;
 		}
 
-		public override BlockExpression ConvertBlock(Block block) {
-			var expr = base.ConvertBlock(block);
+		public override Expression ConvertBlock(Block block) {
 			return Expression.Block(
 				_LocalVariables.Values,
-				expr.Expressions);
+				base.ConvertBlock(block));
 		}
 
 		public override Expression ConvertSymbol(string name) {

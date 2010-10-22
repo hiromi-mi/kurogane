@@ -208,6 +208,10 @@ namespace Kurogane.Compiler {
 					lst.Add(new ArgSuffixPair(NullLiteral.Instant, sfx));
 					token = token.Next;
 				}
+				if (token.Match((ReservedToken t) => t.Value == "返す")) {
+					var value = lst.Where(pair => pair.Suffix == "を").Select(pair => pair.Argument).SingleOrDefault();
+					return MakePair(new Return(value), token.Next);
+				}
 			}
 			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
 				var dfn = CreateDefine(lst);
