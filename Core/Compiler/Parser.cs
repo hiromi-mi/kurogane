@@ -613,6 +613,8 @@ namespace Kurogane.Compiler {
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText)) {
 				return MakePair(NullLiteral.Instant, nextToken);
 			}
+			if (token.Match((ReservedToken t) => t.Value == ConstantNames.ElseText))
+				return MakePair(BoolLiteral.True, nextToken);
 			return null;
 		}
 

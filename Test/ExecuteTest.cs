@@ -46,6 +46,9 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void フィボナッチ数を計算する() {
+			var engine = new Engine();
+			engine.Global.SetVariable("パス", SuffixFunc.Create((object obj) => obj, "を"));
+
 			string code =
 				"以下の手順でNをFIB変換する。" +
 				"	以下の手順で計算する。" +
@@ -59,16 +62,15 @@ namespace Kurogane.Test {
 				"		計算する。" +
 				"以上。" +
 				"10をFIB変換する。";
-			var engine = new Engine();
 			object num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 55);
 
 			code =
 				"以下の手順でNをFIB変換する。" +
-				"	以下の手順でペアをNまでFIB変換する。" +
-				"		ペアの頭をAに代入する。" +
-				"		ペアの体をBに代入する。" +
+				"	以下の手順で頭と体をNまでFIB変換する。" +
+				"		頭をAに代入する。" +
+				"		体をBに代入する。" +
 				"		もし(N>0)なら" +
 				"			Bと(A+B)を(N-1)までFIB変換する。" +
 				"		他なら" +
@@ -76,10 +78,10 @@ namespace Kurogane.Test {
 				"	以上。" +
 				"	0と1をNまでFIB変換する。" +
 				"以上。" +
-				"1000をFIB変換し、表示する。";
+				"1000をFIB変換する。";
 			num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 55);
+			Assert.AreEqual((int)num, 1556111435);
 		}
 
 		[TestMethod]
@@ -108,6 +110,7 @@ namespace Kurogane.Test {
 				"0を1に連結し、2に連結し、3に連結し、4に連結し、リストに代入する。" +
 				"リストを合計する。";
 			var engine = new Engine();
+			engine.Global.SetVariable("パス", SuffixFunc.Create((object obj) => obj, "を"));
 			object num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 10);
@@ -121,6 +124,7 @@ namespace Kurogane.Test {
 				"以上。" +
 				"3と5を加算する。";
 			var engine = new Engine();
+			engine.Global.SetVariable("パス", SuffixFunc.Create((object obj) => obj, "を"));
 			object num = engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 8);
@@ -145,9 +149,10 @@ namespace Kurogane.Test {
 				"	他なら" +
 				"		計算する。" +
 				"以上。" +
-				"1と2と3と4と5とを0から加算で集約し、Aに代入する。" +
-				"1と2と3と4と5とを1から乗算で集約し、Bに代入する。";
+				"[1, 2, 3, 4, 5]を0から加算で集約し、Aに代入する。" +
+				"[1, 2, 3, 4, 5]を1から乗算で集約し、Bに代入する。";
 			var engine = new Engine();
+			engine.Global.SetVariable("パス", SuffixFunc.Create((object obj) => obj, "を"));
 			engine.Execute(code);
 
 			object a = engine.Global.GetVariable("A");
@@ -192,13 +197,17 @@ namespace Kurogane.Test {
 			Assert.AreEqual("こんばんは", engine.Global.GetVariable("B"));
 		}
 
+		[TestMethod]
 		public void もし文が動く() {
 			string code =
 				"3をAに代入する。" +
-				"もし(A＝無)なら" +
-				"	「正しい」を結果に代入する。" +
-				"他なら" +
-				"	「間違い」を結果に代入する。";
+				"もし" +
+				"　(A＝無)なら" +
+				"　　「間違い」を結果に代入する。" +
+				"　(A＝３)なら" +
+				"　　「正しい」を結果に代入する。" +
+				"　他なら" +
+				"　　　「間違い」を結果に代入する。";
 			var engine = new Engine();
 			engine.Execute(code);
 			Assert.AreEqual("正しい", engine.Global.GetVariable("結果"));

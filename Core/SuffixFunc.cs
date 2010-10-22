@@ -169,10 +169,12 @@ namespace Kurogane {
 					}
 					else if (paramLen > argLen) {
 						// arg を param に展開
+						break;
 						throw new NotImplementedException();
 					}
 					else /* paramLen < argLen */ {
 						// arg を param に集約
+						break;
 						throw new NotImplementedException();
 					}
 					prmR = prmL;

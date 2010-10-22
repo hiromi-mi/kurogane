@@ -48,14 +48,43 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression ConvertIf(IfStatement ifStatement) {
-			throw new NotImplementedException();
+			var thens = ifStatement.Thens;
+			var ix = thens.Count - 1;
+			var lastThen = thens[ix];
+			Expression lastExpr;
+			if (lastThen.Condition is BoolLiteral && ((BoolLiteral)lastThen.Condition).Value) {
+				lastExpr = ConvertStatement(lastThen.Statement);
+				ix--;
+			}
+			else {
+				lastExpr = Expression.Constant(null);
+			}
+			for (; ix >= 0; ix--) {
+				var then = thens[ix];
+				lastExpr = Expression.Condition(
+					ToBool(ConvertElement(then.Condition)),
+					ConvertStatement(then.Statement),
+					lastExpr);
+			}
+			return lastExpr;
+		}
+
+		private Expression ToBool(Expression expr) {
+			return Expression.Dynamic(_factory.ToBoolBinder, typeof(bool), expr);
 		}
 
 		public virtual Expression ConvertDefun(Defun defun) {
-			var dic = new Dictionary<string, ParameterExpression>();
 			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
-			var funcExpr = Expression.Parameter(sfxFuncType);
+			var funcVarExpr = Expression.Parameter(sfxFuncType);
+			var defunExpr = ConvertDefunCore(defun, funcVarExpr);
+			return SetGlobal(defun.Name, Expression.Block(new[] { funcVarExpr }, defunExpr));
+		}
+
+		public virtual Expression ConvertDefunCore(Defun defun, ParameterExpression funcExpr) {
+			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
+			var dic = new Dictionary<string, ParameterExpression>();
 			dic[defun.Name] = funcExpr;
 			foreach (var p in defun.Params)
 				dic[p.Name] = Expression.Parameter(typeof(object), p.Name);
@@ -68,7 +97,7 @@ namespace Kurogane.Compiler {
 			for (int i = 0; i < suffixList.Length; i++)
 				suffixList[i] = defun.Params[i].Suffix;
 			var createExpr = Expression.New(ctorInfo, lambdaExpr, Expression.Constant(suffixList));
-			return SetGlobal(defun.Name, Expression.Block(new[] { funcExpr }, Expression.Assign(funcExpr, createExpr), funcExpr));
+			return Expression.Assign(funcExpr, createExpr);
 		}
 
 		private Expression ConvertPhraseChain(PhraseChain chain) {
@@ -109,12 +138,18 @@ namespace Kurogane.Compiler {
 			var func = ConvertSymbol(call.Name);
 			var argList = new List<Expression>(call.Arguments.Count + 1);
 			argList.Add(func);
+			bool hasOptional = false;
+			if (lastExpr != null) {
+				argList.Add(lastExpr);
+				lastExpr = null;
+				hasOptional = true;
+			}
 			var sfxList = new List<string>(call.Arguments.Count);
 			foreach (var argPair in call.Arguments) {
 				argList.Add(ConvertElement(argPair.Argument));
 				sfxList.Add(argPair.Suffix);
 			}
-			var nArg = call.Arguments.Count;
+			var nArg = call.Arguments.Count + (hasOptional ? 1 : 0);
 			var callInfo = new CallInfo(nArg, sfxList);
 			if (func is ParameterExpression)
 				return Expression.Dynamic(_factory.InvokeBinder(callInfo), typeof(object), argList);
@@ -179,14 +214,31 @@ namespace Kurogane.Compiler {
 				return Expression.Constant(((IntLiteral)lit).Value);
 			if (lit is TupleLiteral)
 				return ConvertTuple((TupleLiteral)lit);
+			if (lit is ListLiteral)
+				return ConvertList((ListLiteral)lit);
+			if (lit is NullLiteral)
+				return Expression.Constant(null);
 			throw new NotImplementedException();
+		}
+
+		private Expression ConvertList(ListLiteral listLiteral) {
+			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+			Expression last = Expression.Constant(null);
+			var elems = listLiteral.Elements;
+			for (int i = elems.Count - 1; i >= 0; i--) {
+				var head = Expression.Convert(ConvertElement(elems[i]), typeof(object));
+				last = Expression.New(ctorInfo, head, last);
+			}
+			return last;
 		}
 
 		private Expression ConvertTuple(TupleLiteral tuple) {
 			var head = ConvertElement(tuple.Head);
 			var tail = ConvertElement(tuple.Tail);
 			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
-			return Expression.New(ctorInfo, head, tail);
+			return Expression.New(ctorInfo,
+				Expression.Convert(head, typeof(object)),
+				Expression.Convert(tail, typeof(object)));
 		}
 
 		private Expression ConvertBinaryExpr(BinaryExpr expr) {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Linq.Expressions;
 using Kurogane.RuntimeBinder;
+using Kurogane.Util;
 
 namespace Kurogane.Compiler {
 
@@ -14,13 +15,13 @@ namespace Kurogane.Compiler {
 	internal class BlockGenerator : Generator {
 
 		private readonly Generator _Parent;
-		private readonly IDictionary<string, ParameterExpression> _Func;
-		private readonly Dictionary<string, ParameterExpression> _LocalVariables = new Dictionary<string, ParameterExpression>();
+		private readonly IDictionary<string, ParameterExpression> _FuncVariable;
+		private readonly IDictionary<string, ParameterExpression> _LocalVariables = new Dictionary<string, ParameterExpression>();
 
 		public BlockGenerator(BinderFactory factory, Generator parent, IDictionary<string, ParameterExpression> func)
 			: base(factory) {
 			_Parent = parent;
-			_Func = func;
+			_FuncVariable = func;
 			this.Global = parent.Global;
 		}
 
@@ -35,22 +36,29 @@ namespace Kurogane.Compiler {
 			ParameterExpression expr;
 			if (_LocalVariables.TryGetValue(name, out expr))
 				return expr;
-			else
-				return _Parent.ConvertSymbol(name);
+			if (_FuncVariable.TryGetValue(name, out expr))
+				return expr;
+			return _Parent.ConvertSymbol(name);
 		}
 
 		public override Expression ConvertDefun(Defun defun) {
-			throw new NotImplementedException();
-			//return base.ConvertDefun(defun);
+			var name = defun.Name;
+			if (_LocalVariables.ContainsKey(name))
+				throw new SemanticException("変数「" + name + "」が二度定義されています。");
+			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
+			var funcExpr = Expression.Parameter(sfxFuncType);
+			_LocalVariables[name] = funcExpr;
+			return ConvertDefunCore(defun, funcExpr);
 		}
 
 		public override Expression ConvertDefineValue(DefineValue defineValue, ref Expression lastExpr) {
 			var name = defineValue.Name;
 			if (_LocalVariables.ContainsKey(name))
-				throw new SemanticException("変数「" + defineValue.Name + "」が二度定義されています。");
+				throw new SemanticException("変数「" + name + "」が二度定義されています。");
 
 			Expression valueExpr;
-			if (defineValue == null) {
+			if (defineValue.Value == null) {
 				if (lastExpr != null) {
 					valueExpr = lastExpr;
 					lastExpr = null;

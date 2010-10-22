@@ -69,7 +69,7 @@ namespace Kurogane.RuntimeBinder {
 						Expression.TypeIs(right.Expression, typeof(int)))));
 			}
 			return new DynamicMetaObject(
-				Expression.Constant(this.Operation == ExpressionType.Equal, typeof(object)),
+				Expression.Constant(this.Operation != ExpressionType.Equal, typeof(object)),
 				BindingRestrictions.GetExpressionRestriction(
 					Expression.AndAlso(
 						Expression.TypeIs(left.Expression, left.LimitType),

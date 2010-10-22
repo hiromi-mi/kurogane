@@ -61,6 +61,7 @@
     <Compile Include="KrgnException.cs" />
     <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="RuntimeBinder\ToBoolBinder.cs" />
     <Compile Include="UnaryOperationType.cs" />
     <Compile Include="Util\ExpressionUtil.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />

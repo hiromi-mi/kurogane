@@ -26,6 +26,10 @@ namespace Kurogane.Compiler {
 		public IfStatement(IList<CondThenPair> thens) {
 			this.Thens = thens;
 		}
+
+		public override string ToString() {
+			return "もし～";
+		}
 	}
 
 	/// <summary>If/Case文の中身</summary>
@@ -36,6 +40,10 @@ namespace Kurogane.Compiler {
 		public CondThenPair(Element cond, INormalStatement stmt) {
 			this.Condition = cond;
 			this.Statement = stmt;
+		}
+
+		public override string ToString() {
+			return Condition + "なら";
 		}
 	}
 
