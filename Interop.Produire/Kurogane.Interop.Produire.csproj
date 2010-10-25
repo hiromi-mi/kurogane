@@ -50,6 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddEventDelegator.cs" />
     <Compile Include="InteropEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeBinder\ProduireGetMemberBinder.cs" />

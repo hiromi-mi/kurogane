@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Dynamic;
 using Kurogane.Dynamic;
+using System.Linq.Expressions;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -14,7 +15,21 @@ namespace Kurogane.RuntimeBinder {
 			var mo = MetaObjectLoader.Create(target.Value, target.Expression);
 			if (mo != null)
 				return mo.BindGetMember(this);
-			throw new NotImplementedException();
+
+			return DefaultGetMember(target);
+		}
+
+		private DynamicMetaObject DefaultGetMember(DynamicMetaObject target) {
+			var propInfo = target.LimitType.GetProperty(Name);
+			if (propInfo == null)
+				return RuntimeBinderException.CreateMetaObject(
+					Name + "という属性を持っていません。",
+					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+			return
+				new DynamicMetaObject(
+					Expression.Property(target.Expression, propInfo),
+					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+
 		}
 	}
 }

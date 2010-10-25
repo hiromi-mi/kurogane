@@ -14,5 +14,6 @@ namespace Kurogane {
 		public const string NullText = "無";
 
 		public const string ElseText = "他";
+
 	}
 }

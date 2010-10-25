@@ -22,6 +22,10 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public override DynamicMetaObject FallbackInvokeMember(DynamicMetaObject target, DynamicMetaObject[] args, DynamicMetaObject errorSuggestion) {
+			return FallbackToInvoke(target, args);
+		}
+
+		private DynamicMetaObject FallbackToInvoke(DynamicMetaObject target, DynamicMetaObject[] args) {
 			var argsExpr = new Expression[args.Length + 1];
 			argsExpr[0] = Expression.Dynamic(_factory.GetMemberBinder(this.Name), typeof(object), target.Expression);
 			for (int i = 0; i < args.Length; i++)

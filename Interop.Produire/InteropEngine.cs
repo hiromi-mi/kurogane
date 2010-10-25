@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows.Forms;
 using Kurogane.Interop.Produire.RuntimeBinder;
 using Produire.TypeModel;
+using Produire;
 
 namespace Kurogane.Interop.Produire {
 
@@ -16,11 +17,13 @@ namespace Kurogane.Interop.Produire {
 
 		public InteropEngine()
 			: base(new ProduireBinderFactory()) {
+
 			_reference.Import(_dllPath);
+			_reference.Import(this.GetType().Assembly.Location);
 			this.Factory.Reference = _reference;
 			LoadLibrary();
 			SetConstractor();
-			SetMessageLoop();
+			SetMessageBox();
 		}
 
 		private void LoadLibrary() {
@@ -29,6 +32,13 @@ namespace Kurogane.Interop.Produire {
 					var name = typePair.Key;
 					var type = typePair.Value.ManagedType;
 					Global.SetVariable(name, type);
+					bool isStatic = (type.GetInterface(typeof(IProduireStaticClass).FullName)) != null;
+					if (isStatic) {
+						var ctorInfo = type.GetConstructor(new Type[0]);
+						var obj = ctorInfo.Invoke(new object[0]);
+						if (obj != null && obj.GetType() == type)
+							Global.SetVariable(name, obj);
+					}
 				}
 			}
 		}
@@ -45,13 +55,13 @@ namespace Kurogane.Interop.Produire {
 			Global.SetVariable("作成", SuffixFunc.Create(create, "を"));
 		}
 
-		private void SetMessageLoop() {
-			Func<object, object> loop = win => {
-				var form = win as Form;
-				Application.Run(form);
-				return null;
+		private void SetMessageBox() {
+			Func<object, object> ShowMsg = delegate(object o) {
+				var txt = o.ToString();
+				MessageBox.Show(txt);
+				return o;
 			};
-			Global.SetVariable("メッセージループ", SuffixFunc.Create(loop, "を"));
+			Global.SetVariable("表示", SuffixFunc.Create<Func<object, object>>(ShowMsg, "を"));
 		}
 	}
 }

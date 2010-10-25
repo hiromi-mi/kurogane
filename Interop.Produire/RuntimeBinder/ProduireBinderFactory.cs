@@ -8,6 +8,10 @@ namespace Kurogane.Interop.Produire.RuntimeBinder {
 
 		public ReferenceCollection Reference { get; set; }
 
+		public override DynamicMetaObjectBinder GetMemberBinder(string name) {
+			return new ProduireGetMemberBinder(name, this.Reference);
+		}
+
 		public override DynamicMetaObjectBinder SetMemberBinder(string name) {
 			return new ProduireSetMemberBinder(name, this.Reference);
 		}

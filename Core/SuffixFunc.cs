@@ -66,7 +66,11 @@ namespace Kurogane {
 
 	}
 
-	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
+	public interface IDelegateProvider {
+		Delegate Delegate { get; }
+	}
+
+	public class SuffixFunc<T> : IDelegateProvider, IDynamicMetaObjectProvider {
 
 		private const string Separator = "|";
 
@@ -101,6 +105,8 @@ namespace Kurogane {
 		/// <summary>関数</summary>
 		public readonly T Func;
 
+		Delegate IDelegateProvider.Delegate { get { return Func as Delegate; } }
+
 		/// <summary>
 		/// 通常のコンストラクタ
 		/// </summary>
@@ -111,9 +117,13 @@ namespace Kurogane {
 				throw new ArgumentException("型" + typeof(T).Name + "はデリゲート型ではありません。");
 			if (suffix.Length != Types.Length - 1)
 				throw new ArgumentException("引数の数と助詞の数が一致していません。");
-			
+
 			this.Func = func;
 			this.Suffix = String.Intern(String.Join(Separator, suffix));
+		}
+
+		public static explicit operator Delegate(SuffixFunc<T> func) {
+			return func.Func as Delegate;
 		}
 
 		#region IDynamicMetaObjectProvider メンバー
@@ -214,7 +224,6 @@ namespace Kurogane {
 						typeof(object)),
 					GetRestrictions());
 			}
-
 		}
 
 		#endregion

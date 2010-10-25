@@ -68,7 +68,6 @@
     <Compile Include="Dynamic\MetaObjectLoader.cs" />
     <Compile Include="Dynamic\PairMetaObject.cs" />
     <Compile Include="Compiler\Ast.cs" />
-    <Compile Include="Dynamic\KrgnExpressionBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnGetMemberBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnInvokeBinder.cs" />
     <Compile Include="Compiler\Lexer.cs" />
