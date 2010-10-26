@@ -342,7 +342,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "手順", "以上", "以下", ConstantNames.ElseText, ConstantNames.NullText };
+			string[] reserved = { "手順", ConstantNames.BlockBegin, ConstantNames.BlockEnd, ConstantNames.BlockExec, ConstantNames.ElseText, ConstantNames.NullText };
 			string str = buff.ToString();
 			if (str == "返" && _CurrentChar == 'す') {
 				_NextChar();

@@ -35,7 +35,7 @@ namespace Kurogane.Compiler {
 			ParameterExpression expr;
 			if (_LocalVariables.TryGetValue(name, out expr))
 				return expr;
-			if (_FuncVariable.TryGetValue(name, out expr))
+			if (_FuncVariable != null && _FuncVariable.TryGetValue(name, out expr))
 				return expr;
 			return _Parent.ConvertSymbol(name);
 		}

@@ -51,7 +51,14 @@ namespace Kurogane.Compiler {
 				return ConvertPhraseChain((PhraseChain)stmt);
 			if (stmt is Defun)
 				return ConvertDefun((Defun)stmt);
+			if (stmt is BlockExecute)
+				return ConvertBlockExecute((BlockExecute)stmt);
 			throw new NotImplementedException(stmt.GetType().Name);
+		}
+
+		private Expression ConvertBlockExecute(BlockExecute block) {
+			var gen = new BlockGenerator(_factory, this,null);
+			return gen.ConvertBlock(block.Block);
 		}
 
 		private Expression ConvertIf(IfStatement ifStatement) {

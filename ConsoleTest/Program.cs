@@ -14,7 +14,7 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			LinkedList();
+			FibTest();
 		}
 
 		static void LinkedList() {
@@ -78,9 +78,11 @@ namespace ConsoleTest {
 			string code =
 				"以下の手順でNをFIB変換する。" +
 				"	もし(N≦1)ならNを返す。" +
-				"	(N-1)をFIB変換し、Aとする。" +
-				"	(N-2)をFIB変換し、Bとする。" +
-				"	(A+B)を返す。" +
+				"	他なら以下を実行する。" +
+				"		(N-1)をFIB変換し、Aとする。" +
+				"		(N-2)をFIB変換し、Bとする。" +
+				"		(A+B)を返す。" +
+				"	以上。" +
 				"以上。" +
 				"36をFIB変換し、出力する。改行を出力する。";
 				//"以下の手順でAをパスする。" +

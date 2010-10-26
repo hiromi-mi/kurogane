@@ -97,7 +97,7 @@ namespace Kurogane.Compiler {
 
 		private IPair<Defun> ParseDefun(Token token) {
 			var keywordSkipped = token
-				.MatchFlow((ReservedToken t) => t.Value == "以下")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockBegin)
 				.MatchFlow((SuffixToken t) => t.Value == "の")
 				.MatchFlow((ReservedToken t) => t.Value == "手順")
 				.MatchFlow((SuffixToken t) => t.Value == "で");
@@ -121,7 +121,7 @@ namespace Kurogane.Compiler {
 			var name = ((SymbolToken)token).Value;
 			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == "以上")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockEnd)
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
 				throw Error("関数のブロックが正しく閉じられていません。", blockPair.Token);
@@ -143,19 +143,20 @@ namespace Kurogane.Compiler {
 
 		private IPair<BlockExecute> ParseBlockExecute(Token token) {
 			var blockToken = token
-				.MatchFlow((ReservedToken t) => t.Value == "以下")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockBegin)
 				.MatchFlow((SuffixToken t) => t.Value == "を")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockExec)
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFlow((PeriodToken t) => true);
 			if (blockToken == null)
 				return null;
 			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == "以上")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockEnd)
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
 				throw Error("関数が正しく閉じられていません。", blockPair.Token);
-			return MakePair(new BlockExecute(blockPair.Node), blockPair.Token);
+			return MakePair(new BlockExecute(blockPair.Node), lastToken);
 		}
 
 		#region PhraseChain
