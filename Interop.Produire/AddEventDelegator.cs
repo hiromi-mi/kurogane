@@ -17,21 +17,21 @@ namespace Kurogane.Interop.Produire {
 		}
 
 		[自分("を"), 手順("監視")]
-		public object Add([で]SuffixFunc<Func<object, object, object>> sfxFunc) {
-			var func = sfxFunc.Func;
-			_info.AddEventHandler(_target, new EventHandler(delegate(object sender, EventArgs e) {
-				func(sender, e);
-			}));
-			return sfxFunc;
+		public object Add([で]object func) {
+			if (func is SuffixFunc<Func<object>>) {
+				var sfxFunc = func as SuffixFunc<Func<object>>;
+				_info.AddEventHandler(_target, new EventHandler(delegate(object sender, EventArgs e) {
+					sfxFunc.Func();
+				}));
+			}
+			if (func is SuffixFunc<Func<object, object, object>>) {
+				var sfxFunc = func as SuffixFunc<Func<object, object, object>>;
+				_info.AddEventHandler(_target, new EventHandler(delegate(object sender, EventArgs e) {
+					sfxFunc.Func(sender, e);
+				}));
+			}
+			return func;
 		}
 
-		[自分("を"), 手順("監視")]
-		public object Add([で]SuffixFunc<Func<object>> sfxFunc) {
-			var func = sfxFunc.Func;
-			_info.AddEventHandler(_target, new EventHandler(delegate(object sender, EventArgs e) {
-				func();
-			}));
-			return sfxFunc;
-		}
 	}
 }

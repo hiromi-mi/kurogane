@@ -11,14 +11,17 @@ namespace Kurogane.Compiler {
 	public class Generator {
 
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
-		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory) {
+		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory, string fileName) {
 			var gen = new Generator(factory);
+			if(fileName != null)
+				gen.SymbolDocumentInfo = Expression.SymbolDocument(fileName);
 			var expr = gen.ConvertBlock(block);
 			return Expression.Lambda<Func<Scope, object>>(expr, gen.Global);
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
 		public ParameterExpression Global { get; set; }
+		public virtual SymbolDocumentInfo SymbolDocumentInfo { get; private set; }
 
 		private readonly BinderFactory _factory;
 

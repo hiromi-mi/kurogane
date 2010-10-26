@@ -18,6 +18,8 @@ namespace Kurogane.Compiler {
 		private readonly IDictionary<string, ParameterExpression> _FuncVariable;
 		private readonly IDictionary<string, ParameterExpression> _LocalVariables = new Dictionary<string, ParameterExpression>();
 
+		public override SymbolDocumentInfo SymbolDocumentInfo { get { return _Parent.SymbolDocumentInfo; } }
+
 		public BlockGenerator(BinderFactory factory, Generator parent, IDictionary<string, ParameterExpression> func)
 			: base(factory) {
 			_Parent = parent;

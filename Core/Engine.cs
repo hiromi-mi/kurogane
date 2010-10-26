@@ -48,7 +48,7 @@ namespace Kurogane {
 		public object Execute(string code) {
 			var token = Tokenizer.Tokenize(code);
 			var ast = Parser.Parse(token, null);
-			var expr = Generator.Generate(ast, this.Factory);
+			var expr = Generator.Generate(ast, this.Factory, null);
 			var func = expr.Compile();
 			return func(this.Global);
 		}
@@ -58,7 +58,7 @@ namespace Kurogane {
 			using (var stream = new StreamReader(file, DefaultEncoding)) {
 				var token = Tokenizer.Tokenize(stream, filepath);
 				var ast = Parser.Parse(token, filepath);
-				var expr = Generator.Generate(ast, this.Factory);
+				var expr = Generator.Generate(ast, this.Factory, filepath);
 				var func = expr.Compile();
 				return func(this.Global);
 			}
