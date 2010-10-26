@@ -12,8 +12,23 @@ using Kurogane.RuntimeBinder;
 namespace ConsoleTest {
 
 	class Program {
+
 		static void Main(string[] args) {
-			FibTest();
+			MapTest();
+		}
+
+		static void MapTest() {
+			var code =
+				"以下の手順でNを改行出力する。" +
+				"	Nを出力する。" +
+				"	改行を出力する。" +
+				"以上。" +
+				"以下の手順でPをパスする。" +
+				"	Pを返す。" +
+				"以上。" +
+				"[1,2,3,4,5]をパスし、それぞれ改行出力する。";
+			var e = new Engine();
+			e.Execute(code);
 		}
 
 		static void BasicTest() {

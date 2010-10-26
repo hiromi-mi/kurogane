@@ -10,12 +10,12 @@ namespace Kurogane.Compiler {
 	#region 文
 
 	/// <summary>文</summary>
-	public interface IStatement { }
+	public abstract class IStatement { }
 
 	/// <summary>
 	/// If文の中身になれる文
 	/// </summary>
-	public interface INormalStatement : IStatement { }
+	public abstract class INormalStatement : IStatement { }
 
 	#region もし文
 

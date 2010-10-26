@@ -63,7 +63,7 @@ namespace Kurogane.Compiler {
 				thens.Add(pair.Node);
 			}
 			if (thens.Count == 0)
-				ThrowError("「もし」の後ろがありません。", token);
+				throw Error("「もし」の後ろがありません。", token);
 			return MakePair(new IfStatement(thens), token);
 		}
 
@@ -78,7 +78,7 @@ namespace Kurogane.Compiler {
 
 			var thenPair = ParseINormalStatement(token);
 			if (thenPair == null)
-				ThrowError("「なら」の後ろが正しく解析できません。", token);
+				throw Error("「なら」の後ろが正しく解析できません。", token);
 
 			return MakePair(new CondThenPair(condPair.Node, thenPair.Node), thenPair.Token);
 		}
@@ -117,14 +117,14 @@ namespace Kurogane.Compiler {
 				.MatchFlow((ReservedToken t) => t.Value == "する")
 				.MatchFlow((PeriodToken t) => true);
 			if (blockToken == null)
-				ThrowError("正しく関数が定義出来ていません。", token);
+				throw Error("正しく関数が定義出来ていません。", token);
 			var name = ((SymbolToken)token).Value;
 			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
 				.MatchFlow((ReservedToken t) => t.Value == "以上")
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
-				ThrowError("関数のブロックが正しく閉じられていません。", blockPair.Token);
+				throw Error("関数のブロックが正しく閉じられていません。", blockPair.Token);
 			return MakePair(new Defun(name, paramList, blockPair.Node), lastToken);
 		}
 
@@ -154,7 +154,7 @@ namespace Kurogane.Compiler {
 				.MatchFlow((ReservedToken t) => t.Value == "以上")
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
-				ThrowError("関数が正しく閉じられていません。", blockPair.Token);
+				throw Error("関数が正しく閉じられていません。", blockPair.Token);
 			return MakePair(new BlockExecute(blockPair.Node), blockPair.Token);
 		}
 
@@ -191,12 +191,14 @@ namespace Kurogane.Compiler {
 			while (true) {
 				if (token.Match((ReservedToken t) => t.Value == "それぞれ")) {
 					if (isMap)
-						ThrowError("「それぞれ」を二箇所で使うことはできません。", token);
+						throw Error("「それぞれ」を二箇所で使うことはできません。", token);
 					if (lst.Count > 1)
-						ThrowError("「それぞれ」に対して、二つ以上の引数を与えることはできません。", token);
+						throw Error("「それぞれ」に対して、二つ以上の引数を与えることはできません。", token);
 					isMap = true;
 					if (lst.Count == 1)
 						mappedArg = lst[0];
+					lst.Clear();
+					token = token.Next;
 				}
 				var argPair = ParseArgSfxPair(token);
 				if (argPair == null)
@@ -216,7 +218,7 @@ namespace Kurogane.Compiler {
 			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
 				var dfn = CreateDefine(lst);
 				if (dfn == null)
-					ThrowError("引数が正しくありません。", token);
+					throw Error("引数が正しくありません。", token);
 				return MakePair(dfn, token.Next);
 			}
 			var last = token
@@ -390,7 +392,7 @@ namespace Kurogane.Compiler {
 					break;
 				var elemPair = ParseElement(token);
 				if (elemPair == null)
-					ThrowError("リストの要素が解析できません。", token);
+					throw Error("リストの要素が解析できません。", token);
 
 				elemList.Add(elemPair.Node);
 				token = elemPair.Token;
@@ -401,7 +403,7 @@ namespace Kurogane.Compiler {
 				}
 				if (token.Match((CloseBracketToken t) => true))
 					break;
-				ThrowError("リストの要素が解析できません。", token);
+				throw Error("リストの要素が解析できません。", token);
 			}
 			return MakePair(new ListLiteral(elemList), token.Next);
 		}
@@ -424,7 +426,7 @@ namespace Kurogane.Compiler {
 					var opToken = (OrOpToken)token;
 					var rightPair = ParseAndExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -442,7 +444,7 @@ namespace Kurogane.Compiler {
 					var opToken = (AndOpToken)token;
 					var rightPair = ParseCompareExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -468,7 +470,7 @@ namespace Kurogane.Compiler {
 				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseAddExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -490,7 +492,7 @@ namespace Kurogane.Compiler {
 				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseMultipleExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -513,7 +515,7 @@ namespace Kurogane.Compiler {
 				if (opType != BinaryOperationType.Unknown) {
 					var rightPair = ParseUnknownMultipleExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -530,7 +532,7 @@ namespace Kurogane.Compiler {
 				if (token is UnknownOperatorToken) {
 					var rightPair = ParseUnaryExpr(token.Next);
 					if (rightPair == null)
-						ThrowError("右辺が見つかりません。", token.Next);
+						throw Error("右辺が見つかりません。", token.Next);
 					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node), rightPair.Token);
 				}
 				break;
@@ -588,7 +590,7 @@ namespace Kurogane.Compiler {
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseParenthesisToken t) => true);
 			if (lastToken == null)
-				ThrowError("閉じ括弧が出現していません。", elemPair.Token);
+				throw Error("閉じ括弧が出現していません。", elemPair.Token);
 			return MakePair(elemPair.Node, lastToken);
 		}
 
@@ -629,8 +631,8 @@ namespace Kurogane.Compiler {
 		#region Util
 
 		[DebuggerStepThrough]
-		private void ThrowError(string message, Token token) {
-			throw new SyntaxException(message, _FileName, token.LineNumber, token.CharCount);
+		private SyntaxException Error(string message, Token token) {
+			return new SyntaxException(message, _FileName, token.LineNumber, token.CharCount);
 		}
 
 		private static IPair<T> MakePair<T>(T node, Token token) {

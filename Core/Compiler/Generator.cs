@@ -166,6 +166,8 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression ConvertCall(Call call, ref Expression lastExpr) {
+			if (call is MapCall)
+				return ConvertMapCall((MapCall)call, ref lastExpr);
 			var func = ConvertSymbol(call.Name);
 			var argList = new List<Expression>(call.Arguments.Count + 1);
 			argList.Add(func);
@@ -186,6 +188,53 @@ namespace Kurogane.Compiler {
 				return Expression.Dynamic(_factory.InvokeBinder(callInfo), typeof(object), argList);
 			argList[0] = Global;
 			return Expression.Dynamic(_factory.InvokeMemberBinder(call.Name, callInfo), typeof(object), argList);
+		}
+
+		private Expression ConvertMapCall(MapCall call, ref Expression lastExpr) {
+			Expression listExpr = null;
+			// Mapのリストを探す
+			if (call.FirstArg != null) {
+				listExpr = ConvertElement(call.FirstArg.Argument);
+			}
+			else if (lastExpr != null) {
+				listExpr = lastExpr;
+				lastExpr = null;
+			}
+			else {
+				throw new SemanticException("「それぞれ」の対象がありません。");
+			}
+			// map用の関数を作る。
+			Expression mapFunc = null;
+			var param = Expression.Parameter(typeof(object));
+			{
+				var func = ConvertSymbol(call.Name);
+				// 引数
+				var argList = new List<Expression>(call.Arguments.Count + 1);
+				argList.Add(func);
+				argList.Add(param);
+				foreach (var pair in call.Arguments)
+					argList.Add(ConvertElement(pair.Argument));
+				// 助詞
+				int argCount = call.Arguments.Count + 1;
+				int offset = call.FirstArg == null ? 0 : 1;
+				string[] sfxList = new string[call.Arguments.Count + offset];
+				if (offset == 1)
+					sfxList[0] = call.FirstArg.Suffix;
+				for (int i = 0; i < call.Arguments.Count; i++)
+					sfxList[i + offset] = call.Arguments[i].Suffix;
+				var callInfo = new CallInfo(argCount, sfxList);
+				// 関数
+				if (func is ParameterExpression) {
+					mapFunc = Expression.Dynamic(_factory.InvokeBinder(callInfo), typeof(object), argList);
+				}
+				else {
+					argList[0] = Global;
+					mapFunc = Expression.Dynamic(_factory.InvokeMemberBinder(call.Name, callInfo), typeof(object), argList);
+				}
+			}
+			// 返す。
+			var lambda = Expression.Lambda(mapFunc, param);
+			return Expression.Dynamic(_factory.MapBinder, typeof(object), lambda, listExpr);
 		}
 
 		private Expression ConvertPropertySet(PropertySet propertySet, ref Expression lastExpr) {

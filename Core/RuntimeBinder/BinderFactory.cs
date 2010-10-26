@@ -36,6 +36,7 @@ namespace Kurogane.RuntimeBinder {
 
 		private readonly DynamicMetaObjectBinder _NotBinder = new NotOperationBinder();
 		private readonly DynamicMetaObjectBinder _ToBoolBinder = new ToBoolBinder();
+		private readonly DynamicMetaObjectBinder _MapBinder = new MapBinder();
 
 		#endregion
 
@@ -57,7 +58,9 @@ namespace Kurogane.RuntimeBinder {
 		public virtual DynamicMetaObjectBinder AndBinder { get { return _AndBinder; } }
 		public virtual DynamicMetaObjectBinder OrBinder { get { return _OrBinder; } }
 
-		public virtual DynamicMetaObjectBinder ToBoolBinder { get { return _ToBoolBinder;}}
+		public virtual DynamicMetaObjectBinder ToBoolBinder { get { return _ToBoolBinder; } }
+
+		public virtual DynamicMetaObjectBinder MapBinder { get { return _MapBinder; } }
 
 		// ----- ----- ----- ----- methods ----- ----- ----- -----
 

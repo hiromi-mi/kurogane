@@ -385,7 +385,10 @@ namespace Kurogane.Compiler {
 
 			const string mapKeyword = "それぞれ";
 			if (str.EndsWith(mapKeyword)) {
-				var token = new SuffixToken(this, str);
+				if (mapKeyword == str) {
+					return new ReservedToken(this, mapKeyword);
+				}
+				var token = new SuffixToken(this, str.Substring(0, str.Length - mapKeyword.Length));
 				LineNumber = soLine;
 				CharCount = soCh;
 				var soToken = new ReservedToken(this, mapKeyword);

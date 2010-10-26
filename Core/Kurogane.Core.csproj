@@ -50,11 +50,13 @@
     <Compile Include="Compiler\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamic\ScopeMetaObject.cs" />
+    <Compile Include="Enumerator.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
     <Compile Include="RuntimeBinder\ArithmeticBinder.cs" />
     <Compile Include="RuntimeBinder\ComparingBinder.cs" />
     <Compile Include="RuntimeBinder\EqualityBinder.cs" />
+    <Compile Include="RuntimeBinder\MapBinder.cs" />
     <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="RuntimeBinder\KrgnInvokeMemberBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnSetMemberBinder.cs" />
