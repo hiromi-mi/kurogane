@@ -235,7 +235,7 @@ namespace Kurogane.Compiler {
 			}
 			if (last != null) {
 				string verb = ((SymbolToken)token).Value;
-				if (verb == "代入") {
+				if (verb == ConstantNames.Assign) {
 					var assign = CreateAssign(lst, isFirst);
 					if (assign == null)
 						return null;

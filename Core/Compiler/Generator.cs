@@ -138,9 +138,7 @@ namespace Kurogane.Compiler {
 		}
 
 		public virtual Expression ConvertDefineValue(DefineValue defineValue, ref Expression lastExpr) {
-			throw new SemanticException(
-				"グローバルで変数を定義することはできません。" + Environment.NewLine +
-				"代入を用いてください。");
+			return ConvertAssign(new Assign(defineValue.Name, defineValue.Value), ref lastExpr);
 		}
 
 		private GotoExpression ConvertReturn(Return ret, ref Expression lastExpr) {
