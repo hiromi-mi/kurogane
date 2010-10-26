@@ -62,18 +62,14 @@ namespace Kurogane.Test {
 		[TestMethod]
 		public void フィボナッチ数を計算する() {
 			string code =
-				"以下の手順でNをFIB変換する。" +
-				"	以下の手順で計算する。" +
-				"		(N-1)をFIB変換し、Aとする。" +
-				"		(N-2)をFIB変換し、Bとする。" +
-				"		(A+B)をパスする。" +
-				"	以上。" +
+				"以下の手順でNをフィボナッチする。" +
 				"	もし(N≦1)なら" +
-				"		Nをパスする。" +
-				"	他なら" +
-				"		計算する。" +
+				"		Nを返す。" +
+				"	(N-1)をフィボナッチし、Aとする。" +
+				"	(N-2)をフィボナッチし、Bとする。" +
+				"	(A+B)を返す。" +
 				"以上。" +
-				"10をFIB変換する。";
+				"10をフィボナッチする。";
 			object num = _engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 55);

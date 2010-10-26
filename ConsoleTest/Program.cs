@@ -14,7 +14,40 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			MapTest();
+			LinkedList();
+		}
+
+		static void LinkedList() {
+			string code = @"
+[「A」]を甲とする。
+[「B」]を乙とする。
+[「C」]を丙とする。
+
+以下の手順でリストから値を検索する。
+　　もし
+　　　　（リスト＝無）なら
+　　　　　　無を返す。
+　　　　（リストの頭＝値）なら
+　　　　　　リストの頭を返す。
+　　　　他なら
+　　　　　　リストの体から値を検索する。
+以上。
+
+以下の手順で前者に後者を挿入する。
+　　前者の頭と後者の頭と前者の体を返す。
+以上。
+
+甲に乙を挿入し，丙を挿入し，甲弐式とする。
+甲弐式をそれぞれ出力する。
+
+「|」を出力する。
+甲弐式から「D」を検索し，出力する。
+「|」を出力する。
+甲弐式から「A」を検索し，出力する。
+改行を出力する。
+";
+			var e = new Engine();
+			e.Execute(code);
 		}
 
 		static void MapTest() {

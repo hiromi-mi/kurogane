@@ -211,7 +211,8 @@ namespace Kurogane.Compiler {
 					token = token.Next;
 				}
 				if (token.Match((ReservedToken t) => t.Value == "返す")) {
-					var value = lst.Where(pair => pair.Suffix == "を").Select(pair => pair.Argument).SingleOrDefault();
+					var value = CreateTuple(lst);
+					//var value = lst.Where(pair => pair.Suffix == "を").Select(pair => pair.Argument).SingleOrDefault();
 					return MakePair(new Return(value), token.Next);
 				}
 			}
