@@ -14,7 +14,31 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			FibTest();
+			UniqueTest();
+		}
+
+		static void UniqueTest() {
+			var engine = new Engine();
+			engine.Execute(@"
+以下の手順でリストから要素を検索する。
+　もし
+　　（リスト＝無）なら
+　　　　偽を返す。
+　　（リストの頭＝要素）なら
+　　　　真を返す。
+　　　他なら
+　　　　リストの体から要素を検索する。
+以上。
+以下の手順でリストをユニークする。
+　　もし（リスト＝無）ならリストを返す。
+　　リストの体をユニークし、ユニーク体とする。
+　　ユニーク体からリストの頭を検索し、発見とする。
+　　もし
+　　　　発見ならユニーク体を返す。
+　　　　他ならリストの頭とユニーク体を返す。
+以上。
+[3,1,4,1,5,9,2,6,5]をユニークし、それぞれ出力する。
+");
 		}
 
 		static void LinkedList() {

@@ -297,15 +297,17 @@ namespace Kurogane.Compiler {
 
 		private Expression ConvertLiteral(Element lit) {
 			if (lit is StringLiteral)
-				return Expression.Constant(((StringLiteral)lit).Value);
+				return Expression.Constant(((StringLiteral)lit).Value, typeof(string));
 			if (lit is IntLiteral)
-				return Expression.Constant(((IntLiteral)lit).Value);
+				return Expression.Constant(((IntLiteral)lit).Value, typeof(int));
 			if (lit is TupleLiteral)
 				return ConvertTuple((TupleLiteral)lit);
 			if (lit is ListLiteral)
 				return ConvertList((ListLiteral)lit);
 			if (lit is NullLiteral)
 				return Expression.Constant(null);
+			if (lit is BoolLiteral)
+				return Expression.Constant(((BoolLiteral)lit).Value, typeof(bool));
 			throw new NotImplementedException();
 		}
 

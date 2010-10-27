@@ -13,6 +13,8 @@ namespace Kurogane {
 
 		public const string NullText = "無";
 
+		public const string TrueText = "真";
+		public const string FalseText = "偽";
 		public const string ElseText = "他";
 
 		public const string BlockExec = "実行";
