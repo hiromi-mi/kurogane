@@ -12,6 +12,8 @@ namespace Kurogane {
 	public class Engine {
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
 
+		const string LibraryPath = "Libraries";
+
 		protected BinderFactory Factory { get; private set; }
 
 		/// <summary>グローバルスコープ</summary>
@@ -31,6 +33,7 @@ namespace Kurogane {
 		public Engine()
 			: this(new BinderFactory()) {
 			InitLibrary();
+			LoadStandardLibraries();
 		}
 
 		protected Engine(BinderFactory factory) {
@@ -69,6 +72,14 @@ namespace Kurogane {
 			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
 				obj => { this.Out.Write(obj); return obj; }, "を"));
 			Global.SetVariable("改行", Environment.NewLine);
+		}
+
+		private void LoadStandardLibraries() {
+			var exePath = this.GetType().Assembly.Location;
+			var libPath = Path.Combine(Path.GetDirectoryName(exePath), LibraryPath);
+			foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
+				this.ExecuteFile(file);
+			}
 		}
 	}
 }

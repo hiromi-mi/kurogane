@@ -10,12 +10,14 @@ namespace Kurogane.Compiler {
 			var p = new Parser(filename);
 			var pair = p.ParseBlock(token);
 
-			if (pair.Token is NullToken)
+			if (pair.Token is NullToken) {
 				return pair.Node;
-			else
+			}
+			else {
 				throw new SyntaxException(
 					"プログラムを最後まで読み取ることができませんでした。",
 					filename, pair.Token.LineNumber, pair.Token.CharCount);
+			}
 		}
 
 		private readonly string _FileName;
@@ -39,10 +41,9 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<IStatement> ParseIStatement(Token token) {
-			var ifPair = ParseIfStatement(token);
-			if (ifPair != null)
-				return ifPair;
-			return ParseINormalStatement(token);
+			return
+				ParseIfStatement(token) ??
+				ParseINormalStatement(token) as IPair<IStatement>;
 		}
 
 		#region もし文
@@ -75,7 +76,7 @@ namespace Kurogane.Compiler {
 				.MatchFlow((ReservedToken t) => t.Value == "なら");
 			if (token == null)
 				return null;
-
+			token = token.MatchFlow((CommaToken t) => true) ?? token; // 読点が存在していれば読み飛ばす。
 			var thenPair = ParseINormalStatement(token);
 			if (thenPair == null)
 				throw Error("「なら」の後ろが正しく解析できません。", token);
@@ -90,6 +91,7 @@ namespace Kurogane.Compiler {
 				ParseExprBlock(token) ??
 				ParseDefun(token) ??
 				ParseBlockExecute(token) ??
+				ParseReturn(token) ??
 				ParsePhraseChain(token) as IPair<INormalStatement>;
 		}
 
@@ -159,6 +161,18 @@ namespace Kurogane.Compiler {
 			return MakePair(new BlockExecute(blockPair.Node), lastToken);
 		}
 
+		private IPair<Return> ParseReturn(Token token) {
+			var elemPair = ParseElement(token);
+			if (elemPair == null)
+				return null;
+			var nextToken = elemPair.Token
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.ReturnText)
+				.MatchFlow((PeriodToken t) => true);
+			if (nextToken == null)
+				return null;
+			return MakePair(new Return(elemPair.Node), nextToken);
+		}
+
 		#region PhraseChain
 
 		private IPair<PhraseChain> ParsePhraseChain(Token token) {
@@ -211,12 +225,8 @@ namespace Kurogane.Compiler {
 					lst.Add(new ArgSuffixPair(NullLiteral.Instant, sfx));
 					token = token.Next;
 				}
-				if (token.Match((ReservedToken t) => t.Value == "返す")) {
-					var value = CreateTuple(lst);
-					//var value = lst.Where(pair => pair.Suffix == "を").Select(pair => pair.Argument).SingleOrDefault();
-					return MakePair(new Return(value), token.Next);
-				}
 			}
+
 			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
 				var dfn = CreateDefine(lst);
 				if (dfn == null)
@@ -465,7 +475,7 @@ namespace Kurogane.Compiler {
 					token is NotEqualOpToken ? BinaryOperationType.NotEqual :
 					token is LessThanOpToken ? BinaryOperationType.LessThan :
 					token is GreaterThanOpToken ? BinaryOperationType.GreaterThan :
-					token is LessThanEqualOpToken ? BinaryOperationType.LessThanOrEqual:
+					token is LessThanEqualOpToken ? BinaryOperationType.LessThanOrEqual :
 					token is GreaterThanEqualOpToken ? BinaryOperationType.GreaterThanOrEqual :
 					BinaryOperationType.Unknown;
 

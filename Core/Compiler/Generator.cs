@@ -56,6 +56,8 @@ namespace Kurogane.Compiler {
 				return ConvertDefun((Defun)stmt);
 			if (stmt is BlockExecute)
 				return ConvertBlockExecute((BlockExecute)stmt);
+			if (stmt is Return)
+				return ConvertReturn((Return)stmt);
 			throw new NotImplementedException(stmt.GetType().Name);
 		}
 
@@ -142,8 +144,6 @@ namespace Kurogane.Compiler {
 				return ConvertAssign((Assign)ph, ref lastExpr);
 			if (ph is DefineValue)
 				return ConvertDefineValue((DefineValue)ph, ref lastExpr);
-			if (ph is Return)
-				return ConvertReturn((Return)ph, ref lastExpr);
 			throw new NotImplementedException();
 		}
 
@@ -151,18 +151,8 @@ namespace Kurogane.Compiler {
 			return ConvertAssign(new Assign(defineValue.Name, defineValue.Value), ref lastExpr);
 		}
 
-		private GotoExpression ConvertReturn(Return ret, ref Expression lastExpr) {
-			Expression value;
-			if (ret.Value != null) {
-				value = ConvertElement(ret.Value);
-			}
-			else if (lastExpr != null) {
-				value = lastExpr;
-				lastExpr = null;
-			}
-			else {
-				value = Expression.Constant(null);
-			}
+		private GotoExpression ConvertReturn(Return ret) {
+			var value = ConvertElement(ret.Value);
 			var target = GetReturnTarget();
 			if (value.Type != typeof(object))
 				value = Expression.Convert(value, typeof(object));

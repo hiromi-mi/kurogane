@@ -121,6 +121,18 @@ namespace Kurogane.Compiler {
 		}
 	}
 
+	public class Return : INormalStatement {
+		public Element Value;
+
+		public Return(Element value) {
+			this.Value = value;
+		}
+
+		public override string ToString() {
+			return "return " + Value;
+		}
+	}
+
 	public class PhraseChain : INormalStatement {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -232,19 +244,7 @@ namespace Kurogane.Compiler {
 			return Name + " : " + Value;
 		}
 	}
-
-	public class Return : IPhrase {
-		public Element Value;
-
-		public Return(Element value) {
-			this.Value = value;
-		}
-
-		public override string ToString() {
-			return "返す。";
-		}
-	}
-
+	
 	public class Block {
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public readonly IList<IStatement> Statements;

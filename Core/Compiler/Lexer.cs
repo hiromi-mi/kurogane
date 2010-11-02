@@ -347,10 +347,6 @@ namespace Kurogane.Compiler {
 				ConstantNames.TrueText, ConstantNames.FalseText, ConstantNames.ElseText,
 				ConstantNames.NullText };
 			string str = buff.ToString();
-			if (str == "返" && _CurrentChar == 'す') {
-				_NextChar();
-				return new ReservedToken(this, "返す");
-			}
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);
 			else
@@ -381,7 +377,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "もし", "なら", "してみて", "してみる", "して", "し", "する" };
+			string[] reserved = { "もし", "なら", ConstantNames.ReturnText, "してみて", "してみる", "して", "し", "する" };
 			string str = buff.ToString();
 			if (Array.IndexOf(reserved, str) >= 0)
 				return new ReservedToken(this, str);

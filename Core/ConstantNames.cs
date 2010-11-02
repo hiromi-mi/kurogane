@@ -20,5 +20,7 @@ namespace Kurogane {
 		public const string BlockExec = "実行";
 		public const string BlockBegin = "以下";
 		public const string BlockEnd = "以上";
+
+		public const string ReturnText = "である";
 	}
 }

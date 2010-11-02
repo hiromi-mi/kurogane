@@ -183,9 +183,19 @@ namespace Kurogane {
 						throw new NotImplementedException();
 					}
 					else /* paramLen < argLen */ {
+						for (int i = 2; i <= paramLen; i++)
+							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i + 1]);
 						// arg を param に集約
-						break;
-						throw new NotImplementedException();
+						int count = argLen - paramLen;
+						Expression listExpr = Expression.Convert(args[argL + 1 + count + offset].Expression, typeof(object));
+						var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+						while (count-- > 0) {
+							listExpr = Expression.New(
+								ctorInfo,
+								Expression.Convert(args[argL + 1 + count + offset].Expression, typeof(object)),
+								listExpr);
+						}
+						parameters[prmL + 1] = listExpr;
 					}
 					prmR = prmL;
 				}
