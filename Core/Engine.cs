@@ -87,16 +87,8 @@ namespace Kurogane {
 		private void LoadStandardLibraries() {
 			var asm = this.GetType().Assembly;
 			foreach (var name in asm.GetManifestResourceNames())
-				if (name.EndsWith(".krg"))
+				if (name.EndsWith(".krg.txt"))
 					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
-
-			//var exePath = this.GetType().Assembly.Location;
-			//var libPath = Path.Combine(Path.GetDirectoryName(exePath), LibraryPath);
-			//if (Directory.Exists(libPath)) {
-			//    foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
-			//        this.ExecuteFile(file);
-			//    }
-			//}
 		}
 	}
 }
