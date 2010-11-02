@@ -417,6 +417,30 @@ namespace Kurogane.Compiler {
 		}
 	}
 
+	public class Lambda : Element {
+		public readonly Element Element;
+
+		public Lambda(Element elem) {
+			this.Element = elem;
+		}
+
+		public override string ToString() {
+			return "【" + Element + "】";
+		}
+	}
+
+	public class LambdaParameter : Literal {
+		public readonly string Name;
+
+		public LambdaParameter(string name) {
+			this.Name = name;
+		}
+
+		public override string ToString() {
+			return Name;
+		}
+	}
+
 	#endregion
 
 	#endregion

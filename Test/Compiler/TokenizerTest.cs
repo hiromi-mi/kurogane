@@ -23,14 +23,14 @@ namespace Kurogane.Test.Compiler {
 		[TestMethod]
 		public void Tokenize_関数宣言() {
 			var code =
-				"以下の手順で処理する。" +
+				"以下の定義で処理する。" +
 				"	「こんにちは」を表示する。" +
 				"以上。";
 			var token = Tokenizer.Tokenize(code);
 			Assert.IsTrue(token
 				.MatchFlow((ReservedToken t) => t.Value == "以下")
 				.MatchFlow((SuffixToken t) => t.Value == "の")
-				.MatchFlow((ReservedToken t) => t.Value == "手順")
+				.MatchFlow((ReservedToken t) => t.Value == "定義")
 				.MatchFlow((SuffixToken t) => t.Value == "で")
 				.MatchFlow((SymbolToken t) => t.Value == "処理")
 				.MatchFlow((ReservedToken t) => t.Value == "する")

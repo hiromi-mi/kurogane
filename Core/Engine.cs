@@ -77,8 +77,10 @@ namespace Kurogane {
 		private void LoadStandardLibraries() {
 			var exePath = this.GetType().Assembly.Location;
 			var libPath = Path.Combine(Path.GetDirectoryName(exePath), LibraryPath);
-			foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
-				this.ExecuteFile(file);
+			if (Directory.Exists(libPath)) {
+				foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
+					this.ExecuteFile(file);
+				}
 			}
 		}
 	}

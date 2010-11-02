@@ -6,6 +6,8 @@ using System.Text;
 namespace Kurogane {
 	public static class ConstantNames {
 
+		public const string Defun = "定義";
+
 		public const string Head = "頭";
 		public const string Tail = "体";
 

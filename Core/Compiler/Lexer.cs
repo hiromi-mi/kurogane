@@ -31,8 +31,12 @@ namespace Kurogane.Compiler {
 		};
 
 		private static readonly char[] Brackets = {
-			'(', '{', '[', '（', '｛', '［',
-			')', '}', ']', '）', '｝', '］'
+			'(', '{', '[', '（', '｛', '［', '【',
+			')', '}', ']', '）', '｝', '］', '】',
+		};
+
+		private static readonly char[] LambdaSpaceToken = {
+			'○', '△', '□',										  
 		};
 
 		#endregion
@@ -129,6 +133,9 @@ namespace Kurogane.Compiler {
 
 			if (Array.IndexOf(OperatorCharacter, c) >= 0)
 				return ReadOperatorToken();
+
+			if (Array.IndexOf(LambdaSpaceToken, c) >= 0)
+				return ReadLambdSpaceToken();
 
 			if (kanaBegin <= c && c <= kanaEnd)
 				return ReadPostPositionToken();
@@ -237,6 +244,17 @@ namespace Kurogane.Compiler {
 			}
 		}
 
+		private Token ReadLambdSpaceToken() {
+			LineNumber = line;
+			CharCount = ch;
+			var buff = new StringBuilder();
+			while (Array.IndexOf(LambdaSpaceToken, (char)_CurrentChar) >= 0) {
+				buff.Append((char)_CurrentChar);
+				_NextChar();
+			}
+			return new LambdaSpaceToken(this, buff.ToString());
+		}
+
 		private AbstractOperatorToken ReadOperatorToken() {
 			LineNumber = line;
 			CharCount = ch;
@@ -342,7 +360,7 @@ namespace Kurogane.Compiler {
 				else
 					break;
 			}
-			string[] reserved = { "手順",
+			string[] reserved = { ConstantNames.Defun,
 				ConstantNames.BlockBegin, ConstantNames.BlockEnd, ConstantNames.BlockExec,
 				ConstantNames.TrueText, ConstantNames.FalseText, ConstantNames.ElseText,
 				ConstantNames.NullText };
@@ -424,6 +442,10 @@ namespace Kurogane.Compiler {
 			case '}':
 			case '｝':
 				return new CloseBraceToken(this);
+			case '【':
+				return new OpenSumiBracketToken(this);
+			case '】':
+				return new CloseSumiBracketToken(this);
 			}
 			Debug.Assert(false, "到着不可能フロー" + Environment.NewLine + "プログラムを見直すこと。");
 			throw new NotImplementedException();

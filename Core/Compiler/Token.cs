@@ -81,6 +81,19 @@ namespace Kurogane.Compiler {
 	}
 
 	/// <summary>
+	/// ラムダ式の引数の代わりとなる記号を示すトークン
+	/// </summary>
+	public class LambdaSpaceToken : TargetToken {
+		private readonly string _value;
+		public override string Value { get { return _value; } }
+
+		public LambdaSpaceToken(Lexer lexer, string value)
+			: base(lexer) {
+				_value = value;
+		}
+	}
+
+	/// <summary>
 	/// 文字列リテラルを示すトークン
 	/// </summary>
 	public class LiteralToken : TargetToken {
@@ -347,6 +360,24 @@ namespace Kurogane.Compiler {
 		public override string Value { get { return "}"; } }
 		public CloseBraceToken(Lexer lexer) : base(lexer) { }
 	}
+
+
+	/// <summary>
+	/// 開きすみつき括弧を示すトークン
+	/// </summary>
+	public class OpenSumiBracketToken : Token {
+		public override string Value { get { return "【"; } }
+		public OpenSumiBracketToken(Lexer lexer) : base(lexer) { }
+	}
+
+	/// <summary>
+	/// 閉じすみつき括弧を示すトークン
+	/// </summary>
+	public class CloseSumiBracketToken : Token {
+		public override string Value { get { return "】"; } }
+		public CloseSumiBracketToken(Lexer lexer) : base(lexer) { }
+	}
+
 
 	#endregion
 

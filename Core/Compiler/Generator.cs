@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
-using System.Diagnostics;
 using Kurogane.RuntimeBinder;
 using Kurogane.Util;
 
@@ -20,12 +19,11 @@ namespace Kurogane.Compiler {
 		}
 
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
+		private readonly BinderFactory _factory;
+		private LabelTarget _ReturnTarget = null;
+
 		public ParameterExpression Global { get; set; }
 		public virtual SymbolDocumentInfo SymbolDocumentInfo { get; private set; }
-
-		private readonly BinderFactory _factory;
-
-		private LabelTarget _ReturnTarget = null;
 
 		// ----- ----- ----- ----- ctor ----- ----- ----- -----
 		protected Generator(BinderFactory factory) {
@@ -43,8 +41,6 @@ namespace Kurogane.Compiler {
 			if (_ReturnTarget == null)
 				return blockExpr;
 			return Expression.Label(_ReturnTarget, blockExpr);
-			//var ret = Expression.Return(_ReturnTarget, blockExpr, typeof(object));
-			//return Expression.Block(ret, Expression.Label(_ReturnTarget, ));
 		}
 
 		private Expression ConvertStatement(IStatement stmt) {
@@ -93,7 +89,7 @@ namespace Kurogane.Compiler {
 		}
 
 		public virtual Expression ConvertDefun(Defun defun) {
-			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var funcVarExpr = Expression.Parameter(sfxFuncType);
 			var defunExpr = ConvertDefunCore(defun, funcVarExpr);
@@ -101,7 +97,7 @@ namespace Kurogane.Compiler {
 		}
 
 		public virtual Expression ConvertDefunCore(Defun defun, ParameterExpression funcExpr) {
-			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var dic = new Dictionary<string, ParameterExpression>();
 			dic[defun.Name] = funcExpr;
@@ -262,7 +258,7 @@ namespace Kurogane.Compiler {
 
 		#region ConvertElement
 
-		public Expression ConvertElement(Element elem) {
+		protected Expression ConvertElement(Element elem) {
 			if (elem is Symbol)
 				return ConvertSymbol(((Symbol)elem).Name);
 			if (elem is Literal)
@@ -271,6 +267,8 @@ namespace Kurogane.Compiler {
 				return ConvertBinaryExpr((BinaryExpr)elem);
 			if (elem is PropertyAccess)
 				return ConvertPropertyGet((PropertyAccess)elem);
+			if (elem is Lambda)
+				return ConvertLambda((Lambda)elem);
 			throw new NotImplementedException();
 		}
 
@@ -281,11 +279,16 @@ namespace Kurogane.Compiler {
 				ConvertElement(propertyAccess.Value));
 		}
 
+		protected virtual Expression ConvertLambda(Lambda lambda) {
+			var gen = new LambdaGenerator(_factory, this);
+			return gen.ConvertLambdaCore(lambda);
+		}
+
 		public virtual Expression ConvertSymbol(string name) {
 			return Expression.Dynamic(_factory.GetMemberBinder(name), typeof(object), Global);
 		}
 
-		private Expression ConvertLiteral(Element lit) {
+		protected virtual Expression ConvertLiteral(Element lit) {
 			if (lit is StringLiteral)
 				return Expression.Constant(((StringLiteral)lit).Value, typeof(string));
 			if (lit is IntLiteral)

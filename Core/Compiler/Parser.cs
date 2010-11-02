@@ -101,7 +101,7 @@ namespace Kurogane.Compiler {
 			var keywordSkipped = token
 				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockBegin)
 				.MatchFlow((SuffixToken t) => t.Value == "の")
-				.MatchFlow((ReservedToken t) => t.Value == "手順")
+				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.Defun)
 				.MatchFlow((SuffixToken t) => t.Value == "で");
 			if (keywordSkipped == null)
 				return null;
@@ -591,6 +591,7 @@ namespace Kurogane.Compiler {
 			return
 				ParseSymbol(token) ??
 				ParseParenthesisExpr(token) ??
+				ParseSumiBracketExpr(token) ?? 
 				ParseLiteral(token);
 		}
 
@@ -604,6 +605,18 @@ namespace Kurogane.Compiler {
 			if (lastToken == null)
 				throw Error("閉じ括弧が出現していません。", elemPair.Token);
 			return MakePair(elemPair.Node, lastToken);
+		}
+
+		private IPair<Element> ParseSumiBracketExpr(Token token) {
+			token = token.MatchFlow((OpenSumiBracketToken t) => true);
+			if (token == null)
+				return null;
+			var elemPair = ParseElement(token);
+			var lastToken = elemPair.Token
+				.MatchFlow((CloseSumiBracketToken t) => true);
+			if (lastToken == null)
+				throw Error("閉じ括弧が出現していません。", elemPair.Token);
+			return MakePair(new Lambda(elemPair.Node), lastToken);
 		}
 
 		private IPair<Symbol> ParseSymbol(Token token) {
@@ -628,9 +641,12 @@ namespace Kurogane.Compiler {
 				double value = ((DecimalToken)token).DecimalValue;
 				return MakePair(new FloatLiteral(value), nextToken);
 			}
-			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText)) {
-				return MakePair(NullLiteral.Instant, nextToken);
+			if (token is LambdaSpaceToken) {
+				return MakePair(new LambdaParameter(((LambdaSpaceToken)token).Value), nextToken);
 			}
+
+			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText))
+				return MakePair(NullLiteral.Instant, nextToken);
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.ElseText))
 				return MakePair(BoolLiteral.True, nextToken);
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.TrueText))

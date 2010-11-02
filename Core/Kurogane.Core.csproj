@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="BinaryOperationType.cs" />
     <Compile Include="Compiler\BlockGenerator.cs" />
+    <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
     <Compile Include="Compiler\CompilerException.cs" />
     <Compile Include="Compiler\Generator.cs" />
@@ -86,7 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libraries\リスト.krg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

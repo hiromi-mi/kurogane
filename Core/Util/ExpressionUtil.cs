@@ -1,11 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Linq.Expressions;
 
 namespace Kurogane.Util {
 	public static class ExpressionUtil {
+
+		private static readonly List<Type> _FuncTypeCache = new List<Type>();
+		public static Type GetFuncType(int argCount) {
+			if (argCount < 0)
+				throw new ArgumentOutOfRangeException("argCount");
+			int addSize = argCount - _FuncTypeCache.Count + 1;
+			for (int i = 0; i < addSize; i++)
+				_FuncTypeCache.Add(null);
+			var type = _FuncTypeCache[argCount];
+			if (type == null) {
+				var types = new Type[argCount + 1];
+				for (int i = 0; i < types.Length; i++)
+					types[i] = typeof(object);
+				type = Expression.GetFuncType(types);
+				_FuncTypeCache[argCount] = type;
+			}
+			return type;
+		}
+
+		#region BetaReduction
 
 		public static Expression BetaReduction<TResult>(Expression<Func<TResult>> func) {
 			return func.Body;
@@ -59,5 +78,8 @@ namespace Kurogane.Util {
 				return base.VisitParameter(node);
 			}
 		}
+
+		#endregion
+
 	}
 }

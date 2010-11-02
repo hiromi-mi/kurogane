@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 using Kurogane.RuntimeBinder;
 using Kurogane.Util;
@@ -46,7 +43,7 @@ namespace Kurogane.Compiler {
 			var name = defun.Name;
 			if (_LocalVariables.ContainsKey(name))
 				throw new SemanticException("変数「" + name + "」が二度定義されています。");
-			var funcType = ReflectionHelper.TypeOfFunc[defun.Params.Count];
+			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var funcExpr = Expression.Parameter(sfxFuncType);
 			_LocalVariables[name] = funcExpr;
