@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Kurogane.Util;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -14,16 +15,15 @@ namespace Kurogane.RuntimeBinder {
 
 		public override DynamicMetaObject FallbackConvert(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
 			if (target.LimitType == typeof(bool)) {
-				var expr = Expression.Convert(target.Expression, typeof(bool));
-				return new DynamicMetaObject(expr, BindingRestrictions.GetTypeRestriction(target.Expression, typeof(bool)));
+				return new DynamicMetaObject(
+					Expression.Convert(target.Expression, typeof(bool)),
+					BindingRestrictions.GetTypeRestriction(target.Expression, typeof(bool)));
 			}
-			if (target.LimitType == typeof(object)) {
-				var expr = Expression.Equal(target.Expression,  Expression.Constant(null));
-				return new DynamicMetaObject(expr, BindingRestrictions.GetTypeRestriction(target.Expression, typeof(object)));
+			else {
+				return new DynamicMetaObject(
+					Expression.TypeIs(target.Expression, typeof(object)),
+					BindingRestrictions.GetExpressionRestriction(Expression.Not(Expression.TypeIs(target.Expression, typeof(bool)))));
 			}
-			return new DynamicMetaObject(
-				Expression.Constant(true),
-				BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
 		}
 	}
 }

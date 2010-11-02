@@ -14,8 +14,9 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			SumTestCore();
+			UniqueTest();
 		}
+
 
 		static void SumTestCore() {
 			var code = "0と[1, 2, 3, 4, 5]を【□＋○】で集約し、出力する。改行を出力する。";
@@ -23,25 +24,25 @@ namespace ConsoleTest {
 			engine.Execute(code);
 		}
 
+		static void SearchOne() {
+			var code =
+				"3を対象とする。" +
+				"[3,1,4,1,5,9,2,6,5]から【□＝対象】を検索し，出力する。";
+			var engine = new Engine();
+			engine.Execute(code);
+		}
+
 		static void UniqueTest() {
 			var engine = new Engine();
 			engine.Execute(@"
-以下の定義でリストから要素を検索する。
-　もし
-　　（リスト＝無）なら
-　　　　偽を返す。
-　　（リストの頭＝要素）なら
-　　　　真を返す。
-　　　他なら
-　　　　リストの体から要素を検索する。
-以上。
 以下の定義でリストをユニークする。
-　　もし（リスト＝無）ならリストを返す。
+　　もし（リスト＝無）なら、無である。
 　　リストの体をユニークし、ユニーク体とする。
-　　ユニーク体からリストの頭を検索し、発見とする。
+	リストの頭を対象とする。
+　　ユニーク体から【□＝対象】を検索し、発見とする。
 　　もし
-　　　　発見ならユニーク体を返す。
-　　　　他ならリストの頭とユニーク体を返す。
+　　　　発見なら、ユニーク体である。
+　　　　他なら、リストの頭とユニーク体である。
 以上。
 [3,1,4,1,5,9,2,6,5]をユニークし、それぞれ出力する。
 ");

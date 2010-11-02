@@ -35,7 +35,9 @@ namespace Kurogane.RuntimeBinder {
 			var nullExpr = Expression.Constant(null);
 			return new DynamicMetaObject(
 				Expression.Convert(
-					Expression.MakeBinary(this.Operation, left.Expression, right.Expression),
+					Expression.MakeBinary(this.Operation,
+						Expression.Convert(left.Expression,typeof(object)),
+						Expression.Convert(right.Expression, typeof(object))),
 					typeof(object)),
 				BindingRestrictions.GetExpressionRestriction(
 					Expression.OrElse(

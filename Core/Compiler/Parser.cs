@@ -165,12 +165,29 @@ namespace Kurogane.Compiler {
 			var elemPair = ParseElement(token);
 			if (elemPair == null)
 				return null;
+			token = elemPair.Token;
+			var lst = new List<ArgSuffixPair>();
+			while (token.Match((SuffixToken t) => t.Value == "と")) {
+				lst.Add(new ArgSuffixPair(elemPair.Node, "と"));
+				elemPair = ParseElement(token.Next);
+				if (elemPair == null)
+					break;
+				token = elemPair.Token;
+			}
+			Element retValue = null;
+			if (lst.Count == 0) {
+				retValue = elemPair.Node;
+			}
+			else {
+				lst.Add(new ArgSuffixPair(elemPair.Node, "で"));
+				retValue = CreateTuple(lst);
+			}
 			var nextToken = elemPair.Token
 				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.ReturnText)
 				.MatchFlow((PeriodToken t) => true);
 			if (nextToken == null)
 				return null;
-			return MakePair(new Return(elemPair.Node), nextToken);
+			return MakePair(new Return(retValue), nextToken);
 		}
 
 		#region PhraseChain

@@ -67,6 +67,16 @@ namespace Kurogane {
 			}
 		}
 
+		private object ExecuteStream(Stream stream, string filename) {
+			using (var reader = new StreamReader(stream, DefaultEncoding)) {
+				var token = Tokenizer.Tokenize(reader, filename);
+				var ast = Parser.Parse(token, filename);
+				var expr = Generator.Generate(ast, this.Factory, filename);
+				var func = expr.Compile();
+				return func(this.Global);
+			}
+		}
+
 		private void InitLibrary() {
 			Global.SetVariable("入力", new SuffixFunc<Func<object>>(this.In.ReadLine));
 			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
@@ -75,13 +85,18 @@ namespace Kurogane {
 		}
 
 		private void LoadStandardLibraries() {
-			var exePath = this.GetType().Assembly.Location;
-			var libPath = Path.Combine(Path.GetDirectoryName(exePath), LibraryPath);
-			if (Directory.Exists(libPath)) {
-				foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
-					this.ExecuteFile(file);
-				}
-			}
+			var asm = this.GetType().Assembly;
+			foreach (var name in asm.GetManifestResourceNames())
+				if (name.EndsWith(".krg"))
+					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
+
+			//var exePath = this.GetType().Assembly.Location;
+			//var libPath = Path.Combine(Path.GetDirectoryName(exePath), LibraryPath);
+			//if (Directory.Exists(libPath)) {
+			//    foreach (var file in Directory.GetFiles(libPath, "*.krg")) {
+			//        this.ExecuteFile(file);
+			//    }
+			//}
 		}
 	}
 }
