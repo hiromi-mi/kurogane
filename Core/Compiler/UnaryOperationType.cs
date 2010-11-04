@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Kurogane {
+namespace Kurogane.Compiler {
 
 	/// <summary>
 	/// 組み込みの単項演算子の種類を表す。

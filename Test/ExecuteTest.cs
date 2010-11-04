@@ -15,13 +15,6 @@ namespace Kurogane.Test {
 		public void Init() {
 			_engine = new Engine();
 			_engine.Execute(
-				"以下の定義でリストを初期値から関数で集約する。" +
-				"	もし(リスト＝無)なら" +
-				"		初期値をパスする。" +
-				"	リストの体を初期値から関数で集約し、次に代入する。" +
-				"	リストの頭と次を関数する。" +
-				"以上。");
-			_engine.Execute(
 				"以下の定義でNをパスする。" +
 				"	Nである。" +
 				"以上。");
@@ -49,19 +42,22 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void コメントを読み飛ばす() {
-			string code =
+			_engine.Execute(
+				"以下の定義でNをパスする。" +
+				"	Nである。" +
+				"以上。");
+			object num = _engine.Execute(
 				"※これは、コメントです。" +
 				"1をパスする。" +
 				"※（括弧で囲むよ。複数でもOK！。。。）" +
-				"3をパスする。";
-			object num = _engine.Execute(code);
+				"3をパスする。");
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 3);
 		}
 
 		[TestMethod]
 		public void フィボナッチ数を計算する() {
-			string code =
+			var code =
 				"以下の定義でNをフィボナッチする。" +
 				"	もし(N≦1)なら" +
 				"		Nである。" +
@@ -93,40 +89,10 @@ namespace Kurogane.Test {
 		}
 
 		[TestMethod]
-		public void リストの中身を合計する() {
-			string code =
-				"以下の定義でAにBを連結する。" +
-				"	以下の定義でTで判定する。" +
-				"		もし(T＝0)なら" +
-				"			Aである。" +
-				"		他なら" +
-				"			Bである。" +
-				"	以上。" +
-				"	判定である。" +
-				"以上。" +
-				"以下の定義で分解を合計する。" +
-				"	以下の定義で計算する。" +
-				"		0で分解し、Aとする。" +
-				"		1で分解し、合計し、Bとする。" +
-				"		(A+B)である。" +
-				"	以上。" +
-				"	もし(分解＝0)なら" +
-				"		0である。" +
-				"	他なら" +
-				"		計算する。" +
-				"以上。" +
-				"0を1に連結し、2に連結し、3に連結し、4に連結し、リストに代入する。" +
-				"リストを合計する。";
-			object num = _engine.Execute(code);
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 10);
-		}
-
-		[TestMethod]
 		public void 対で引数をとれる() {
 			object num = _engine.Execute(
 				"以下の定義でAとBを加算する。" +
-				"	(A+B)をパスする。" +
+				"	(A+B)である。" +
 				"以上。" +
 				"3と5を加算する。");
 			Assert.IsInstanceOfType(num, typeof(int));
@@ -136,24 +102,8 @@ namespace Kurogane.Test {
 		[TestMethod]
 		public void 集約関数() {
 			_engine.Execute(
-				"以下の定義でAとBを加算する。" +
-				"	(A＋B)をパスする。" +
-				"以上。" +
-				"以下の定義でAとBを乗算する。" +
-				"	(A×B)をパスする。" +
-				"以上。" +
-				"以下の定義でリストを初期値から関数で集約する。" +
-				"	以下の定義で計算する。" +
-				"		リストの体を初期値から関数で集約し、次に代入する。" +
-				"		リストの頭と次を関数する。" +
-				"	以上。" +
-				"	もし(リスト＝無)なら" +
-				"		初期値をパスする。" +
-				"	他なら" +
-				"		計算する。" +
-				"以上。" +
-				"[1, 2, 3, 4, 5]を0から加算で集約し、Aに代入する。" +
-				"[1, 2, 3, 4, 5]を1から乗算で集約し、Bに代入する。");
+				"0と[1, 2, 3, 4, 5]を【○＋△】で集約し、Aとする。" +
+				"1と[1, 2, 3, 4, 5]を【○×△】で集約し、Bとする。");
 
 			object a = _engine.Global.GetVariable("A");
 			Assert.IsInstanceOfType(a, typeof(int));
@@ -194,17 +144,17 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void もし文が動く() {
-			_engine.Execute(
-				"3をAに代入する。" +
+			var result = _engine.Execute(
+				"3をAとする。" +
 				"もし" +
 				"　(A＝無)なら" +
-				"　　「間違い」を結果に代入する。" +
+				"　　「失敗」である。" +
 				"　(A＝３)なら" +
-				"　　「正しい」を結果に代入する。" +
+				"　　「成功」である。" +
 				"　他なら" +
-				"　　　「間違い」を結果に代入する。");
+				"　　「失敗」である。");
 
-			Assert.AreEqual("正しい", _engine.Global.GetVariable("結果"));
+			Assert.AreEqual("成功", result);
 		}
 	}
 }

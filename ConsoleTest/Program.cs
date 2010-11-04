@@ -14,14 +14,15 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			UniqueTest();
+			SumTestCore();
 		}
 
 
 		static void SumTestCore() {
-			var code = "0と[1, 2, 3, 4, 5]を【□＋○】で集約し、出力する。改行を出力する。";
 			var engine = new Engine();
-			engine.Execute(code);
+			engine.Execute(
+				"0と[1, 2, 3, 4, 5]を【○＋△】で集約し、Aとする。" +
+				"1と[1, 2, 3, 4, 5]を【○×△】で集約し、Bとする。");
 		}
 
 		static void SearchOne() {

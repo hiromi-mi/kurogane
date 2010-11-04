@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BinaryOperationType.cs" />
+    <Compile Include="Compiler\BinaryOperationType.cs" />
     <Compile Include="Compiler\BlockGenerator.cs" />
     <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
@@ -65,7 +65,7 @@
     <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="RuntimeBinder\ToBoolBinder.cs" />
-    <Compile Include="UnaryOperationType.cs" />
+    <Compile Include="Compiler\UnaryOperationType.cs" />
     <Compile Include="Util\ExpressionUtil.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />
     <Compile Include="Dynamic\MetaObjectLoader.cs" />
@@ -86,7 +86,9 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Libraries\リスト系.krg.txt" />
+    <EmbeddedResource Include="Libraries\リスト系.krg.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
