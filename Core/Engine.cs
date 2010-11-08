@@ -69,7 +69,7 @@ namespace Kurogane {
 			var token = Tokenizer.Tokenize(stream, filename);
 			var ast = Parser.Parse(token, filename);
 			var expr = Generator.Generate(ast, this.Factory, filename);
-			expr = FuncAnalyzer.Analyze(expr);
+			//expr = FuncAnalyzer.Analyze(expr);
 			var func = expr.Compile();
 			return func(this.Global);
 		}

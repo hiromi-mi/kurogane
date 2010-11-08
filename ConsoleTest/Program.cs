@@ -14,7 +14,7 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			SumTestCore();
+			FibTest();
 		}
 
 
@@ -23,6 +23,17 @@ namespace ConsoleTest {
 			engine.Execute(
 				"0と[1, 2, 3, 4, 5]を【○＋△】で集約し、Aとする。" +
 				"1と[1, 2, 3, 4, 5]を【○×△】で集約し、Bとする。");
+		}
+
+		static void Add() {
+			var engine = new Engine();
+			engine.Execute(@"
+以下の定義でAとBを加算する。
+	もし（A≦0）なら、Bである。
+	他なら、(A-1)と(B+1)を加算する。
+以上。
+1000と1000を加算し、出力する。改行を出力する。
+");
 		}
 
 		static void SearchOne() {
@@ -109,11 +120,11 @@ namespace ConsoleTest {
 		static void FibTest() {
 			string code =
 				"以下の定義でNをFIB変換する。" +
-				"	もし(N≦1)ならNを返す。" +
+				"	もし(N≦1)ならNである。" +
 				"	他なら以下を実行する。" +
 				"		(N-1)をFIB変換し、Aとする。" +
 				"		(N-2)をFIB変換し、Bとする。" +
-				"		(A+B)を返す。" +
+				"		(A+B)である。" +
 				"	以上。" +
 				"以上。" +
 				"38をFIB変換し、出力する。改行を出力する。";
