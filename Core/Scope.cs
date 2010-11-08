@@ -17,18 +17,52 @@ namespace Kurogane {
 		}
 
 		public object GetVariable(string name) {
-			if (_values.ContainsKey(name)) {
-				return _values[name];
-			}
-			throw new KrgnRuntimeException(String.Format("変数「{0}」が存在しません。", name)); ;
+			object value = null;
+			_values.TryGetValue(name, out value);
+			return value;
 		}
 
 		public object SetVariable(string name, object value) {
 			return _values[name] = value;
 		}
 
+		#region IDynamicMetaObjectProvider
+
 		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
 			return new ScopeMetaObject(this, parameter);
 		}
+
+		internal class ScopeMetaObject : DynamicMetaObject {
+
+			public ScopeMetaObject(Scope self, Expression expr)
+				: base(expr, BindingRestrictions.GetExpressionRestriction(Expression.TypeIs(expr, typeof(Scope))), self) {
+			}
+
+			public override IEnumerable<string> GetDynamicMemberNames() {
+				return ((Scope)base.Value)._values.Keys;
+			}
+
+			public override DynamicMetaObject BindGetMember(GetMemberBinder binder) {
+				return new DynamicMetaObject(
+					Expression.Call(
+						Expression.Convert(this.Expression, typeof(Scope)),
+						typeof(Scope).GetMethod("GetVariable"),
+						Expression.Constant(binder.Name)),
+					this.Restrictions);
+			}
+
+			public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value) {
+				return new DynamicMetaObject(
+					Expression.Call(
+						Expression.Convert(this.Expression, typeof(Scope)),
+						typeof(Scope).GetMethod("SetVariable"),
+						Expression.Constant(binder.Name),
+						Expression.Convert(value.Expression, typeof(object))),
+					this.Restrictions);
+			}
+		}
+
+		#endregion
+
 	}
 }

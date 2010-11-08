@@ -64,6 +64,89 @@ namespace Kurogane {
 			return _Create(func, suffix1, suffix2, suffix3);
 		}
 
+		internal static Expression SortAndInvoke(Expression func, string[] prmSfx, CallInfo cInfo, Func<int, Expression> argArray) {
+			int offset = cInfo.ArgumentCount - cInfo.ArgumentNames.Count;
+			if (offset >= 2)
+				return ThrowArgumentException("助詞無しで渡された引数が多すぎます。");
+
+			// ordering parameters
+			var parameters = new Expression[prmSfx.Length];
+			int prmR = prmSfx.Length - 1;
+			bool offsetUsed = offset == 1 ? false : true; // Offsetを引数として利用したら立てる
+			while (prmR >= 0) {
+				// 仮引数の範囲を決定
+				var sfx = prmSfx[prmR];
+				int prmL = prmR - 1;
+				while (prmL >= 0 && prmSfx[prmL] == "と") prmL--;
+				var paramLen = prmR - prmL;
+				// 実引数の範囲を決定
+				var argSfx = cInfo.ArgumentNames;
+				int argR = argSfx.Count - 1;
+				while (argR >= 0 && argSfx[argR] != sfx) argR--;
+				// 暗黙引数が引数になるのは1回まで（のチェック）
+				if (argR < 0) {
+					if (offsetUsed)
+						break;
+					offsetUsed = true;
+				}
+				int argL = argR - 1;
+				while (argL >= 0 && argSfx[argL] == "と") argL--;
+				int argLen = argR - argL;
+				// arg->param へ 移行
+				if (paramLen == argLen) {
+					for (int i = 1; i <= argLen; i++) {
+						parameters[prmL + i] = Wrap( argArray(argL + i + offset));
+					}
+				}
+				else if (paramLen > argLen) {
+					// arg を param に展開
+					break;
+					throw new NotImplementedException();
+				}
+				else /* paramLen < argLen */ {
+					for (int i = 2; i <= paramLen; i++) {
+						parameters[prmL + i] = Wrap(argArray(argL + i + offset));
+					}
+					// arg を param に集約
+					int count = argLen - paramLen;
+
+					Expression listExpr = Wrap(argArray(argL + 1 + count + offset));
+					var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+					while (count-- > 0) {
+						listExpr = Expression.New(
+							ctorInfo,
+							Wrap(argArray(argL + 1 + count + offset)),
+							listExpr);
+					}
+					parameters[prmL + 1] = listExpr;
+				}
+				prmR = prmL;
+			}
+			// 正しく並びかえられたかチェック
+			foreach (var p in parameters)
+				if (p == null)
+					return ThrowArgumentException(
+						"引数または助詞が合っていません。" + Environment.NewLine +
+						"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
+						"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames));
+			return Expression.Invoke(func, parameters);
+		}
+
+		private static Expression ThrowArgumentException(string message) {
+			var ctorInfo = typeof(ArgumentException).GetConstructor(new[] { typeof(string) });
+			return Expression.Throw(Expression.New(ctorInfo, Expression.Constant(message)), typeof(object));
+		}
+
+		private static Expression Wrap(Expression expr, Type type) {
+			if (expr.Type == type)
+				return expr;
+			else
+				return Expression.Convert(expr, type);
+		}
+
+		private static Expression Wrap(Expression expr) {
+			return Wrap(expr, typeof(object));
+		}
 	}
 
 	public interface IDelegateProvider {

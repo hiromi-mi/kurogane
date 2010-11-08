@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Kurogane.Util;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -35,9 +36,16 @@ namespace Kurogane.RuntimeBinder {
 					Expression.Call(mInfo, Expression.Convert(target.Expression, funcType), arg.Expression),
 					BindingRestrictions.GetTypeRestriction(target.Expression, funcType));
 			}
-			return RuntimeBinderException.CreateMetaObject(
-				target.LimitType + "を射影関数（それぞれ）に適用できません。",
+			return ThrowArgumentException(
+				target.LimitType + "を用いて射影（それぞれ）できません。",
 				BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+		}
+
+		private static DynamicMetaObject ThrowArgumentException(string message, BindingRestrictions restrictions) {
+			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
+			return new DynamicMetaObject(
+				Expression.Throw(Expression.New(ctorInfo, Expression.Constant(message)), typeof(object)),
+				restrictions);
 		}
 	}
 }

@@ -49,32 +49,29 @@ namespace Kurogane {
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
 
 		public object Execute(string code) {
-			var token = Tokenizer.Tokenize(code);
-			var ast = Parser.Parse(token, null);
-			var expr = Generator.Generate(ast, this.Factory, null);
-			var func = expr.Compile();
-			return func(this.Global);
+			return ExecuteCore(new StringReader(code), null);
 		}
 
 		public object ExecuteFile(string filepath) {
 			using (var file = File.OpenRead(filepath))
 			using (var stream = new StreamReader(file, DefaultEncoding)) {
-				var token = Tokenizer.Tokenize(stream, filepath);
-				var ast = Parser.Parse(token, filepath);
-				var expr = Generator.Generate(ast, this.Factory, filepath);
-				var func = expr.Compile();
-				return func(this.Global);
+				return ExecuteCore(stream, filepath);
 			}
 		}
 
 		private object ExecuteStream(Stream stream, string filename) {
 			using (var reader = new StreamReader(stream, DefaultEncoding)) {
-				var token = Tokenizer.Tokenize(reader, filename);
-				var ast = Parser.Parse(token, filename);
-				var expr = Generator.Generate(ast, this.Factory, filename);
-				var func = expr.Compile();
-				return func(this.Global);
+				return ExecuteCore(reader, filename);
 			}
+		}
+
+		private object ExecuteCore(TextReader stream, string filename) {
+			var token = Tokenizer.Tokenize(stream, filename);
+			var ast = Parser.Parse(token, filename);
+			var expr = Generator.Generate(ast, this.Factory, filename);
+			expr = FuncAnalyzer.Analyze(expr);
+			var func = expr.Compile();
+			return func(this.Global);
 		}
 
 		private void InitLibrary() {

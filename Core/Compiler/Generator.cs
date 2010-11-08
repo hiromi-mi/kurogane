@@ -91,7 +91,7 @@ namespace Kurogane.Compiler {
 		public virtual Expression ConvertDefun(Defun defun) {
 			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
-			var funcVarExpr = Expression.Parameter(sfxFuncType);
+			var funcVarExpr = Expression.Parameter(sfxFuncType, defun.Name);
 			var defunExpr = ConvertDefunCore(defun, funcVarExpr);
 			return SetGlobal(defun.Name, Expression.Block(new[] { funcVarExpr }, defunExpr));
 		}

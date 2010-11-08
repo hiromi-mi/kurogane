@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Compiler\BinaryOperationType.cs" />
     <Compile Include="Compiler\BlockGenerator.cs" />
+    <Compile Include="Compiler\FuncAnalyzer.cs" />
     <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
     <Compile Include="Compiler\CompilerException.cs" />
