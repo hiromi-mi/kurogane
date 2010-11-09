@@ -2,21 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Kurogane;
 using Kurogane.Dynamic;
-using System.Linq.Expressions;
-using Kurogane.Util;
 using Kurogane.RuntimeBinder;
+using Kurogane.Util;
 
 namespace ConsoleTest {
 
 	class Program {
 
 		static void Main(string[] args) {
-			FibTest();
+			Hoge();
 		}
 
+		static void Hoge() {
+			var lst = ListCell.ConvertFrom(new[] { 1, 2, 3, 4, 5 });
+			foreach (var i in lst)
+				Console.WriteLine(i);
+		}
 
 		static void SumTestCore() {
 			var engine = new Engine();

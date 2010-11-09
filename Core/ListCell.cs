@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Dynamic;
-using System.Reflection;
-using Kurogane.Util;
-using System.Collections.ObjectModel;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Dynamic;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
+using Kurogane.Util;
 
 namespace Kurogane {
 
-	public class ListCell : IDynamicMetaObjectProvider, IEquatable<ListCell> {
+	public class ListCell : IDynamicMetaObjectProvider, IEquatable<ListCell>, IEnumerable {
 
 		#region static
 
@@ -23,17 +22,17 @@ namespace Kurogane {
 				return new Tuple<object, object>(left, right);
 		}
 
-		public static ListCell FromEnumerable(IEnumerable list) {
+		public static ListCell ConvertFrom(IEnumerable list) {
 			var tor = list.GetEnumerator();
 			using (var disp = tor as IDisposable) {
-				return FromEnumerable(tor);
+				return ConvertFrom(tor);
 			}
 		}
 
-		private static ListCell FromEnumerable(IEnumerator tor) {
+		private static ListCell ConvertFrom(IEnumerator tor) {
 			if (tor.MoveNext() == false)
 				return null;
-			return new ListCell(tor.Current, FromEnumerable(tor));
+			return new ListCell(tor.Current, ConvertFrom(tor));
 		}
 
 		#endregion
@@ -49,6 +48,7 @@ namespace Kurogane {
 		public override string ToString() {
 			var buff = new StringBuilder("[");
 			AppendItem(buff);
+			buff.Append("]");
 			return buff.ToString();
 		}
 
@@ -57,9 +57,6 @@ namespace Kurogane {
 			if (Tail != null) {
 				buff.Append(", ");
 				this.Tail.AppendItem(buff);
-			}
-			else {
-				buff.Append("]");
 			}
 		}
 
@@ -138,5 +135,16 @@ namespace Kurogane {
 
 		#endregion
 
+		#region IEnumerable メンバー
+
+		public IEnumerator GetEnumerator() {
+			var cell = this;
+			while (cell != null) {
+				yield return cell.Head;
+				cell = cell.Tail;
+			}
+		}
+
+		#endregion
 	}
 }

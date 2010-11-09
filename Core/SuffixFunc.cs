@@ -95,7 +95,7 @@ namespace Kurogane {
 				// arg->param へ 移行
 				if (paramLen == argLen) {
 					for (int i = 1; i <= argLen; i++) {
-						parameters[prmL + i] = Wrap( argArray(argL + i + offset));
+						parameters[prmL + i] = Wrap(argArray(argL + i + offset));
 					}
 				}
 				else if (paramLen > argLen) {
@@ -111,10 +111,10 @@ namespace Kurogane {
 					int count = argLen - paramLen;
 
 					Expression listExpr = Wrap(argArray(argL + 1 + count + offset));
-					var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+					var memInfo = typeof(ListCell).GetMethod("Cons", new[] { typeof(object), typeof(object) });
 					while (count-- > 0) {
-						listExpr = Expression.New(
-							ctorInfo,
+						listExpr = Expression.Call(
+							memInfo,
 							Wrap(argArray(argL + 1 + count + offset)),
 							listExpr);
 					}
@@ -135,6 +135,14 @@ namespace Kurogane {
 		private static Expression ThrowArgumentException(string message) {
 			var ctorInfo = typeof(ArgumentException).GetConstructor(new[] { typeof(string) });
 			return Expression.Throw(Expression.New(ctorInfo, Expression.Constant(message)), typeof(object));
+		}
+
+		private static Expression Wrap(Expression expr, Type type1, Type type2) {
+			if (expr.Type == type2)
+				return expr;
+			if (expr.Type == type1)
+				return Expression.Convert(expr, type2);
+			return Expression.Convert(Expression.Convert(expr, type1), type2);
 		}
 
 		private static Expression Wrap(Expression expr, Type type) {
@@ -267,10 +275,10 @@ namespace Kurogane {
 						// arg を param に集約
 						int count = argLen - paramLen;
 						Expression listExpr = Expression.Convert(args[argL + 1 + count + offset].Expression, typeof(object));
-						var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+						var memInfo = typeof(ListCell).GetMethod("Cons", new[] { typeof(object), typeof(object) });
 						while (count-- > 0) {
-							listExpr = Expression.New(
-								ctorInfo,
+							listExpr = Expression.Call(
+								memInfo,
 								Expression.Convert(args[argL + 1 + count + offset].Expression, typeof(object)),
 								listExpr);
 						}
