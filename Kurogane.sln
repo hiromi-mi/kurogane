@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Interop.Produire",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.Interop.Produire.Shell", "Interop.Produire.Shell\Kurogane.Interop.Produire.Shell.csproj", "{A13CE529-F620-46F4-ACD1-5D144C83AB77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.SimpleEditor", "SimpleEditor\Kurogane.SimpleEditor.csproj", "{74A7A53F-BB49-474E-8690-BC7C8338FC91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,16 @@ Global
 		{A13CE529-F620-46F4-ACD1-5D144C83AB77}.Release|Mixed Platforms.Build.0 = Release|x86
 		{A13CE529-F620-46F4-ACD1-5D144C83AB77}.Release|x86.ActiveCfg = Release|x86
 		{A13CE529-F620-46F4-ACD1-5D144C83AB77}.Release|x86.Build.0 = Release|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Debug|x86.ActiveCfg = Debug|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Debug|x86.Build.0 = Debug|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Release|Any CPU.ActiveCfg = Release|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Release|Mixed Platforms.Build.0 = Release|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Release|x86.ActiveCfg = Release|x86
+		{74A7A53F-BB49-474E-8690-BC7C8338FC91}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
