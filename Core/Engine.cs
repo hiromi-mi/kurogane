@@ -79,6 +79,22 @@ namespace Kurogane {
 			Global.SetVariable("出力", new SuffixFunc<Func<object, object>>(
 				obj => { this.Out.Write(obj); return obj; }, "を"));
 			Global.SetVariable("改行", Environment.NewLine);
+			Global.SetVariable("文字分割", new SuffixFunc<Func<object, object>>(input => {
+				var str = input as string;
+				return ListCell.ConvertFrom(str.ToCharArray());
+			}, "を"));
+			Global.SetVariable("整数文字変換", new SuffixFunc<Func<object, object>>(input => {
+				var i = input as int?;
+				if (i.HasValue) return (char)i;
+				else return null;
+			}, "を"));
+			Global.SetVariable("文字整数変換", new SuffixFunc<Func<object, object>>(input => {
+				var c = input as char?;
+				if (c.HasValue) return (int)c;
+				var str = input as string;
+				if (str != null) return (int)str[0];
+				return null;
+			}, "を"));
 		}
 
 		private void LoadStandardLibraries() {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using Kurogane.Compiler;
 
 namespace Kurogane.Shell {
 	public class Program {
@@ -54,9 +55,15 @@ namespace Kurogane.Shell {
 					before = String.Empty;
 					Console.Write(ConsoleWait);
 				}
-				catch {
+				catch (CompilerException) {
 					before = before + line;
 					Console.Write("... ");
+				}
+				catch (Exception e) {
+					var beforeColor = Console.ForegroundColor;
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.Error.WriteLine(e.StackTrace);
+					Console.ForegroundColor = beforeColor;
 				}
 			}
 			Console.WriteLine("See you ...");
