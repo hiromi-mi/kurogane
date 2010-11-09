@@ -12,7 +12,7 @@ namespace Kurogane.Compiler {
 		// ----- ----- ----- ----- public interface ----- ----- ----- -----
 		public static Expression<Func<Scope, object>> Generate(Block block, BinderFactory factory, string fileName) {
 			var gen = new Generator(factory);
-			if(fileName != null)
+			if (fileName != null)
 				gen.SymbolDocumentInfo = Expression.SymbolDocument(fileName);
 			var expr = gen.ConvertBlock(block);
 			return Expression.Lambda<Func<Scope, object>>(expr, gen.Global);
@@ -58,7 +58,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression ConvertBlockExecute(BlockExecute block) {
-			var gen = new BlockGenerator(_factory, this,null);
+			var gen = new BlockGenerator(_factory, this, null);
 			return gen.ConvertBlock(block.Block);
 		}
 
@@ -156,7 +156,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private LabelTarget GetReturnTarget() {
-			return _ReturnTarget ?? (_ReturnTarget = Expression.Label(typeof(object)));
+			return _ReturnTarget ?? (_ReturnTarget = Expression.Label(typeof(object), "#return_label"));
 		}
 
 		private Expression ConvertCall(Call call, ref Expression lastExpr) {
@@ -199,7 +199,7 @@ namespace Kurogane.Compiler {
 			}
 			// map用の関数を作る。
 			Expression mapFunc = null;
-			var param = Expression.Parameter(typeof(object));
+			var param = Expression.Parameter(typeof(object), "それぞれ");
 			{
 				var func = ConvertSymbol(call.Name);
 				// 引数
@@ -335,35 +335,35 @@ namespace Kurogane.Compiler {
 
 		private DynamicMetaObjectBinder FindBinder(BinaryOperationType type) {
 			switch (type) {
-			case BinaryOperationType.Add:
-				return _factory.AddBinder;
-			case BinaryOperationType.Subtract:
-				return _factory.SubBinder;
-			case BinaryOperationType.Multiply:
-				return _factory.MultBinder;
-			case BinaryOperationType.Divide:
-				return _factory.DivideBinder;
-			case BinaryOperationType.Modulo:
-				return _factory.ModBinder;
+				case BinaryOperationType.Add:
+					return _factory.AddBinder;
+				case BinaryOperationType.Subtract:
+					return _factory.SubBinder;
+				case BinaryOperationType.Multiply:
+					return _factory.MultBinder;
+				case BinaryOperationType.Divide:
+					return _factory.DivideBinder;
+				case BinaryOperationType.Modulo:
+					return _factory.ModBinder;
 
-			case BinaryOperationType.LessThan:
-				return _factory.LessThanBinder;
-			case BinaryOperationType.LessThanOrEqual:
-				return _factory.LessThanOrEqualBinder;
-			case BinaryOperationType.GreaterThan:
-				return _factory.GreaterThanBinder;
-			case BinaryOperationType.GreaterThanOrEqual:
-				return _factory.GreaterThanOrEqualBinder;
+				case BinaryOperationType.LessThan:
+					return _factory.LessThanBinder;
+				case BinaryOperationType.LessThanOrEqual:
+					return _factory.LessThanOrEqualBinder;
+				case BinaryOperationType.GreaterThan:
+					return _factory.GreaterThanBinder;
+				case BinaryOperationType.GreaterThanOrEqual:
+					return _factory.GreaterThanOrEqualBinder;
 
-			case BinaryOperationType.Equal:
-				return _factory.EqualBinder;
-			case BinaryOperationType.NotEqual:
-				return _factory.NotEqualBinder;
+				case BinaryOperationType.Equal:
+					return _factory.EqualBinder;
+				case BinaryOperationType.NotEqual:
+					return _factory.NotEqualBinder;
 
-			case BinaryOperationType.And:
-				return _factory.AndBinder;
-			case BinaryOperationType.Or:
-				return _factory.OrBinder;
+				case BinaryOperationType.And:
+					return _factory.AndBinder;
+				case BinaryOperationType.Or:
+					return _factory.OrBinder;
 			}
 			throw new NotImplementedException();
 		}

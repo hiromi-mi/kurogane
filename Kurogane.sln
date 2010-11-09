@@ -16,6 +16,33 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kurogane.SimpleEditor", "SimpleEditor\Kurogane.SimpleEditor.csproj", "{74A7A53F-BB49-474E-8690-BC7C8338FC91}"
 EndProject
 Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 8
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs01
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = ConsoleTest\\ConsoleTest.csproj
+		SccProjectName1 = ConsoleTest
+		SccLocalPath1 = ConsoleTest
+		SccProjectUniqueName2 = Core\\Kurogane.Core.csproj
+		SccProjectName2 = Core
+		SccLocalPath2 = Core
+		SccProjectUniqueName3 = Test\\Kurogane.Test.csproj
+		SccProjectName3 = Test
+		SccLocalPath3 = Test
+		SccProjectUniqueName4 = Shell\\Kurogane.Shell.csproj
+		SccProjectName4 = Shell
+		SccLocalPath4 = Shell
+		SccProjectUniqueName5 = Interop.Produire\\Kurogane.Interop.Produire.csproj
+		SccProjectName5 = Interop.Produire
+		SccLocalPath5 = Interop.Produire
+		SccProjectUniqueName6 = Interop.Produire.Shell\\Kurogane.Interop.Produire.Shell.csproj
+		SccProjectName6 = Interop.Produire.Shell
+		SccLocalPath6 = Interop.Produire.Shell
+		SccProjectUniqueName7 = SimpleEditor\\Kurogane.SimpleEditor.csproj
+		SccProjectName7 = SimpleEditor
+		SccLocalPath7 = SimpleEditor
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms

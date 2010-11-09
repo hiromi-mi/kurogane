@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq.Expressions;
-using Kurogane.RuntimeBinder;
 
-namespace Kurogane.Compiler {
+namespace Kurogane.Expressions {
 
-	public class FuncAnalyzer : ExpressionVisitor {
-
-		// ----- ----- ----- ----- ----- static ----- ----- ----- ----- -----
-
-		public static Expression<T> Analyze<T>(Expression<T> expr) {
-			var visitor = new FuncAnalyzer();
-			return Expression.Lambda<T>(visitor.Visit(expr.Body), expr.Parameters);
-		}
-
+	public class InvokeStatic : ExpressionVisitor {
 		// ----- ----- ----- ----- ----- inner class ----- ----- ----- ----- -----
 
 		private class SuffixFuncInfo {
@@ -27,11 +16,6 @@ namespace Kurogane.Compiler {
 		// ----- ----- ----- ----- ----- field ----- ----- ----- ----- -----
 
 		private Dictionary<ParameterExpression, SuffixFuncInfo> _dic = new Dictionary<ParameterExpression, SuffixFuncInfo>();
-
-		// ----- ----- ----- ----- ----- private constructor ----- ----- ----- ----- -----
-
-		private FuncAnalyzer() {
-		}
 
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
 
@@ -68,14 +52,16 @@ namespace Kurogane.Compiler {
 			if (left == null)
 				return null;
 			var right = node.Right as NewExpression;
-			if (right == null)
+			if (right == null || right.Arguments.Count == 0)
 				return null;
 			var sfxFuncType = right.Constructor.DeclaringType;
 			if (typeof(SuffixFunc<>) != sfxFuncType.GetGenericTypeDefinition())
 				return null;
+			//if ((right.Arguments[0] is LambdaExpression) == false)
+			//    return null;
 			var funcType = sfxFuncType.GetGenericArguments()[0];
 			var suffix = ((ConstantExpression)right.Arguments[1]).Value as string[];
-			var param = Expression.Parameter(funcType, left.Name);
+			var param = Expression.Parameter(funcType, left.Name + "_Body");
 			var info = new SuffixFuncInfo { Suffix = suffix, FuncExpr = param };
 			_dic[left] = info;
 
@@ -94,7 +80,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression CallStatic(DynamicExpression node) {
-			var binder = node.Binder as KrgnInvokeBinder;
+			var binder = node.Binder as InvokeBinder;
 			if (binder == null)
 				return null;
 			var target = node.Arguments[0] as ParameterExpression;

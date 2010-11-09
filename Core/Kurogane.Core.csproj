@@ -13,6 +13,10 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,7 +49,7 @@
   <ItemGroup>
     <Compile Include="Compiler\BinaryOperationType.cs" />
     <Compile Include="Compiler\BlockGenerator.cs" />
-    <Compile Include="Compiler\FuncAnalyzer.cs" />
+    <Compile Include="Expressions\ExpressionOptimizer.cs" />
     <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
     <Compile Include="Compiler\CompilerException.cs" />
@@ -53,6 +57,9 @@
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamic\ScopeMetaObject.cs" />
     <Compile Include="Enumerator.cs" />
+    <Compile Include="Expressions\InvokeStatic.cs" />
+    <Compile Include="Expressions\LambdaFinder.cs" />
+    <Compile Include="Expressions\TailRecursion.cs" />
     <Compile Include="ListCell.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />

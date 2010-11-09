@@ -7,6 +7,7 @@ using Kurogane.Dynamic;
 using Kurogane.Compiler;
 using System.Diagnostics;
 using Kurogane.RuntimeBinder;
+using Kurogane.Expressions;
 
 namespace Kurogane {
 	public class Engine {
@@ -49,7 +50,9 @@ namespace Kurogane {
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
 
 		public object Execute(string code) {
-			return ExecuteCore(new StringReader(code), null);
+			using (var reader = new StringReader(code)) {
+				return ExecuteCore(reader, null);
+			}
 		}
 
 		public object ExecuteFile(string filepath) {
@@ -66,12 +69,23 @@ namespace Kurogane {
 		}
 
 		private object ExecuteCore(TextReader stream, string filename) {
+			//var sw = new Stopwatch();
+			//sw.Start();
 			var token = Tokenizer.Tokenize(stream, filename);
 			var ast = Parser.Parse(token, filename);
 			var expr = Generator.Generate(ast, this.Factory, filename);
-			//expr = FuncAnalyzer.Analyze(expr);
+			expr = ExpressionOptimizer.Analyze(expr);
 			var func = expr.Compile();
-			return func(this.Global);
+			//sw.Stop();
+			//var compileTime = sw.ElapsedMilliseconds;
+			//sw.Reset();
+			//sw.Start();
+			var result = func(this.Global);
+			//sw.Stop();
+			//var executeTime = sw.ElapsedMilliseconds;
+			//Console.WriteLine("Compile : " + compileTime);
+			//Console.WriteLine("Execute : " + executeTime);
+			return result;
 		}
 
 		private void InitLibrary() {

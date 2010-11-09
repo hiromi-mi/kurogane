@@ -56,7 +56,7 @@ namespace Kurogane.Compiler {
 		public override bool HasNext { get { return false; } }
 
 		public override string Value {
-			get { throw new NotImplementedException(); }
+			get { throw new InvalidOperationException(); }
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace Kurogane.Compiler {
 
 		public LambdaSpaceToken(Lexer lexer, string value)
 			: base(lexer) {
-				_value = value;
+			_value = value;
 		}
 	}
 

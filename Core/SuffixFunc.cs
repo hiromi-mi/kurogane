@@ -157,7 +157,7 @@ namespace Kurogane {
 		}
 	}
 
-	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
+	public sealed class SuffixFunc<T> : IDynamicMetaObjectProvider {
 
 		private const string Separator = "|";
 
@@ -191,8 +191,6 @@ namespace Kurogane {
 
 		/// <summary>関数</summary>
 		public readonly T Func;
-		private Func<object, object> func;
-		private string p;
 
 		/// <summary>
 		/// 通常のコンストラクタ
