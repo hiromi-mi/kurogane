@@ -305,12 +305,12 @@ namespace Kurogane.Compiler {
 		}
 
 		private Expression ConvertList(ListLiteral listLiteral) {
-			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
+			var memInfo = typeof(ListCell).GetMethod("Cons", new[] { typeof(object), typeof(object) });
 			Expression last = Expression.Constant(null);
 			var elems = listLiteral.Elements;
 			for (int i = elems.Count - 1; i >= 0; i--) {
 				var head = Expression.Convert(ConvertElement(elems[i]), typeof(object));
-				last = Expression.New(ctorInfo, head, last);
+				last = Expression.Call(memInfo, head, last);
 			}
 			return last;
 		}
@@ -318,8 +318,8 @@ namespace Kurogane.Compiler {
 		private Expression ConvertTuple(TupleLiteral tuple) {
 			var head = ConvertElement(tuple.Head);
 			var tail = ConvertElement(tuple.Tail);
-			var ctorInfo = typeof(Tuple<object, object>).GetConstructor(new[] { typeof(object), typeof(object) });
-			return Expression.New(ctorInfo,
+			var memInfo = typeof(ListCell).GetMethod("Cons", new[] { typeof(object), typeof(object) });
+			return Expression.Call(memInfo,
 				Expression.Convert(head, typeof(object)),
 				Expression.Convert(tail, typeof(object)));
 		}

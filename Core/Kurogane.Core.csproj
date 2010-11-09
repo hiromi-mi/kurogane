@@ -53,6 +53,7 @@
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Dynamic\ScopeMetaObject.cs" />
     <Compile Include="Enumerator.cs" />
+    <Compile Include="ListCell.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
     <Compile Include="RuntimeBinder\ArithmeticBinder.cs" />

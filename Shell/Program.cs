@@ -47,9 +47,10 @@ namespace Kurogane.Shell {
 				}
 				try {
 					var result = engine.Execute(before + line);
-					if (result != null) {
+					if (result != null)
 						Console.WriteLine(result);
-					}
+					else
+						Console.WriteLine(ConstantNames.NullText);
 					before = String.Empty;
 					Console.Write(ConsoleWait);
 				}

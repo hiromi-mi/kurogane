@@ -35,7 +35,7 @@ namespace Kurogane.Test.Libraries {
 		[TestMethod]
 		public void 列挙() {
 			var result = engine.Execute("[1,2,3,4,5]から【□％２＝０】を列挙する。");
-			var actual = Enumerator.FromEnumerable(new[] { 2, 4 });
+			var actual = ListCell.FromEnumerable(new[] { 2, 4 });
 			Assert.AreEqual(actual, result);
 		}
 
@@ -66,7 +66,7 @@ namespace Kurogane.Test.Libraries {
 			Assert.IsNull(result1);
 
 			var result2 = engine.Execute("[1,2,3,4,5]を【○×○】で射影する。");
-			var actual2 = Enumerator.FromEnumerable(new[] { 1, 4, 9, 16, 25 });
+			var actual2 = ListCell.FromEnumerable(new[] { 1, 4, 9, 16, 25 });
 			Assert.AreEqual(actual2, result2);
 		}
 	}
