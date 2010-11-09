@@ -149,11 +149,7 @@ namespace Kurogane {
 		}
 	}
 
-	public interface IDelegateProvider {
-		Delegate Delegate { get; }
-	}
-
-	public class SuffixFunc<T> : IDelegateProvider, IDynamicMetaObjectProvider {
+	public class SuffixFunc<T> : IDynamicMetaObjectProvider {
 
 		private const string Separator = "|";
 
@@ -188,8 +184,6 @@ namespace Kurogane {
 		/// <summary>関数</summary>
 		public readonly T Func;
 
-		Delegate IDelegateProvider.Delegate { get { return Func as Delegate; } }
-
 		/// <summary>
 		/// 通常のコンストラクタ
 		/// </summary>
@@ -205,8 +199,10 @@ namespace Kurogane {
 			this.Suffix = String.Intern(String.Join(Separator, suffix));
 		}
 
-		public static explicit operator Delegate(SuffixFunc<T> func) {
-			return func.Func as Delegate;
+		public override string ToString() {
+			var sfxs = Suffix.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+			const string blank = "～";
+			return blank + String.Join(blank, sfxs) + blank + "する。";
 		}
 
 		#region IDynamicMetaObjectProvider メンバー
@@ -320,5 +316,9 @@ namespace Kurogane {
 		}
 
 		#endregion
+
+		public static explicit operator Delegate(SuffixFunc<T> func) {
+			return func.Func as Delegate;
+		}
 	}
 }

@@ -33,7 +33,7 @@ namespace Kurogane.Shell {
 		/// コンソールで一行ずつ実行するモード
 		/// </summary>
 		private static void StartRepl() {
-			string before = "";
+			string before = String.Empty;
 			var engine = new Engine();
 			Console.Write(ConsoleWait);
 			while (true) {
@@ -41,14 +41,16 @@ namespace Kurogane.Shell {
 				if (line == "exit" || line.StartsWith("終了"))
 					break;
 				if (line.Length == 0) {
-					before = "";
+					before = String.Empty;
 					Console.Write(ConsoleWait);
 					continue;
 				}
 				try {
 					var result = engine.Execute(before + line);
-					Console.WriteLine(result);
-					before = "";
+					if (result != null) {
+						Console.WriteLine(result);
+					}
+					before = String.Empty;
 					Console.Write(ConsoleWait);
 				}
 				catch {
