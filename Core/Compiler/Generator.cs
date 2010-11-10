@@ -37,7 +37,10 @@ namespace Kurogane.Compiler {
 			foreach (var stmt in block.Statements) {
 				list.Add(ConvertStatement(stmt));
 			}
-			var blockExpr = Expression.Block(list);
+			var blockExpr =
+				list.Count == 0
+				? Expression.Constant(null)
+				: Expression.Block(list) as Expression;
 			if (_ReturnTarget == null)
 				return blockExpr;
 			return Expression.Label(_ReturnTarget, blockExpr);
