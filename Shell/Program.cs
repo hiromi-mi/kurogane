@@ -64,6 +64,7 @@ namespace Kurogane.Shell {
 					Console.ForegroundColor = ConsoleColor.Red;
 					Console.Error.WriteLine(e.StackTrace);
 					Console.ForegroundColor = beforeColor;
+					Console.Write(ConsoleWait);
 				}
 			}
 			Console.WriteLine("See you ...");

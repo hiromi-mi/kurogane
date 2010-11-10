@@ -60,6 +60,9 @@
     <Compile Include="Expressions\InvokeStatic.cs" />
     <Compile Include="Expressions\LambdaFinder.cs" />
     <Compile Include="Expressions\TailRecursion.cs" />
+    <Compile Include="Libraries\StandardIO.cs" />
+    <Compile Include="Libraries\StringUtil.cs" />
+    <Compile Include="LibraryAttribute.cs" />
     <Compile Include="ListCell.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
