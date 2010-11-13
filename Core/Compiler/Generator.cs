@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
@@ -189,7 +189,7 @@ namespace Kurogane.Compiler {
 
 		private Expression ConvertMapCall(MapCall call, ref Expression lastExpr) {
 			Expression listExpr = null;
-			// Mapのリストを探す
+			// Map???????
 			if (call.FirstArg != null) {
 				listExpr = ConvertElement(call.FirstArg.Argument);
 			}
@@ -198,20 +198,20 @@ namespace Kurogane.Compiler {
 				lastExpr = null;
 			}
 			else {
-				throw new SemanticException("「それぞれ」の対象がありません。");
+				throw new SemanticException("????????????????");
 			}
-			// map用の関数を作る。
+			// map????????
 			Expression mapFunc = null;
-			var param = Expression.Parameter(typeof(object), "それぞれ");
+			var param = Expression.Parameter(typeof(object), "????");
 			{
 				var func = ConvertSymbol(call.Name);
-				// 引数
+				// ??
 				var argList = new List<Expression>(call.Arguments.Count + 1);
 				argList.Add(func);
 				argList.Add(param);
 				foreach (var pair in call.Arguments)
 					argList.Add(ConvertElement(pair.Argument));
-				// 助詞
+				// ??
 				int argCount = call.Arguments.Count + 1;
 				int offset = call.FirstArg == null ? 0 : 1;
 				string[] sfxList = new string[call.Arguments.Count + offset];
@@ -220,7 +220,7 @@ namespace Kurogane.Compiler {
 				for (int i = 0; i < call.Arguments.Count; i++)
 					sfxList[i + offset] = call.Arguments[i].Suffix;
 				var callInfo = new CallInfo(argCount, sfxList);
-				// 関数
+				// ??
 				if (func is ParameterExpression) {
 					mapFunc = Expression.Dynamic(_factory.InvokeBinder(callInfo), typeof(object), argList);
 				}
@@ -229,7 +229,7 @@ namespace Kurogane.Compiler {
 					mapFunc = Expression.Dynamic(_factory.InvokeMemberBinder(call.Name, callInfo), typeof(object), argList);
 				}
 			}
-			// 返す。
+			// ???
 			var lambda = Expression.Lambda(mapFunc, param);
 			return Expression.Dynamic(_factory.MapBinder, typeof(object), lambda, listExpr);
 		}

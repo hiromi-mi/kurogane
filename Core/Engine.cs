@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,20 +18,20 @@ namespace Kurogane {
 
 		protected BinderFactory Factory { get; private set; }
 
-		/// <summary>グローバルスコープ</summary>
+		/// <summary>?????????</summary>
 		public Scope Global { get; private set; }
 
-		/// <summary>入力先</summary>
+		/// <summary>???</summary>
 		public TextReader In { get; set; }
 
-		/// <summary>出力先</summary>
+		/// <summary>???</summary>
 		public TextWriter Out { get; set; }
 
 		public Encoding DefaultEncoding { get; set; }
 
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
-		/// <summary>通常のコンストラクタ</summary>
+		/// <summary>??????????</summary>
 		public Engine()
 			: this(new BinderFactory()) {
 			LoadLibrary(this.GetType().Assembly);
@@ -91,7 +91,7 @@ namespace Kurogane {
 		#region LoadLibrary
 
 		private void LoadLibrary(Assembly asm) {
-			// 静的ライブラリのロード
+			// ???????????
 			foreach (var type in asm.GetTypes()) {
 				var typeAttrs = type.GetCustomAttributes(typeof(LibraryAttribute), false);
 				if (typeAttrs.Length == 0) continue;
@@ -100,7 +100,7 @@ namespace Kurogane {
 				foreach (var mInfo in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
 					SetMethod(mInfo);
 			}
-			// 動的ライブラリのロード
+			// ???????????
 			foreach (var name in asm.GetManifestResourceNames())
 				if (name.EndsWith(".krg"))
 					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
@@ -146,7 +146,7 @@ namespace Kurogane {
 			var ctorInfo = typeof(SuffixFunc<>).MakeGenericType(funcType).GetConstructor(new[] { funcType, typeof(string[]) });
 			var body = Expression.New(ctorInfo, lambda, Expression.Constant(sfxs));
 			if (ext > 0) {
-				// this パラメタが存在する
+				// this ?????????
 				if (paramInfos[0].ParameterType == typeof(Engine)) {
 					var func = Expression.Lambda<Func<Engine, object>>(Expression.Convert(body, typeof(object)), outerParam);
 					var exec = func.Compile();
@@ -165,7 +165,7 @@ namespace Kurogane {
 				}
 			}
 			else {
-				// this パラメタが存在しない。
+				// this ???????????
 				var func = Expression.Lambda<Func<object>>(Expression.Convert(body, typeof(object)));
 				var exec = func.Compile();
 				foreach (var nAttr in nameAttrs) {
