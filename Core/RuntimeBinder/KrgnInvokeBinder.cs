@@ -15,6 +15,24 @@ namespace Kurogane.RuntimeBinder {
 
 		public override DynamicMetaObject FallbackInvoke(DynamicMetaObject target, DynamicMetaObject[] args, DynamicMetaObject errorSuggestion) {
 			var funcType = target.LimitType;
+			if (target.Value == null)
+				return ThrowNullReferenceException(target);
+			bool isDelegate = typeof(Delegate).IsAssignableFrom(funcType);
+			if (isDelegate) {
+				var mo = FallbackDelegate(target, args);
+				if (mo != null)
+					return mo;
+			}
+
+			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
+			var exception = Expression.New(ctorInfo, Expression.Constant(target.LimitType + "は実行可能な型ではありません。"));
+			return new DynamicMetaObject(
+				Expression.Throw(exception, typeof(object)),
+				BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+		}
+
+		private DynamicMetaObject FallbackDelegate(DynamicMetaObject target, DynamicMetaObject[] args) {
+			var funcType = target.LimitType;
 			var typeArgs = funcType.GetGenericArguments();
 			Type type = null;
 			if (Expression.TryGetFuncType(typeArgs, out type)) {
@@ -43,11 +61,7 @@ namespace Kurogane.RuntimeBinder {
 						Expression.Constant(null)),
 					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
 			}
-			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(object) });
-			var exception = Expression.New(ctorInfo, Expression.Constant(target.LimitType + "は実行可能な型ではありません。"));
-			return new DynamicMetaObject(
-				Expression.Throw(exception, typeof(object)),
-				BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+			return null;
 		}
 
 		private Expression[] ConvertArguments(DynamicMetaObject[] args, Type[] typeArgs) {
@@ -65,6 +79,15 @@ namespace Kurogane.RuntimeBinder {
 			var ctorInfo = typeof(ArgumentException).GetConstructor(new[] { typeof(string) });
 			var exception = Expression.New(ctorInfo, Expression.Constant(message));
 			return new DynamicMetaObject(Expression.Throw(exception, typeof(object)), restriction);
+		}
+
+		private DynamicMetaObject ThrowNullReferenceException(DynamicMetaObject target) {
+			var ctorInfo = typeof(NullReferenceException).GetConstructor(new[] { typeof(string) });
+			var exception = Expression.New(ctorInfo, Expression.Constant("無は実行可能な型ではありません。"));
+			var isNull = Expression.ReferenceEqual(target.Expression, Expression.Constant(null));
+			return new DynamicMetaObject(
+				Expression.Throw(exception, typeof(object)),
+				BindingRestrictions.GetExpressionRestriction(isNull));
 		}
 	}
 }

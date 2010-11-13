@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,7 @@ namespace Kurogane.Shell {
 
 		const string ConsoleWait = "> ";
 
-		/// <summary>????????</summary>
+		/// <summary>エントリポイント</summary>
 		public static void Main(string[] args) {
 			if (args.Length == 0)
 				StartRepl();
@@ -19,11 +19,11 @@ namespace Kurogane.Shell {
 		}
 
 		/// <summary>
-		/// ?????????
+		/// ファイルからの実行
 		/// </summary>
 		private static void ExecuteFile(string filepath) {
 			if (!File.Exists(filepath)) {
-				Console.Error.WriteLine("?????{0}?????????", filepath);
+				Console.Error.WriteLine("ファイル「{0}」が存在しません。", filepath);
 				Environment.Exit(-1);
 			}
 			var engine = new Engine();
@@ -31,7 +31,7 @@ namespace Kurogane.Shell {
 		}
 
 		/// <summary>
-		/// ?????????????????
+		/// コンソールで一行ずつ実行するモード
 		/// </summary>
 		private static void StartRepl() {
 			string before = String.Empty;
@@ -39,7 +39,7 @@ namespace Kurogane.Shell {
 			Console.Write(ConsoleWait);
 			while (true) {
 				string line = Console.ReadLine();
-				if (line == "exit" || line.StartsWith("??"))
+				if (line == "exit" || line.StartsWith("終了"))
 					break;
 				if (line.Length == 0) {
 					before = String.Empty;
@@ -62,7 +62,7 @@ namespace Kurogane.Shell {
 				catch (Exception e) {
 					var beforeColor = Console.ForegroundColor;
 					Console.ForegroundColor = ConsoleColor.Red;
-					Console.Error.WriteLine(e.StackTrace);
+					Console.Error.WriteLine(e.Message);
 					Console.ForegroundColor = beforeColor;
 					Console.Write(ConsoleWait);
 				}

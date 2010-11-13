@@ -18,8 +18,9 @@ namespace Kurogane {
 
 		public object GetVariable(string name) {
 			object value = null;
-			_values.TryGetValue(name, out value);
-			return value;
+			if (_values.TryGetValue(name, out value))
+				return value;
+			throw new KrgnRuntimeException(String.Format("{0}という変数は存在しません。", name));
 		}
 
 		public object SetVariable(string name, object value) {

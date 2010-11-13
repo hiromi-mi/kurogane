@@ -94,9 +94,8 @@ namespace Kurogane {
 				int argLen = argR - argL;
 				// arg->param へ 移行
 				if (paramLen == argLen) {
-					for (int i = 1; i <= argLen; i++) {
+					for (int i = 1; i <= argLen; i++)
 						parameters[prmL + i] = Wrap(argArray(argL + i + offset));
-					}
 				}
 				else if (paramLen > argLen) {
 					// arg を param に展開
@@ -104,19 +103,15 @@ namespace Kurogane {
 					throw new NotImplementedException();
 				}
 				else /* paramLen < argLen */ {
-					for (int i = 2; i <= paramLen; i++) {
+					for (int i = 2; i <= paramLen; i++)
 						parameters[prmL + i] = Wrap(argArray(argL + i + offset));
-					}
 					// arg を param に集約
 					int count = argLen - paramLen;
-
 					Expression listExpr = Wrap(argArray(argL + 1 + count + offset));
 					var memInfo = typeof(ListCell).GetMethod("Cons", new[] { typeof(object), typeof(object) });
 					while (count-- > 0) {
-						listExpr = Expression.Call(
-							memInfo,
-							Wrap(argArray(argL + 1 + count + offset)),
-							listExpr);
+						var head = Wrap(argArray(argL + 1 + count + offset));
+						listExpr = Expression.Call(memInfo, head, listExpr);
 					}
 					parameters[prmL + 1] = listExpr;
 				}
@@ -172,6 +167,11 @@ namespace Kurogane {
 		/// </summary>
 		private static readonly Type[] Types;
 
+		/// <summary>
+		/// Typesのすべての型がobjectであるかどうかの変数
+		/// </summary>
+		private static readonly bool TypeStrict;
+
 		static SuffixFunc() {
 			var mInfo = typeof(T).GetMethod("Invoke");
 			if (mInfo == null) {
@@ -184,6 +184,7 @@ namespace Kurogane {
 			types[0] = mInfo.ReturnType;
 			for (int i = 0; i < pInfos.Length; i++)
 				types[i + 1] = pInfos[i].ParameterType;
+			TypeStrict = types.All(t => t == typeof(object));
 		}
 
 		/// <summary>助詞をSeparatorで連結したもの</summary>
