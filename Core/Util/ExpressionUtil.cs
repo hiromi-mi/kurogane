@@ -7,6 +7,13 @@ namespace Kurogane.Util {
 	public static class ExpressionUtil {
 
 		private static readonly List<Type> _FuncTypeCache = new List<Type>();
+
+		/// <summary>
+		/// argCount個数の引数を受け取る関数の型を返します。
+		/// 例えばargCountが1の場合、Func<object,object>を返します。
+		/// </summary>
+		/// <param name="argCount">関数の引数の個数</param>
+		/// <returns>Funcを指すType型の値</returns>
 		public static Type GetFuncType(int argCount) {
 			if (argCount < 0)
 				throw new ArgumentOutOfRangeException("argCount");

@@ -296,6 +296,8 @@ namespace Kurogane.Compiler {
 				return Expression.Constant(((StringLiteral)lit).Value, typeof(string));
 			if (lit is IntLiteral)
 				return Expression.Constant(((IntLiteral)lit).Value, typeof(int));
+			if (lit is FloatLiteral)
+				return Expression.Constant(((FloatLiteral)lit).Value, typeof(double));
 			if (lit is TupleLiteral)
 				return ConvertTuple((TupleLiteral)lit);
 			if (lit is ListLiteral)
@@ -338,35 +340,35 @@ namespace Kurogane.Compiler {
 
 		private DynamicMetaObjectBinder FindBinder(BinaryOperationType type) {
 			switch (type) {
-				case BinaryOperationType.Add:
-					return _factory.AddBinder;
-				case BinaryOperationType.Subtract:
-					return _factory.SubBinder;
-				case BinaryOperationType.Multiply:
-					return _factory.MultBinder;
-				case BinaryOperationType.Divide:
-					return _factory.DivideBinder;
-				case BinaryOperationType.Modulo:
-					return _factory.ModBinder;
+			case BinaryOperationType.Add:
+				return _factory.AddBinder;
+			case BinaryOperationType.Subtract:
+				return _factory.SubBinder;
+			case BinaryOperationType.Multiply:
+				return _factory.MultBinder;
+			case BinaryOperationType.Divide:
+				return _factory.DivideBinder;
+			case BinaryOperationType.Modulo:
+				return _factory.ModBinder;
 
-				case BinaryOperationType.LessThan:
-					return _factory.LessThanBinder;
-				case BinaryOperationType.LessThanOrEqual:
-					return _factory.LessThanOrEqualBinder;
-				case BinaryOperationType.GreaterThan:
-					return _factory.GreaterThanBinder;
-				case BinaryOperationType.GreaterThanOrEqual:
-					return _factory.GreaterThanOrEqualBinder;
+			case BinaryOperationType.LessThan:
+				return _factory.LessThanBinder;
+			case BinaryOperationType.LessThanOrEqual:
+				return _factory.LessThanOrEqualBinder;
+			case BinaryOperationType.GreaterThan:
+				return _factory.GreaterThanBinder;
+			case BinaryOperationType.GreaterThanOrEqual:
+				return _factory.GreaterThanOrEqualBinder;
 
-				case BinaryOperationType.Equal:
-					return _factory.EqualBinder;
-				case BinaryOperationType.NotEqual:
-					return _factory.NotEqualBinder;
+			case BinaryOperationType.Equal:
+				return _factory.EqualBinder;
+			case BinaryOperationType.NotEqual:
+				return _factory.NotEqualBinder;
 
-				case BinaryOperationType.And:
-					return _factory.AndBinder;
-				case BinaryOperationType.Or:
-					return _factory.OrBinder;
+			case BinaryOperationType.And:
+				return _factory.AndBinder;
+			case BinaryOperationType.Or:
+				return _factory.OrBinder;
 			}
 			throw new NotImplementedException();
 		}

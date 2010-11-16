@@ -2,6 +2,7 @@
 using System.Dynamic;
 using Kurogane.Dynamic;
 using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -13,11 +14,11 @@ namespace Kurogane.RuntimeBinder {
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
 		#region Binderのキャッシュ
 
-		private readonly DynamicMetaObjectBinder _AddBinder = new ArithmeticBinder(ExpressionType.Add, "加算", "op_Addition");
-		private readonly DynamicMetaObjectBinder _SubBinder = new ArithmeticBinder(ExpressionType.Subtract, "減算", "op_Subtraction");
-		private readonly DynamicMetaObjectBinder _MultBinder = new ArithmeticBinder(ExpressionType.Multiply, "乗算", "op_Multiply");
-		private readonly DynamicMetaObjectBinder _DivideBinder = new ArithmeticBinder(ExpressionType.Multiply, "除算", "op_Division");
-		private readonly DynamicMetaObjectBinder _ModBinder = new ArithmeticBinder(ExpressionType.Modulo, "剰余算", "op_Modulus");
+		private readonly DynamicMetaObjectBinder _AddBinder = new ArithmeticBinder(ExpressionType.Add, "加算");
+		private readonly DynamicMetaObjectBinder _SubBinder = new ArithmeticBinder(ExpressionType.Subtract, "減算");
+		private readonly DynamicMetaObjectBinder _MultBinder = new ArithmeticBinder(ExpressionType.Multiply, "乗算");
+		private readonly DynamicMetaObjectBinder _DivideBinder = new ArithmeticBinder(ExpressionType.Divide, "除算");
+		private readonly DynamicMetaObjectBinder _ModBinder = new ArithmeticBinder(ExpressionType.Modulo, "剰余算");
 
 		private readonly DynamicMetaObjectBinder _LessThanBinder =
 			new ComparingBinder(ExpressionType.LessThan, "op_LessThan", val => val < 0);
@@ -38,13 +39,16 @@ namespace Kurogane.RuntimeBinder {
 		private readonly DynamicMetaObjectBinder _ToBoolBinder = new ToBoolBinder();
 		private readonly DynamicMetaObjectBinder _MapBinder = new MapBinder();
 
+		private readonly Dictionary<string, DynamicMetaObjectBinder> _GetMemberCache = new Dictionary<string, DynamicMetaObjectBinder>();
+		private readonly Dictionary<string, DynamicMetaObjectBinder> _SetMemberCache = new Dictionary<string, DynamicMetaObjectBinder>();
+
 		#endregion
 
 		// ----- ----- ----- ----- properties ----- ----- ----- -----
 		public virtual DynamicMetaObjectBinder AddBinder { get { return _AddBinder; } }
 		public virtual DynamicMetaObjectBinder SubBinder { get { return _SubBinder; } }
 		public virtual DynamicMetaObjectBinder MultBinder { get { return _MultBinder; } }
-		public virtual DynamicMetaObjectBinder DivideBinder { get { return _AddBinder; } }
+		public virtual DynamicMetaObjectBinder DivideBinder { get { return _DivideBinder; } }
 		public virtual DynamicMetaObjectBinder ModBinder { get { return _ModBinder; } }
 
 		public virtual DynamicMetaObjectBinder LessThanBinder { get { return _LessThanBinder; } }
@@ -73,11 +77,17 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public virtual DynamicMetaObjectBinder GetMemberBinder(string name) {
-			return new KrgnGetMemberBinder(name);
+			DynamicMetaObjectBinder binder;
+			if (_GetMemberCache.TryGetValue(name, out binder))
+				return binder;
+			return _GetMemberCache[name] = new KrgnGetMemberBinder(name);
 		}
 
 		public virtual DynamicMetaObjectBinder SetMemberBinder(string name) {
-			return new KrgnSetMemberBinder(name);
+			DynamicMetaObjectBinder binder;
+			if (_SetMemberCache.TryGetValue(name, out binder))
+				return binder;
+			return _SetMemberCache[name] = new KrgnSetMemberBinder(name);
 		}
 
 	}

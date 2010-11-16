@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using Kurogane;
-using Kurogane.Dynamic;
-using Kurogane.RuntimeBinder;
-using Kurogane.Util;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Numerics;
+using Kurogane;
+using Kurogane.RuntimeBinder;
 
 namespace ConsoleTest {
 
 	class Program {
+
 
 		static void Main(string[] args) {
 			Hoge();
@@ -20,11 +16,10 @@ namespace ConsoleTest {
 
 		static void Hoge() {
 			var engine = new Engine();
-			engine.Execute(@"
-以下の定義で彼に挨拶する。
-　　彼と「さん、こんにちは」を文字列連結し、表示する。
-以上。
-「山田」に挨拶する。");
+			var result = engine.Execute(
+				"（１１．０÷４．０）である。"
+				);
+			Console.WriteLine(result);
 		}
 
 		static void SumTestCore() {
