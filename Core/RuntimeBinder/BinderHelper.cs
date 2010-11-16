@@ -69,5 +69,57 @@ namespace Kurogane.RuntimeBinder {
 					Expression.TypeIs(right.Expression, right.LimitType)));
 		}
 
+		/// <summary>
+		/// 引数の値を確かめて、いずれかがnullの場合、InvalidOperationExceptionを投げるDynamicMetaObjectを返す。
+		/// そうでない場合はnullを返す。
+		/// </summary>
+		/// <param name="name">Operation名</param>
+		/// <param name="type">式が想定する型</param>
+		/// <param name="left">左辺</param>
+		/// <param name="right">右辺</param>
+		/// <returns>Throw式あるいはnull</returns>
+		public static DynamicMetaObject NullErrorOnOperation(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
+			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
+			var format = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object) });
+			if (left.Value == null && right.Value == null) {
+				var msg = ConstantNames.NullText + "同士を" + name + "できません。";
+				var expr = Expression.Throw(Expression.New(ctorInfo, Expression.Constant(msg)), type);
+				var rest = BindingRestrictions.GetExpressionRestriction(
+						Expression.AndAlso(IsNull(left.Expression), IsNull(right.Expression)));
+				return new DynamicMetaObject(expr, rest);
+			}
+			if (left.Value != null && right.Value == null) {
+				var msg = "{0}と" + ConstantNames.NullText + "を" + name + "できません。";
+				var formatTxt = Expression.Constant(msg);
+				var msgExpr = Expression.Call(format, formatTxt, Expression.Convert(left.Expression, typeof(object)));
+				var expr = Expression.Throw(Expression.New(ctorInfo, msgExpr), type);
+				var rest = BindingRestrictions.GetExpressionRestriction(Expression.AndAlso(IsNull(right.Expression), IsNotNull(left.Expression)));
+				return new DynamicMetaObject(expr, rest);
+			}
+			if (left.Value == null && right.Value != null) {
+				var msg = ConstantNames.NullText + "と{0}を" + name + "できません。";
+				var formatTxt = Expression.Constant(msg);
+				var msgExpr = Expression.Call(format, formatTxt, Expression.Convert(right.Expression, typeof(object)));
+				var expr = Expression.Throw(Expression.New(ctorInfo, msgExpr), type);
+				var rest = BindingRestrictions.GetExpressionRestriction(Expression.AndAlso(IsNull(left.Expression), IsNotNull(right.Expression)));
+				return new DynamicMetaObject(expr, rest);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// 適切な計算方法が見つからなかった場合、RuntimeBinderExceptionを投げる。
+		/// </summary>
+		public static DynamicMetaObject NoResult(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
+			var ctorInfo = typeof(RuntimeBinderException).GetConstructor(new[] { typeof(string) });
+			var errorMsg = "{0}と{1}を" + name + "出来ません。";
+			var mInfo = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object), typeof(object) });
+			var msgExpr = Expression.Call(mInfo,
+				Expression.Constant(errorMsg),
+				Expression.Convert(left.Expression, typeof(object)),
+				Expression.Convert(right.Expression, typeof(object)));
+			var expr = Expression.Throw(Expression.New(ctorInfo, msgExpr), typeof(object));
+			return new DynamicMetaObject(expr, BinderHelper.GetTypeRestriction(left, right));
+		}
 	}
 }

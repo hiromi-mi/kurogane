@@ -21,9 +21,10 @@ namespace Kurogane.RuntimeBinder {
 
 		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
 			if (target.Value == null || arg.Value == null)
-				return FallbackOnNull(target, arg);
+				return BinderHelper.NullErrorOnOperation(_name, this.ReturnType, target, arg);
+			Expression expr = null;
 			try {
-				Expression expr = Expression.MakeBinary(
+				expr = Expression.MakeBinary(
 					this.Operation,
 					BinderHelper.Wrap(target.Expression, target.LimitType),
 					BinderHelper.Wrap(arg.Expression, arg.LimitType));
@@ -34,38 +35,6 @@ namespace Kurogane.RuntimeBinder {
 			catch (InvalidOperationException) {
 				return DefferentType(target, arg);
 			}
-		}
-
-		/// <summary>
-		/// 値のいずれかがnullであった場合の処理。
-		/// </summary>
-		private DynamicMetaObject FallbackOnNull(DynamicMetaObject left, DynamicMetaObject right) {
-			var nullExpr = Expression.Constant(null);
-			Expression expr;
-			string errorMsg;
-			if (left.Value == null && right.Value != null) {
-				expr = Expression.AndAlso(
-					BinderHelper.IsNull(left.Expression),
-					BinderHelper.IsNotNull(right.Expression));
-				errorMsg = String.Format("{0}と{1}を{2}できません。",
-					ConstantNames.NullText, right.LimitType.Name, _name);
-
-			}
-			else if (right.Value == null && left.Value != null) {
-				expr = Expression.AndAlso(
-					BinderHelper.IsNotNull(left.Expression),
-					BinderHelper.IsNull(right.Expression));
-				errorMsg = String.Format("{0}と{1}を{2}できません。",
-					left.LimitType.Name, ConstantNames.NullText, _name);
-			}
-			else {
-				expr = Expression.And(
-					BinderHelper.IsNull(left.Expression),
-					BinderHelper.IsNull(right.Expression));
-				errorMsg = String.Format("{0}同士を{1}できません。",
-					ConstantNames.NullText, _name);
-			}
-			return RuntimeBinderException.CreateMetaObject(errorMsg, BindingRestrictions.GetExpressionRestriction(expr));
 		}
 
 		/// <summary>
@@ -93,7 +62,7 @@ namespace Kurogane.RuntimeBinder {
 					BinderHelper.Wrap(expr, this.ReturnType),
 					BinderHelper.GetTypeRestriction(left, right));
 			}
-			return NoResult(left, right);
+			return BinderHelper.NoResult(_name, this.ReturnType, left, right);
 		}
 
 		/// <summary>
@@ -121,18 +90,6 @@ namespace Kurogane.RuntimeBinder {
 					BinderHelper.GetTypeRestriction(left, right));
 			}
 			return null;
-		}
-
-		/// <summary>
-		/// 適切な計算方法が見つからなかった場合。
-		/// </summary>
-		private DynamicMetaObject NoResult(DynamicMetaObject left, DynamicMetaObject right) {
-			var errorMsg = "{0}と{1}を" + _name + "出来ません。";
-			var mInfo = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object), typeof(object) });
-			var msgExpr = Expression.Call(mInfo, Expression.Constant(errorMsg), left.Expression, right.Expression);
-			var ctorInfo = typeof(RuntimeBinderException).GetConstructor(new[] { typeof(string) });
-			var expr = Expression.Throw(Expression.New(ctorInfo, msgExpr), typeof(object));
-			return new DynamicMetaObject(expr, BinderHelper.GetTypeRestriction(left, right));
 		}
 	}
 }

@@ -71,6 +71,8 @@
     <Compile Include="RuntimeBinder\ComparingBinder.cs" />
     <Compile Include="RuntimeBinder\EqualityBinder.cs" />
     <Compile Include="RuntimeBinder\MapBinder.cs" />
+    <Compile Include="RuntimeBinder\NegateBinder.cs" />
+    <Compile Include="RuntimeBinder\NotBinder.cs" />
     <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="RuntimeBinder\KrgnInvokeMemberBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnSetMemberBinder.cs" />

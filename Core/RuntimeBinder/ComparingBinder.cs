@@ -11,7 +11,7 @@ namespace Kurogane.RuntimeBinder {
 
 	/// <summary>
 	/// 比較演算用のBinderクラス。
-	/// nullと比較した場合，必ずfalseを返す。
+	/// nullの比較は例外
 	/// </summary>
 	public class ComparingBinder : BinaryOperationBinder {
 
@@ -26,14 +26,34 @@ namespace Kurogane.RuntimeBinder {
 
 		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
 			if (target.Value == null || arg.Value == null)
-				return FallbackOnNull(target, arg);
-			if (target.LimitType == arg.LimitType)
-				return CalcOnSameType(target, arg);
-			else
-				return CalcOnDefferentType(target, arg);
+				return BinderHelper.NullErrorOnOperation("比較", this.ReturnType, target, arg);
+			try {
+				var expr = Expression.MakeBinary(
+					this.Operation,
+					BinderHelper.Wrap(target.Expression, target.LimitType),
+					BinderHelper.Wrap(arg.Expression, arg.LimitType));
+				return new DynamicMetaObject(
+					BinderHelper.Wrap(expr, this.ReturnType),
+					BinderHelper.GetTypeRestriction(target, arg));
+			}
+			catch (InvalidOperationException) {
+				throw new NotImplementedException();
+			}
+
+
+			//if (target.LimitType == arg.LimitType)
+			//    return CalcOnSameType(target, arg);
+			//else
+			//    return CalcOnDefferentType(target, arg);
 		}
 
 		private DynamicMetaObject FallbackOnNull(DynamicMetaObject left, DynamicMetaObject right) {
+			if (left.Value == null && right.Value == null) {
+
+			}
+
+
+
 			var nullExpr = Expression.Constant(null);
 			return new DynamicMetaObject(
 				Expression.Constant(false, typeof(object)),
@@ -88,9 +108,12 @@ namespace Kurogane.RuntimeBinder {
 			var mInfo = left.LimitType.GetMethod(_ilMethodName, types) ?? right.LimitType.GetMethod(_ilMethodName, types);
 			if (mInfo == null)
 				return null;
-			return new DynamicMetaObject(Expression.Call(mInfo,
-					Expression.Convert(left.Expression, left.LimitType),
-					Expression.Convert(right.Expression, right.LimitType)),
+			return new DynamicMetaObject(
+				Expression.Convert(
+					Expression.Call(mInfo,
+						Expression.Convert(left.Expression, left.LimitType),
+						Expression.Convert(right.Expression, right.LimitType)),
+					typeof(object)),
 				GetTypeRestriction(left, right));
 		}
 

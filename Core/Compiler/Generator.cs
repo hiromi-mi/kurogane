@@ -266,6 +266,8 @@ namespace Kurogane.Compiler {
 				return ConvertSymbol(((Symbol)elem).Name);
 			if (elem is Literal)
 				return ConvertLiteral((Literal)elem);
+			if (elem is UnaryExpr)
+				return ConvertUnaryExpr((UnaryExpr)elem);
 			if (elem is BinaryExpr)
 				return ConvertBinaryExpr((BinaryExpr)elem);
 			if (elem is PropertyAccess)
@@ -329,15 +331,32 @@ namespace Kurogane.Compiler {
 				Expression.Convert(tail, typeof(object)));
 		}
 
+		private Expression ConvertUnaryExpr(UnaryExpr expr) {
+			var binder = FindBinder(expr.Type);
+			var value = ConvertElement(expr.Value);
+			return Expression.Dynamic(binder, typeof(object), value);
+		}
+
 		private Expression ConvertBinaryExpr(BinaryExpr expr) {
 			var binder = FindBinder(expr.Type);
 			var left = ConvertElement(expr.Left);
 			var right = ConvertElement(expr.Right);
-			if (binder == null)
-				throw new NotImplementedException();
 			return Expression.Dynamic(binder, typeof(object), left, right);
 		}
 
+		private DynamicMetaObjectBinder FindBinder(UnaryOperationType type) {
+			switch (type) {
+			case UnaryOperationType.Not:
+				return _factory.NotBinder;
+			case UnaryOperationType.Negate:
+				return _factory.NegateBinder;
+			}
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// 二幸演算子から、適切なBinderを探す。
+		/// </summary>
 		private DynamicMetaObjectBinder FindBinder(BinaryOperationType type) {
 			switch (type) {
 			case BinaryOperationType.Add:

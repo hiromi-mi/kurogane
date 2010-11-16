@@ -14,6 +14,9 @@ namespace Kurogane.RuntimeBinder {
 		// ----- ----- ----- ----- fields ----- ----- ----- -----
 		#region Binderのキャッシュ
 
+		private readonly DynamicMetaObjectBinder _Not = new NotBinder();
+		private readonly DynamicMetaObjectBinder _NegateBinder = new NegateBinder();
+
 		private readonly DynamicMetaObjectBinder _AddBinder = new ArithmeticBinder(ExpressionType.Add, "加算");
 		private readonly DynamicMetaObjectBinder _SubBinder = new ArithmeticBinder(ExpressionType.Subtract, "減算");
 		private readonly DynamicMetaObjectBinder _MultBinder = new ArithmeticBinder(ExpressionType.Multiply, "乗算");
@@ -45,17 +48,20 @@ namespace Kurogane.RuntimeBinder {
 		#endregion
 
 		// ----- ----- ----- ----- properties ----- ----- ----- -----
+
 		public virtual DynamicMetaObjectBinder AddBinder { get { return _AddBinder; } }
 		public virtual DynamicMetaObjectBinder SubBinder { get { return _SubBinder; } }
 		public virtual DynamicMetaObjectBinder MultBinder { get { return _MultBinder; } }
 		public virtual DynamicMetaObjectBinder DivideBinder { get { return _DivideBinder; } }
 		public virtual DynamicMetaObjectBinder ModBinder { get { return _ModBinder; } }
+		public virtual DynamicMetaObjectBinder NegateBinder { get { return _NegateBinder; } }
 
 		public virtual DynamicMetaObjectBinder LessThanBinder { get { return _LessThanBinder; } }
 		public virtual DynamicMetaObjectBinder GreaterThanBinder { get { return _GreaterThanBinder; } }
 		public virtual DynamicMetaObjectBinder LessThanOrEqualBinder { get { return _LessThanOrEqualBinder; } }
 		public virtual DynamicMetaObjectBinder GreaterThanOrEqualBinder { get { return _GreaterThanOrEqualBinder; } }
 
+		public virtual DynamicMetaObjectBinder NotBinder { get { return _NotBinder; } }
 		public virtual DynamicMetaObjectBinder EqualBinder { get { return _EqualBinder; } }
 		public virtual DynamicMetaObjectBinder NotEqualBinder { get { return _NotEqualBinder; } }
 

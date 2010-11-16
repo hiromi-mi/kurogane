@@ -9,16 +9,57 @@ namespace ConsoleTest {
 
 	class Program {
 
+		class Hoge1 {
+			public int Value { get; set; }
+			public Hoge1(int value) {
+				this.Value = value;
+			}
+		}
+
+		class Hoge2 {
+			public int Value { get; set; }
+			public Hoge2(int value) {
+				this.Value = value;
+			}
+
+			public static bool operator <(Hoge1 left, Hoge2 right) {
+				return left.Value < right.Value;
+			}
+			public static bool operator >(Hoge1 left, Hoge2 right) {
+				return left.Value > right.Value;
+			}
+		}
+
 
 		static void Main(string[] args) {
-			Hoge();
+			CompTest();
 		}
 
 		static void Hoge() {
-			var engine = new Engine();
-			var result = engine.Execute(
-				"（１１．０÷４．０）である。"
-				);
+			var factory = new BinderFactory();
+			var paramA = Expression.Parameter(typeof(object));
+			var paramB = Expression.Parameter(typeof(object));
+			var dyn = Expression.Dynamic(factory.LessThanBinder, typeof(object), paramA, paramB);
+			var lambda = Expression.Lambda<Func<object, object, object>>(dyn, paramA, paramB);
+			var func = lambda.Compile();
+			var result = func(new Hoge1(3), new Hoge2(5));
+			Console.WriteLine(result);
+		}
+
+		static void CompTest() {
+			{
+				dynamic a = null;
+				dynamic b = 1;
+				dynamic c = a > b;
+				Console.WriteLine(c);
+			}
+			var paramA = Expression.Parameter(typeof(object));
+			var paramB = Expression.Parameter(typeof(object));
+			var lessThan = Expression.Lambda<Func<object, object, object>>(
+				Expression.Convert(Expression.LessThan(paramA, paramB), typeof(object)),
+				paramA, paramB);
+			var func = lessThan.Compile();
+			var result = func(null, null);
 			Console.WriteLine(result);
 		}
 

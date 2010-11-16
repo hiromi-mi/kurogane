@@ -6,8 +6,9 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Kurogane.Test.Spec {
+
 	/// <summary>
-	/// UnitTest1 の概要の説明
+	/// 四則演算のテスト
 	/// </summary>
 	[TestClass]
 	public class ArithmeticTest {
@@ -16,6 +17,12 @@ namespace Kurogane.Test.Spec {
 		[TestInitialize]
 		public void Init() {
 			_engine = new Engine();
+		}
+
+		[TestMethod]
+		public void 負の数() {
+			Assert.AreEqual(-3, (int)_engine.Execute("(-3)である。"));
+			Assert.AreEqual(-5.5, (double)_engine.Execute("(-5.5)である。"));
 		}
 
 		[TestMethod]
@@ -41,6 +48,27 @@ namespace Kurogane.Test.Spec {
 			Assert.AreEqual(5.5, (double)_engine.Execute("（2.5+3）である。"));
 			Assert.AreEqual(5.5, (double)_engine.Execute("（3+2.5）である。"));
 			Assert.AreEqual(2.75, (double)_engine.Execute("（１１÷４．０）である。"));
+		}
+
+		[TestMethod]
+		public void 無を計算した場合例外() {
+			try {
+				_engine.Execute("(無+1)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+
+			try {
+				_engine.Execute("(3-無)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+
+			try {
+				_engine.Execute("(無×無)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
 		}
 	}
 }
