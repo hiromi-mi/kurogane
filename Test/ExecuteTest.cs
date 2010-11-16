@@ -156,5 +156,29 @@ namespace Kurogane.Test {
 
 			Assert.AreEqual("成功", result);
 		}
+
+		[TestMethod]
+		public void リストの中身を合計する() {
+			string code =
+				"以下の定義でAにBを連結する。" +
+				"	以下の定義でTで判定する。" +
+				"		もし(T＝0)なら" +
+				"			Aである。" +
+				"		他なら" +
+				"			Bである。" +
+				"	以上。" +
+				"	判定である。" +
+				"以上。" +
+				"以下の定義で分解を合計する。" +
+				"	もし(分解＝0)なら、0である。" +
+				"	0で分解し、Aとする。" +
+				"	1で分解し、合計し、Bとする。" +
+				"	(A+B)である。" +
+				"以上。" +
+				"0を1に連結し、2に連結し、3に連結し、4に連結し、合計する。";
+			object num = _engine.Execute(code);
+			Assert.IsInstanceOfType(num, typeof(int));
+			Assert.AreEqual((int)num, 10);
+		}
 	}
 }

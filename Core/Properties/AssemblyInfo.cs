@@ -2,17 +2,20 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle("Kurogane.Core")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("Kurogane.Core")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyProduct("プログラミング言語「クロガネ」")]
+[assembly: AssemblyTitle("クロガネに必要な基幹機能群")]
+[assembly: AssemblyDescription(
+	"クロガネを実行するためのアセンブリです。" +
+	"構文解析器やエンジン、標準ライブラリなどを一式が含まれています。")]
 [assembly: AssemblyCulture("")]
+
+
+// 使わない
+//[assembly: AssemblyConfiguration("")]
+//[assembly: AssemblyCompany("Microsoft")]
+//[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
+//[assembly: AssemblyTrademark("")]
+
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -32,8 +35,8 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.0.9.0")]
+//[assembly: AssemblyFileVersion("1.0.0.0")]
 
 
 [assembly: InternalsVisibleTo("Kurogane.Test")]

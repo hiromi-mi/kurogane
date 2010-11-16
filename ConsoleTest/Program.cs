@@ -8,19 +8,23 @@ using Kurogane;
 using Kurogane.Dynamic;
 using Kurogane.RuntimeBinder;
 using Kurogane.Util;
+using System.Diagnostics;
 
 namespace ConsoleTest {
 
 	class Program {
 
 		static void Main(string[] args) {
-			Add();
+			Hoge();
 		}
 
 		static void Hoge() {
-			var lst = ListCell.ConvertFrom(new[] { 1, 2, 3, 4, 5 });
-			foreach (var i in lst)
-				Console.WriteLine(i);
+			var engine = new Engine();
+			engine.Execute(@"
+以下の定義で彼に挨拶する。
+　　彼と「さん、こんにちは」を文字列連結し、表示する。
+以上。
+「山田」に挨拶する。");
 		}
 
 		static void SumTestCore() {
@@ -132,25 +136,12 @@ namespace ConsoleTest {
 				"		(A+B)である。" +
 				"	以上。" +
 				"以上。" +
-				"37をFIB変換し、出力する。改行を出力する。";
-			//"以下の定義でAをパスする。" +
-			//"	Aを返す。" +
-			//"以上。" +
-			//"以下の定義でNをFIB変換する。" +
-			//"	以下の定義で計算する。" +
-			//"		(N-1)をFIB変換し、Aとする。" +
-			//"		(N-2)をFIB変換し、Bとする。" +
-			//"		(A+B)をパスする。" +
-			//"	以上。" +
-			//"	もし(N≦1)なら" +
-			//"		Nをパスする。" +
-			//"	他なら" +
-			//"		計算する。" +
-			//"以上。" +
-			//"27をFIB変換し、出力する。";
-
+				"39をFIB変換し、出力する。改行を出力する。";
+			var sw = Stopwatch.StartNew();
 			var engine = new Engine();
 			engine.Execute(code);
+			sw.Stop();
+			Console.WriteLine(sw.ElapsedMilliseconds);
 		}
 
 		static void Test() {
