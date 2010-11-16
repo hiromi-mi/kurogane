@@ -6,7 +6,7 @@ using System.Text;
 namespace Kurogane.Libraries {
 
 	[Library]
-	public static class StringUtil {
+	public static class StringLib {
 
 		[JpName("文字分割")]
 		public static ListCell Split([Suffix("を")]string str) {
@@ -27,6 +27,11 @@ namespace Kurogane.Libraries {
 		[JpName("整数文字変換")]
 		public static string IntToChar([Suffix("を")]int num) {
 			return ((char)num).ToString();
+		}
+
+		[JpName("文字列連結")]
+		public static string Join([Suffix("を")] object obj) {
+			return ListLib.FlattenFoldLeft(obj, new StringBuilder(), (o, b) => b.Append(o)).ToString();
 		}
 	}
 }
