@@ -86,6 +86,7 @@
     <Compile Include="Libraries\ListLib.cs" />
     <Compile Include="Libraries\StandardIO.cs" />
     <Compile Include="Libraries\StringLib.cs" />
+    <Compile Include="Libraries\TupleAlias.cs" />
     <Compile Include="LibraryAttribute.cs" />
     <Compile Include="ListCell.cs" />
     <Compile Include="RuntimeBinder\BinderHelper.cs" />
@@ -104,8 +105,7 @@
     <Compile Include="Compiler\UnaryOperationType.cs" />
     <Compile Include="Util\ExpressionHelper.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />
-    <Compile Include="Dynamic\MetaObjectLoader.cs" />
-    <Compile Include="Dynamic\PairMetaObject.cs" />
+    <Compile Include="RuntimeBinder\MetaObjectLoader.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="RuntimeBinder\KrgnGetMemberBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnInvokeBinder.cs" />
@@ -126,6 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Libraries\io.krg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Dynamic\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

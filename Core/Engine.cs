@@ -91,12 +91,27 @@ namespace Kurogane {
 		private void LoadLibrary(Assembly asm) {
 			// 静的ライブラリのロード
 			foreach (var type in asm.GetTypes()) {
+				// 関数と変数
 				var typeAttrs = type.GetCustomAttributes(typeof(LibraryAttribute), false);
-				if (typeAttrs.Length == 0) continue;
-				foreach (var fInfo in type.GetFields(BindingFlags.Public | BindingFlags.Static))
-					SetField(fInfo);
-				foreach (var mInfo in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-					SetMethod(mInfo);
+				if (typeAttrs.Length > 0) {
+					foreach (var fInfo in type.GetFields(BindingFlags.Public | BindingFlags.Static))
+						SetField(fInfo);
+					foreach (var mInfo in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+						SetMethod(mInfo);
+				}
+				// クラス
+				var aliasAttr = type.GetCustomAttributes(typeof(AliasForAttribute), false);
+				if (aliasAttr.Length > 0) {
+					foreach (AliasForAttribute attr in aliasAttr) {
+						MetaObjectLoader.RegisterAlias(attr.Type, type);
+					}
+				}
+				else {
+					var nameAttr = type.GetCustomAttributes(typeof(JpNameAttribute), false);
+					if (nameAttr.Length > 0) {
+						MetaObjectLoader.RegisterAlias(type, type);
+					}
+				}
 			}
 			// 動的ライブラリのロード
 			foreach (var name in asm.GetManifestResourceNames())

@@ -1,6 +1,8 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Diagnostics.Contracts;
+using System.Dynamic;
 using System.Linq.Expressions;
-using Kurogane.Dynamic;
+using System.Reflection;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -11,10 +13,20 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public override DynamicMetaObject FallbackGetMember(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
-			var mo = MetaObjectLoader.Create(target.Value, target.Expression);
-			if (mo != null)
-				return mo.BindGetMember(this);
-			return DefaultGetMember(target);
+			return
+				SearchAlias(target) ??
+				DefaultGetMember(target);
+		}
+
+		private DynamicMetaObject SearchAlias(DynamicMetaObject target) {
+			var cacher = MetaObjectLoader.GetAlias(target.LimitType);
+			if (cacher == null)
+				return null;
+			var propInfo = cacher.GetMemberInfo(this.Name) as PropertyInfo;
+			if (propInfo != null && propInfo.CanRead) {
+				return MakeDynamicMetaObject(target, propInfo);
+			}
+			return null;
 		}
 
 		private DynamicMetaObject DefaultGetMember(DynamicMetaObject target) {
@@ -27,9 +39,21 @@ namespace Kurogane.RuntimeBinder {
 				var ctorInfo = typeof(PropertyNotFoundException).GetConstructor(
 					new[] { typeof(string), typeof(PropertyAccessMode) });
 				expr = Expression.Throw(
-					Expression.New(ctorInfo, Expression.Constant(this.Name), Expression.Constant(PropertyAccessMode.Write)),
+					Expression.New(ctorInfo, Expression.Constant(this.Name), Expression.Constant(PropertyAccessMode.Read)),
 					this.ReturnType);
 			}
+			var rest = BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType);
+			return new DynamicMetaObject(expr, rest);
+		}
+
+		private DynamicMetaObject MakeDynamicMetaObject(DynamicMetaObject target, PropertyInfo propInfo) {
+			Contract.Requires<ArgumentNullException>(target != null);
+			Contract.Requires<ArgumentNullException>(propInfo != null);
+			Contract.Requires<ArgumentException>(propInfo.CanRead == true);
+
+			var targetExpr = BinderHelper.Wrap(target.Expression, target.LimitType);
+			var propAccess = Expression.Property(targetExpr, propInfo);
+			var expr = BinderHelper.Wrap(propAccess, this.ReturnType);
 			var rest = BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType);
 			return new DynamicMetaObject(expr, rest);
 		}

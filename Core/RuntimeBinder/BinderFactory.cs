@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Dynamic;
-using Kurogane.Dynamic;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 

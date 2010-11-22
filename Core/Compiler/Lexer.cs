@@ -275,15 +275,6 @@ namespace Kurogane.Compiler {
 				buff.Append(c);
 			}
 			var op = buff.ToString();
-			// １×-1のような場合に気をつける。
-			Token afterToken = null;
-			if (op.Length > 1) {
-				string[] unaryOps = { "!", "！", "￢", "-", "－" };
-				foreach (var uOp in unaryOps) {
-					if (op.EndsWith(uOp)) {
-					}
-				}
-			}
 
 			switch (op) {
 			case "+":

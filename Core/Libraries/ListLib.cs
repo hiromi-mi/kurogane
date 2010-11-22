@@ -60,13 +60,6 @@ namespace Kurogane.Libraries {
 		/// <summary>
 		/// キーワード「それぞれ」によって呼ばれる関数。
 		/// </summary>
-		public static object Map(SuffixFunc<Func<object, object>> func, object list) {
-			return Map(func.Func, list);
-		}
-
-		/// <summary>
-		/// キーワード「それぞれ」によって呼ばれる関数。
-		/// </summary>
 		public static object Map(Func<object, object> func, object list) {
 			var cell = list as ListCell;
 			if (cell != null) {
