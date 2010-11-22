@@ -11,16 +11,29 @@ namespace Kurogane {
 	public class Scope : IDynamicMetaObjectProvider {
 
 		private readonly IDictionary<string, dynamic> _values = new Dictionary<string, dynamic>();
+		private readonly Scope _parent;
+
+		public Scope() {
+			_parent = null;
+		}
+
+		public Scope(Scope parent) {
+			_parent = parent;
+		}
 
 		public bool HasVariable(string name) {
-			return _values.ContainsKey(name);
+			return _values.ContainsKey(name) ||
+				(_parent != null && _parent.HasVariable(name));
 		}
 
 		public object GetVariable(string name) {
 			object value = null;
 			if (_values.TryGetValue(name, out value))
 				return value;
-			throw new VariableNotFoundException(name);
+			if (_parent == null)
+				throw new VariableNotFoundException(name);
+			else
+				return _parent.GetVariable(name);
 		}
 
 		public object SetVariable(string name, object value) {

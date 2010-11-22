@@ -6,6 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Kurogane.Test {
 
+	/// <summary>
+	/// 適当なテストを実行するファイル。
+	/// 通過しても何の意味もないが、通過しない場合は問題。
+	/// </summary>
 	[TestClass]
 	public class ExecuteTest {
 
@@ -21,24 +25,6 @@ namespace Kurogane.Test {
 		}
 
 
-		[TestMethod]
-		public void 助詞によって引数の順番を切り替える() {
-			string[] codes = {
-				"「A」が「B」を「C」にテストする。" ,
-				"「A」が「C」に「B」をテストする。" ,
-				"「B」を「A」が「C」にテストする。" ,
-				"「B」を「C」に「A」がテストする。" ,
-				"「C」に「A」が「B」をテストする。" ,
-				"「C」に「B」を「A」がテストする。"};
-			_engine.Global.SetVariable("テスト", new SuffixFunc<Func<object, object, object, object>>(
-				(a, b, c) => ((string)a == "A" && (string)b == "B" && (string)c == "C"),
-				"が", "を", "に"));
-			foreach (var code in codes) {
-				var result = _engine.Execute(code);
-				Assert.IsInstanceOfType(result, typeof(bool));
-				Assert.IsTrue((bool)result);
-			}
-		}
 
 		[TestMethod]
 		public void コメントを読み飛ばす() {
@@ -86,6 +72,19 @@ namespace Kurogane.Test {
 			num = _engine.Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 1556111435);
+
+			code =
+				"【□＋△】を加算とする。" +
+				"以下の定義でNをフィボナッチする。" +
+				"　　もし（N≦１）なら、" +
+				"　　　　Nである。" +
+				"　　他なら、" +
+				"　　　　(N-1)と(N-2)をそれぞれフィボナッチし、加算する。" +
+				"以上。" +
+				"10をフィボナッチする。";
+			num = _engine.Execute(code);
+			Assert.IsInstanceOfType(num, typeof(int));
+			Assert.AreEqual((int)num, 55);
 		}
 
 		[TestMethod]
@@ -97,21 +96,6 @@ namespace Kurogane.Test {
 				"3と5を加算する。");
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 8);
-		}
-
-		[TestMethod]
-		public void 集約関数() {
-			_engine.Execute(
-				"0と[1, 2, 3, 4, 5]を【○＋△】で集約し、Aとする。" +
-				"1と[1, 2, 3, 4, 5]を【○×△】で集約し、Bとする。");
-
-			object a = _engine.Global.GetVariable("A");
-			Assert.IsInstanceOfType(a, typeof(int));
-			Assert.AreEqual((int)a, 15);
-
-			object b = _engine.Global.GetVariable("B");
-			Assert.IsInstanceOfType(b, typeof(int));
-			Assert.AreEqual((int)b, 120);
 		}
 
 		[TestMethod]
