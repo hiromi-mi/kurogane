@@ -16,12 +16,27 @@ namespace Kurogane.RuntimeBinder {
 			: base(ExpressionType.And) {
 		}
 
-		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
-			var expr = Expression.Condition(
-				Expression.TypeIs(target.Expression, typeof(bool)),
-				Expression.Condition(Expression.Convert(target.Expression, typeof(bool)), arg.Expression, target.Expression),
-				Expression.Condition(Expression.Equal(target.Expression, Expression.Constant(null)), target.Expression, arg.Expression));
-			return new DynamicMetaObject(expr, BindingRestrictions.Empty);
+		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject left, DynamicMetaObject right, DynamicMetaObject errorSuggestion) {
+			Expression expr;
+			BindingRestrictions rest;
+			if (left.Value == null) {
+				expr = BinderHelper.Wrap(left.Expression, this.ReturnType);
+				rest = BindingRestrictions.GetExpressionRestriction(BinderHelper.IsNull(left.Expression));
+			}
+			else if (left.LimitType == typeof(bool)) {
+				expr = BinderHelper.Wrap(
+					Expression.Condition(BinderHelper.Wrap(left.Expression, typeof(bool)), right.Expression, left.Expression),
+					this.ReturnType);
+				rest = BindingRestrictions.GetTypeRestriction(left.Expression, typeof(bool));
+			}
+			else {
+				expr = BinderHelper.Wrap(right.Expression, this.ReturnType);
+				rest = BindingRestrictions.GetExpressionRestriction(
+					Expression.AndAlso(
+						BinderHelper.IsNotNull(left.Expression),
+						Expression.Not(Expression.TypeIs(left.Expression, typeof(bool)))));
+			}
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 
@@ -34,12 +49,27 @@ namespace Kurogane.RuntimeBinder {
 			: base(ExpressionType.Or) {
 		}
 
-		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
-			var expr = Expression.Condition(
-				Expression.TypeIs(target.Expression, typeof(bool)),
-				Expression.Condition(Expression.Convert(target.Expression, typeof(bool)), target.Expression, arg.Expression),
-				Expression.Condition(Expression.Equal(target.Expression, Expression.Constant(null)), arg.Expression, target.Expression));
-			return new DynamicMetaObject(expr, BindingRestrictions.Empty);
+		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject left, DynamicMetaObject right, DynamicMetaObject errorSuggestion) {
+			Expression expr;
+			BindingRestrictions rest;
+			if (left.Value == null) {
+				expr = BinderHelper.Wrap(right.Expression, this.ReturnType);
+				rest = BindingRestrictions.GetExpressionRestriction(BinderHelper.IsNull(left.Expression));
+			}
+			else if (left.LimitType == typeof(bool)) {
+				expr = BinderHelper.Wrap(
+					Expression.Condition(BinderHelper.Wrap(left.Expression, typeof(bool)), left.Expression, right.Expression),
+					this.ReturnType);
+				rest = BindingRestrictions.GetTypeRestriction(left.Expression, typeof(bool));
+			}
+			else {
+				expr = BinderHelper.Wrap(left.Expression, this.ReturnType);
+				rest = BindingRestrictions.GetExpressionRestriction(
+					Expression.AndAlso(
+						BinderHelper.IsNotNull(left.Expression),
+						Expression.Not(Expression.TypeIs(left.Expression, typeof(bool)))));
+			}
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 
@@ -53,15 +83,25 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public override DynamicMetaObject FallbackUnaryOperation(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
-			var nullExpr = Expression.Default(typeof(object));
-			var trueExpr = Expression.Constant(true, typeof(object));
-			var falseExpr = Expression.Constant(false, typeof(object));
-
-			var expr = Expression.Condition(
-				Expression.TypeIs(target.Expression, typeof(bool)),
-				Expression.Condition(Expression.Convert(target.Expression, typeof(bool)), falseExpr, trueExpr),
-				Expression.Condition(Expression.Equal(target.Expression, nullExpr), trueExpr, falseExpr));
-			return new DynamicMetaObject(expr, BindingRestrictions.Empty);
+			Expression boolExpr;
+			BindingRestrictions rest;
+			if (target.Value == null) {
+				boolExpr = Expression.Constant(true);
+				rest = BindingRestrictions.GetExpressionRestriction(BinderHelper.IsNull(target.Expression));
+			}
+			else if (target.LimitType == typeof(bool)) {
+				boolExpr = Expression.Not(BinderHelper.Wrap(target.Expression, typeof(bool)));
+				rest = BindingRestrictions.GetTypeRestriction(target.Expression, typeof(bool));
+			}
+			else {
+				boolExpr = Expression.Constant(false);
+				rest = BindingRestrictions.GetExpressionRestriction(
+					Expression.AndAlso(
+						BinderHelper.IsNotNull(target.Expression),
+						Expression.Not(Expression.TypeIs(target.Expression, typeof(bool)))));
+			}
+			var expr = BinderHelper.Wrap(boolExpr, this.ReturnType);
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 }

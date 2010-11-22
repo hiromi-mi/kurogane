@@ -51,13 +51,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\TokenizerTest.cs" />
-    <Compile Include="EnumeratorTest.cs" />
     <Compile Include="ExecuteTest.cs" />
     <Compile Include="Libraries\list.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EncodingTest.cs" />
     <Compile Include="Spec\ArithmeticTest.cs" />
     <Compile Include="Spec\ComparingTest.cs" />
+    <Compile Include="Spec\EqualityTest.cs" />
+    <Compile Include="Spec\BooleanTest.cs" />
     <Compile Include="Util\ExpressionUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>

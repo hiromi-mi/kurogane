@@ -20,7 +20,7 @@ namespace Kurogane {
 			object value = null;
 			if (_values.TryGetValue(name, out value))
 				return value;
-			throw new KrgnRuntimeException(String.Format("{0}という変数は存在しません。", name));
+			throw new VariableNotFoundException(name);
 		}
 
 		public object SetVariable(string name, object value) {

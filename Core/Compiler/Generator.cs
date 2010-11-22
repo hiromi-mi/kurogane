@@ -92,7 +92,7 @@ namespace Kurogane.Compiler {
 		}
 
 		public virtual Expression ConvertDefun(Defun defun) {
-			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
+			var funcType = ExpressionHelper.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var funcVarExpr = Expression.Parameter(sfxFuncType, defun.Name);
 			var defunExpr = ConvertDefunCore(defun, funcVarExpr);
@@ -100,7 +100,7 @@ namespace Kurogane.Compiler {
 		}
 
 		public virtual Expression ConvertDefunCore(Defun defun, ParameterExpression funcExpr) {
-			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
+			var funcType = ExpressionHelper.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var dic = new Dictionary<string, ParameterExpression>();
 			dic[defun.Name] = funcExpr;
@@ -339,9 +339,24 @@ namespace Kurogane.Compiler {
 
 		private Expression ConvertBinaryExpr(BinaryExpr expr) {
 			var binder = FindBinder(expr.Type);
-			var left = ConvertElement(expr.Left);
-			var right = ConvertElement(expr.Right);
-			return Expression.Dynamic(binder, typeof(object), left, right);
+			var left = ExpressionHelper.Wrap(ConvertElement(expr.Left), typeof(object));
+			var right = ExpressionHelper.Wrap(ConvertElement(expr.Right), typeof(object));
+			if (binder != null) {
+				return Expression.Dynamic(binder, typeof(object), left, right);
+			}
+			else {
+				if (expr.Type == BinaryOperationType.Concat) {
+					return ExpressionHelper.BetaReduction<object, object, object>(
+						(arg0, arg1) => String.Concat(arg0, arg1),
+						left, right);
+				}
+				if (expr.Type == BinaryOperationType.Cons) {
+					return ExpressionHelper.BetaReduction<object, object, object>(
+						(arg0, arg1) => ListCell.Cons(arg0, arg1),
+						left, right);
+				}
+			}
+			throw new NotImplementedException();
 		}
 
 		private DynamicMetaObjectBinder FindBinder(UnaryOperationType type) {
@@ -389,7 +404,7 @@ namespace Kurogane.Compiler {
 			case BinaryOperationType.Or:
 				return _factory.OrBinder;
 			}
-			throw new NotImplementedException();
+			return null;
 		}
 
 		#endregion

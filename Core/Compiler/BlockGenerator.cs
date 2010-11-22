@@ -43,7 +43,7 @@ namespace Kurogane.Compiler {
 			var name = defun.Name;
 			if (_LocalVariables.ContainsKey(name))
 				throw new SemanticException("変数「" + name + "」が二度定義されています。");
-			var funcType = ExpressionUtil.GetFuncType(defun.Params.Count);
+			var funcType = ExpressionHelper.GetFuncType(defun.Params.Count);
 			var sfxFuncType = typeof(SuffixFunc<>).MakeGenericType(funcType);
 			var funcExpr = Expression.Parameter(sfxFuncType, name);
 			_LocalVariables[name] = funcExpr;

@@ -17,6 +17,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +29,29 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>False</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>False</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsContainerAnalysis>False</CodeContractsContainerAnalysis>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>False</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>False</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -55,7 +79,6 @@
     <Compile Include="Compiler\CompilerException.cs" />
     <Compile Include="Compiler\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
-    <Compile Include="Enumerator.cs" />
     <Compile Include="Expressions\InvokeStatic.cs" />
     <Compile Include="Expressions\LambdaFinder.cs" />
     <Compile Include="Expressions\TailRecursion.cs" />
@@ -64,6 +87,7 @@
     <Compile Include="Libraries\StringLib.cs" />
     <Compile Include="LibraryAttribute.cs" />
     <Compile Include="ListCell.cs" />
+    <Compile Include="PropertyNotFoundException.cs" />
     <Compile Include="RuntimeBinder\BinderHelper.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
@@ -73,15 +97,12 @@
     <Compile Include="RuntimeBinder\MapBinder.cs" />
     <Compile Include="RuntimeBinder\NegateBinder.cs" />
     <Compile Include="RuntimeBinder\NotBinder.cs" />
-    <Compile Include="RuntimeBinder\RuntimeBinderException.cs" />
     <Compile Include="RuntimeBinder\KrgnInvokeMemberBinder.cs" />
     <Compile Include="RuntimeBinder\KrgnSetMemberBinder.cs" />
-    <Compile Include="KrgnException.cs" />
-    <Compile Include="KrgnRuntimeException.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="RuntimeBinder\ToBoolBinder.cs" />
     <Compile Include="Compiler\UnaryOperationType.cs" />
-    <Compile Include="Util\ExpressionUtil.cs" />
+    <Compile Include="Util\ExpressionHelper.cs" />
     <Compile Include="Util\ReflectionHelper.cs" />
     <Compile Include="Dynamic\MetaObjectLoader.cs" />
     <Compile Include="Dynamic\PairMetaObject.cs" />
@@ -96,6 +117,7 @@
     <Compile Include="Scope.cs" />
     <Compile Include="Util\EncodeDetecter.cs" />
     <Compile Include="SuffixFunc.cs" />
+    <Compile Include="VariableNotFoundException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

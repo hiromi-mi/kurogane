@@ -5,6 +5,7 @@ using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
 using Kurogane.Util;
+using Kurogane.Libraries;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -22,23 +23,33 @@ namespace Kurogane.RuntimeBinder {
 		/// <param name="errorSuggestion"></param>
 		/// <returns>リスト</returns>
 		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
+			Expression expr = null;
+			Expression rest = null;
 			var funcType = typeof(Func<object, object>);
 			if (target.LimitType == funcType) {
-				var mInfo = typeof(Enumerator).GetMethod("Map", new[] { funcType, typeof(object) });
-				return new DynamicMetaObject(
-					Expression.Call(mInfo, Expression.Convert(target.Expression, funcType), arg.Expression),
-					BindingRestrictions.GetTypeRestriction(target.Expression, funcType));
+				expr = ExpressionHelper.BetaReduction<Func<object, object>, object, object>(
+					(func, lst) => ListLib.Map(func, lst),
+					BinderHelper.Wrap(target.Expression, funcType), arg.Expression);
+				rest = Expression.TypeIs(target.Expression, funcType);
 			}
 			funcType = typeof(SuffixFunc<Func<object, object>>);
 			if (target.LimitType == funcType) {
-				var mInfo = typeof(Enumerator).GetMethod("Map", new[] { funcType, typeof(object) });
-				return new DynamicMetaObject(
-					Expression.Call(mInfo, Expression.Convert(target.Expression, funcType), arg.Expression),
-					BindingRestrictions.GetTypeRestriction(target.Expression, funcType));
+				expr = ExpressionHelper.BetaReduction<SuffixFunc<Func<object, object>>, object, object>(
+					(func, lst) => ListLib.Map(func, lst),
+					BinderHelper.Wrap(target.Expression, funcType), arg.Expression);
+				rest = Expression.TypeIs(target.Expression, funcType);
 			}
-			return ThrowArgumentException(
-				target.LimitType + "を用いて射影（それぞれ）できません。",
-				BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+			// ----- ----- ----- return ----- ----- -----
+			if (expr != null && rest != null) {
+				return new DynamicMetaObject(
+					BinderHelper.Wrap(expr, this.ReturnType),
+					BindingRestrictions.GetExpressionRestriction(rest));
+			}
+			else {
+				return ThrowArgumentException(
+					target.LimitType + "を用いて射影（それぞれ）できません。",
+					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+			}
 		}
 
 		private static DynamicMetaObject ThrowArgumentException(string message, BindingRestrictions restrictions) {

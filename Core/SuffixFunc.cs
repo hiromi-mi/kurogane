@@ -168,23 +168,15 @@ namespace Kurogane {
 		private static readonly Type[] Types;
 
 		/// <summary>
-		/// Typesのすべての型がobjectであるかどうかの変数
+		/// Typesのすべての型がobjectであるかどうかの変数。
+		/// 一つでもobject型以外が含まれている場合、true。
 		/// </summary>
 		private static readonly bool TypeStrict;
 
 		static SuffixFunc() {
-			var mInfo = typeof(T).GetMethod("Invoke");
-			if (mInfo == null) {
-				Types = null;
-				return;
-			}
-			var pInfos = mInfo.GetParameters();
-			var types = new Type[pInfos.Length + 1];
-			Types = types;
-			types[0] = mInfo.ReturnType;
-			for (int i = 0; i < pInfos.Length; i++)
-				types[i + 1] = pInfos[i].ParameterType;
-			TypeStrict = types.All(t => t == typeof(object));
+			Types = ReflectionHelper.GetDelegateType(typeof(T));
+			if (Types != null)
+				TypeStrict = Types.All(t => t == typeof(object)) == false;
 		}
 
 		/// <summary>助詞をSeparatorで連結したもの</summary>
@@ -263,7 +255,7 @@ namespace Kurogane {
 					// arg->param へ 移行
 					if (paramLen == argLen) {
 						for (int i = 1; i <= argLen; i++)
-							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i + 1]);
+							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i ]);
 					}
 					else if (paramLen > argLen) {
 						// arg を param に展開
@@ -272,7 +264,7 @@ namespace Kurogane {
 					}
 					else /* paramLen < argLen */ {
 						for (int i = 2; i <= paramLen; i++)
-							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i + 1]);
+							parameters[prmL + i] = Expression.Convert(args[argL + i + offset].Expression, Types[prmL + i ]);
 						// arg を param に集約
 						int count = argLen - paramLen;
 						Expression listExpr = Expression.Convert(args[argL + 1 + count + offset].Expression, typeof(object));
@@ -298,7 +290,8 @@ namespace Kurogane {
 				string propName = ReflectionHelper.PropertyName((SuffixFunc<T> func) => func.Func);
 				var funcExpr = Expression.PropertyOrField(this.Expression, propName);
 				Expression expr = Expression.Invoke(funcExpr, parameters);
-				if (Types[0].IsValueType)
+				var retType = Types[Types.Length - 1];
+				if (retType.IsValueType)
 					expr = Expression.Convert(expr, typeof(object));
 				return new DynamicMetaObject(expr, GetRestrictions());
 			}

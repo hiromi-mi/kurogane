@@ -12,17 +12,16 @@ namespace Kurogane.Test.Spec {
 	/// </summary>
 	[TestClass]
 	public class ArithmeticTest {
-		private Engine _engine;
 
-		[TestInitialize]
-		public void Init() {
-			_engine = new Engine();
-		}
+		// 使いまわし可能
+		private Engine _engine = new Engine();
 
 		[TestMethod]
 		public void 負の数() {
 			Assert.AreEqual(-3, (int)_engine.Execute("(-3)である。"));
 			Assert.AreEqual(-5.5, (double)_engine.Execute("(-5.5)である。"));
+			Assert.AreEqual(0, (int)_engine.Execute("(-0)である。"));
+			Assert.AreEqual(0.0, (double)_engine.Execute("(-0.0)である。"));
 		}
 
 		[TestMethod]
@@ -69,6 +68,51 @@ namespace Kurogane.Test.Spec {
 				Assert.Fail();
 			}
 			catch (InvalidOperationException) { }
+		}
+
+		[TestMethod]
+		public void 文字列を計算すると例外() {
+			try {
+				_engine.Execute("(「こんにちは」＋１)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+
+			try {
+				_engine.Execute("(「こんにちは」＋「さようなら」)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+
+			try {
+				_engine.Execute("(「こんにちは」×３)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+		}
+
+		[TestMethod]
+		public void リストを計算すると例外() {
+			try {
+				_engine.Execute("([1,2,3] + [4,5,6])である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+
+			try {
+				_engine.Execute("([1,2,3,4,5]×3)である。");
+				Assert.Fail();
+			}
+			catch (InvalidOperationException) { }
+		}
+
+		[TestMethod]
+		public void 複雑な計算式を計算() {
+			Assert.AreEqual(9, (int)_engine.Execute("(2+3+4)である。"));
+			Assert.AreEqual(14, (int)_engine.Execute("(2+3*4)である。"));
+			Assert.AreEqual(10, (int)_engine.Execute("(2*3+4)である。"));
+			Assert.AreEqual(20, (int)_engine.Execute("((2+3)*4)である。"));
+			Assert.AreEqual(14, (int)_engine.Execute("(2*(3+4))である。"));
 		}
 	}
 }

@@ -5,7 +5,16 @@ using System.Text;
 using System.Diagnostics;
 
 namespace Kurogane.Compiler {
+
 	public class Parser {
+
+		/// <summary>
+		/// プログラム全体を構文解析し、Blockにして返す。
+		/// 構文解析できなかった場合、SyntaxExceptionが発生する。
+		/// </summary>
+		/// <param name="token">プログラムのトークン列</param>
+		/// <param name="filename">ファイル名（デバッグ用）</param>
+		/// <returns>構文解析した結果</returns>
 		public static Block Parse(Token token, string filename) {
 			var p = new Parser(filename);
 			var pair = p.ParseBlock(token);
@@ -69,7 +78,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<CondThenPair> ParseCondThenPair(Token token) {
-			var condPair = ParseElement(token);
+			var condPair = ParseProperty(token);
 			if (condPair == null)
 				return null;
 			token = condPair.Token
@@ -162,14 +171,14 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<Return> ParseReturn(Token token) {
-			var elemPair = ParseElement(token);
+			var elemPair = ParseProperty(token);
 			if (elemPair == null)
 				return null;
 			token = elemPair.Token;
 			var lst = new List<ArgSuffixPair>();
 			while (token.Match((SuffixToken t) => t.Value == "と")) {
 				lst.Add(new ArgSuffixPair(elemPair.Node, "と"));
-				elemPair = ParseElement(token.Next);
+				elemPair = ParseProperty(token.Next);
 				if (elemPair == null)
 					break;
 				token = elemPair.Token;
@@ -180,7 +189,7 @@ namespace Kurogane.Compiler {
 			}
 			else {
 				lst.Add(new ArgSuffixPair(elemPair.Node, "で"));
-				retValue = CreateTuple(lst);
+				retValue = CreateTuple(lst).Argument;
 			}
 			var nextToken = elemPair.Token
 				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.ReturnText)
@@ -224,11 +233,18 @@ namespace Kurogane.Compiler {
 				if (token.Match((ReservedToken t) => t.Value == "それぞれ")) {
 					if (isMap)
 						throw Error("「それぞれ」を二箇所で使うことはできません。", token);
-					if (lst.Count > 1)
-						throw Error("「それぞれ」に対して、二つ以上の引数を与えることはできません。", token);
 					isMap = true;
 					if (lst.Count == 1)
 						mappedArg = lst[0];
+					else if (lst.Count > 1) {
+						var tmpArg = CreateTuple(lst);
+						if (tmpArg != null) {
+							mappedArg = tmpArg;
+						}
+						else {
+							throw Error("「それぞれ」に対して、二つ以上の引数を与えることはできません。", token);
+						}
+					}
 					lst.Clear();
 					token = token.Next;
 				}
@@ -293,7 +309,7 @@ namespace Kurogane.Compiler {
 				return new DefineValue(name, null);
 			if (args.Last().Suffix != "を")
 				return null;
-			var tuple = CreateTuple(args);
+			var tuple = CreateTuple(args).Argument;
 			if (tuple == null)
 				return null;
 			return new DefineValue(name, tuple);
@@ -326,7 +342,7 @@ namespace Kurogane.Compiler {
 				}
 
 				lst.RemoveAt(lst.Count - 1);
-				var value = CreateTuple(lst);
+				var value = CreateTuple(lst).Argument;
 				if (value == null)
 					return null;
 				if (name != null)
@@ -338,7 +354,7 @@ namespace Kurogane.Compiler {
 			prop = getProp(lst[0]);
 			if (name != null || prop != null) {
 				lst.RemoveAt(0);
-				var value = CreateTuple(lst);
+				var value = CreateTuple(lst).Argument;
 				if (value == null)
 					return null;
 				if (name != null)
@@ -349,19 +365,20 @@ namespace Kurogane.Compiler {
 			return null;
 		}
 
-		private Element CreateTuple(List<ArgSuffixPair> args) {
+		private ArgSuffixPair CreateTuple(List<ArgSuffixPair> args) {
 			var tuple = args.Last().Argument;
+			var sfx = args.Last().Suffix;
 			for (int i = args.Count - 2; i >= 0; i--) {
 				var elem = args[i];
 				if (elem.Suffix != "と")
 					return null;
 				tuple = new TupleLiteral(elem.Argument, tuple);
 			}
-			return tuple;
+			return new ArgSuffixPair(tuple, sfx);
 		}
 
 		private IPair<ArgSuffixPair> ParseArgSfxPair(Token token) {
-			var elemPair = ParseElement(token);
+			var elemPair = ParseProperty(token);
 			if (elemPair == null)
 				return null;
 			var sfxToken = elemPair.Token as SuffixToken;
@@ -400,193 +417,10 @@ namespace Kurogane.Compiler {
 		private IPair<IExpr> ParseExpr(Token token) {
 			return
 				ParseExprBlock(token) ??
-				ParseElement(token) as IPair<IExpr>;
+				ParseProperty(token) as IPair<IExpr>;
 		}
 
 		#region 要素
-
-		private IPair<Element> ParseElement(Token token) {
-			return
-				ParseList(token) ??
-				ParseBinaryExpr(token);
-		}
-
-		private IPair<ListLiteral> ParseList(Token token) {
-			token = token.MatchFlow((OpenBracketToken t) => true);
-			if (token == null)
-				return null;
-			var elemList = new List<Element>();
-			while (true) {
-				if (token.Match((CloseBracketToken t) => true))
-					break;
-				var elemPair = ParseElement(token);
-				if (elemPair == null)
-					throw Error("リストの要素が解析できません。", token);
-
-				elemList.Add(elemPair.Node);
-				token = elemPair.Token;
-
-				if (token.Match((CommaToken t) => true)) {
-					token = token.Next;
-					continue;
-				}
-				if (token.Match((CloseBracketToken t) => true))
-					break;
-				throw Error("リストの要素が解析できません。", token);
-			}
-			return MakePair(new ListLiteral(elemList), token.Next);
-		}
-
-		#region BinaryExpr
-
-		/// binExpr ::= andExpr | binExpr OrOp  andExpr
-		/// orExpr  ::= cmpExpr |  orExpr AndOp cmpExpr
-		/// cmpExpr ::= addExpr | cmpExpr CmpOp addExpr
-		/// addExpr ::= mltExpr | addExpr AddOp mltExpr
-		/// mltExpr ::= ukExpr  | mltExpr MltOp unExpr
-		/// unExpr  ::= unary   |  unExpr UnknownOp unary
-		private IPair<Element> ParseBinaryExpr(Token token) {
-			IPair<Element> pair = ParseAndExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				if (token is OrOpToken) {
-					var opToken = (OrOpToken)token;
-					var rightPair = ParseAndExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		private IPair<Element> ParseAndExpr(Token token) {
-			IPair<Element> pair = ParseCompareExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				if (token is AndOpToken) {
-					var opToken = (AndOpToken)token;
-					var rightPair = ParseCompareExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		private IPair<Element> ParseCompareExpr(Token token) {
-			IPair<Element> pair = ParseAddExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				var opType =
-					token is EqualOpToken ? BinaryOperationType.Equal :
-					token is NotEqualOpToken ? BinaryOperationType.NotEqual :
-					token is LessThanOpToken ? BinaryOperationType.LessThan :
-					token is GreaterThanOpToken ? BinaryOperationType.GreaterThan :
-					token is LessThanEqualOpToken ? BinaryOperationType.LessThanOrEqual :
-					token is GreaterThanEqualOpToken ? BinaryOperationType.GreaterThanOrEqual :
-					BinaryOperationType.Unknown;
-
-				if (opType != BinaryOperationType.Unknown) {
-					var rightPair = ParseAddExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		private IPair<Element> ParseAddExpr(Token token) {
-			IPair<Element> pair = ParseMultipleExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				var opType =
-					token is AddOpToken ? BinaryOperationType.Add :
-					token is SubOpToken ? BinaryOperationType.Subtract :
-					BinaryOperationType.Unknown;
-
-				if (opType != BinaryOperationType.Unknown) {
-					var rightPair = ParseMultipleExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		private IPair<Element> ParseMultipleExpr(Token token) {
-			IPair<Element> pair = ParseUnknownMultipleExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				var opType =
-					token is MultipleOpToken ? BinaryOperationType.Multiply :
-					token is DivideOpToken ? BinaryOperationType.Divide :
-					token is ModuloOpToken ? BinaryOperationType.Modulo :
-					BinaryOperationType.Unknown;
-
-				if (opType != BinaryOperationType.Unknown) {
-					var rightPair = ParseUnknownMultipleExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		private IPair<Element> ParseUnknownMultipleExpr(Token token) {
-			IPair<Element> pair = ParseUnaryExpr(token);
-			if (pair == null)
-				return null;
-			token = pair.Token;
-			while (true) {
-				if (token is UnknownOperatorToken) {
-					var rightPair = ParseUnaryExpr(token.Next);
-					if (rightPair == null)
-						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node), rightPair.Token);
-				}
-				break;
-			}
-			return pair;
-		}
-
-		#endregion
-
-		private IPair<Element> ParseUnaryExpr(Token token) {
-			UnaryOperationType? op = null;
-			if (token.Match((AbstractOperatorToken t) => true)) {
-				var opType =
-					token is SubOpToken ? UnaryOperationType.Negate :
-					token is NotOpToken ? UnaryOperationType.Not :
-					UnaryOperationType.Unknown;
-				op = opType;
-				token = token.Next;
-			}
-
-			var propPair = ParseProperty(token);
-			if (op == null)
-				return propPair;
-			return MakePair(new UnaryExpr(op.Value, propPair.Node), propPair.Token);
-		}
 
 		private IPair<Element> ParseProperty(Token token) {
 			IPair<Element> pair = ParseUnit(token);
@@ -606,17 +440,218 @@ namespace Kurogane.Compiler {
 
 		private IPair<Element> ParseUnit(Token token) {
 			return
-				ParseSymbol(token) ??
 				ParseParenthesisExpr(token) ??
-				ParseSumiBracketExpr(token) ?? 
-				ParseLiteral(token);
+				ParseList(token) ??
+				ParseSumiBracketExpr(token) ??
+				ParseSymbol(token) ??
+				ParseLiteral(token) as IPair<Element>;
 		}
+
+		#region BinaryExpr
+
+		/// consExpr ::= concatExpr | concatExpr OrOp  consExpr
+		/// concatExpr ::= orExpr | concatExpr OrOp  concatExpr
+		/// orExpr  ::= andExpr | binExpr OrOp  andExpr
+		/// andExpr ::= cmpExpr |  orExpr AndOp cmpExpr
+		/// cmpExpr ::= addExpr | cmpExpr CmpOp addExpr
+		/// addExpr ::= mltExpr | addExpr AddOp mltExpr
+		/// mltExpr ::= ukExpr  | mltExpr MltOp unExpr
+		/// unExpr  ::= unary   |  unExpr UnknownOp unary
+		private IPair<Element> ParseBinaryExpr(Token token) {
+			// concatExprのみ右優先結合であることに注意すること
+			IPair<Element> pair = ParseConcatExpr(token);
+			if (pair == null)
+				return null;
+			token = pair.Token;
+			if (token is ConsOpToken) {
+				var opToken = (ConsOpToken)token;
+				var rightPair = ParseBinaryExpr(token.Next);
+				if (rightPair == null)
+					throw Error("右辺が見つかりません。", token.Next);
+				pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Cons, rightPair.Node), rightPair.Token);
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseConcatExpr(Token token) {
+			IPair<Element> pair = ParseOrExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				if (token is ConcatOpToken) {
+					var opToken = (ConcatOpToken)token;
+					var rightPair = ParseOrExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Concat, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseOrExpr(Token token) {
+			IPair<Element> pair = ParseAndExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				if (token is OrOpToken) {
+					var opToken = (OrOpToken)token;
+					var rightPair = ParseAndExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseAndExpr(Token token) {
+			IPair<Element> pair = ParseCompareExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				if (token is AndOpToken) {
+					var opToken = (AndOpToken)token;
+					var rightPair = ParseCompareExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseCompareExpr(Token token) {
+			IPair<Element> pair = ParseAddExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				var opType =
+					token is EqualOpToken ? BinaryOperationType.Equal :
+					token is NotEqualOpToken ? BinaryOperationType.NotEqual :
+					token is LessThanOpToken ? BinaryOperationType.LessThan :
+					token is GreaterThanOpToken ? BinaryOperationType.GreaterThan :
+					token is LessThanEqualOpToken ? BinaryOperationType.LessThanOrEqual :
+					token is GreaterThanEqualOpToken ? BinaryOperationType.GreaterThanOrEqual :
+					BinaryOperationType.Unknown;
+
+				if (opType != BinaryOperationType.Unknown) {
+					var rightPair = ParseAddExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseAddExpr(Token token) {
+			IPair<Element> pair = ParseMultipleExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				var opType =
+					token is AddOpToken ? BinaryOperationType.Add :
+					token is SubOpToken ? BinaryOperationType.Subtract :
+					BinaryOperationType.Unknown;
+
+				if (opType != BinaryOperationType.Unknown) {
+					var rightPair = ParseMultipleExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseMultipleExpr(Token token) {
+			IPair<Element> pair = ParseUnknownMultipleExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				var opType =
+					token is MultipleOpToken ? BinaryOperationType.Multiply :
+					token is DivideOpToken ? BinaryOperationType.Divide :
+					token is ModuloOpToken ? BinaryOperationType.Modulo :
+					BinaryOperationType.Unknown;
+
+				if (opType != BinaryOperationType.Unknown) {
+					var rightPair = ParseUnknownMultipleExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		private IPair<Element> ParseUnknownMultipleExpr(Token token) {
+			IPair<Element> pair = ParseUnaryExpr(token);
+			if (pair == null)
+				return null;
+			while (true) {
+				token = pair.Token;
+				if (token is UnknownOperatorToken) {
+					var rightPair = ParseUnaryExpr(token.Next);
+					if (rightPair == null)
+						throw Error("右辺が見つかりません。", token.Next);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node), rightPair.Token);
+				}
+				else
+					break;
+			}
+			return pair;
+		}
+
+		#endregion
+
+		#region UnaryExpr
+
+		private IPair<Element> ParseUnaryExpr(Token token) {
+			UnaryOperationType? op = null;
+			if (token.Match((AbstractOperatorToken t) => true)) {
+				var opType =
+					token is SubOpToken ? UnaryOperationType.Negate :
+					token is NotOpToken ? UnaryOperationType.Not :
+					UnaryOperationType.Unknown;
+				op = opType;
+				token = token.Next;
+			}
+
+			var propPair = ParseProperty(token);
+			if (op == null)
+				return propPair;
+			return MakePair(new UnaryExpr(op.Value, propPair.Node), propPair.Token);
+		}
+
+		#endregion
+
+		#region StartWithBracket
 
 		private IPair<Element> ParseParenthesisExpr(Token token) {
 			token = token.MatchFlow((OpenParenthesisToken t) => true);
 			if (token == null)
 				return null;
-			var elemPair = ParseElement(token);
+			var elemPair = ParseBinaryExpr(token);
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseParenthesisToken t) => true);
 			if (lastToken == null)
@@ -628,13 +663,43 @@ namespace Kurogane.Compiler {
 			token = token.MatchFlow((OpenSumiBracketToken t) => true);
 			if (token == null)
 				return null;
-			var elemPair = ParseElement(token);
+			var elemPair = ParseBinaryExpr(token);
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseSumiBracketToken t) => true);
 			if (lastToken == null)
 				throw Error("閉じ括弧が出現していません。", elemPair.Token);
 			return MakePair(new Lambda(elemPair.Node), lastToken);
 		}
+
+		private IPair<ListLiteral> ParseList(Token token) {
+			token = token.MatchFlow((OpenBracketToken t) => true);
+			if (token == null)
+				return null;
+			var elemList = new List<Element>();
+			while (true) {
+				if (token.Match((CloseBracketToken t) => true))
+					break;
+				var elemPair = ParseBinaryExpr(token);
+				if (elemPair == null)
+					throw Error("リストの要素が解析できません。", token);
+
+				elemList.Add(elemPair.Node);
+				token = elemPair.Token;
+
+				if (token.Match((CommaToken t) => true)) {
+					token = token.Next;
+					continue;
+				}
+				if (token.Match((CloseBracketToken t) => true))
+					break;
+				throw Error("リストの要素が解析できません。", token);
+			}
+			return MakePair(new ListLiteral(elemList), token.Next);
+		}
+
+		#endregion
+
+		#region Single
 
 		private IPair<Symbol> ParseSymbol(Token token) {
 			var symToken = token as SymbolToken;
@@ -672,6 +737,8 @@ namespace Kurogane.Compiler {
 				return MakePair(BoolLiteral.False, nextToken);
 			return null;
 		}
+
+		#endregion
 
 		#endregion
 

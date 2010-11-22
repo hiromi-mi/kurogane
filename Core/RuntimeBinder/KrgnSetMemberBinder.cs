@@ -18,19 +18,22 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		private DynamicMetaObject DefaultSetMember(DynamicMetaObject target, DynamicMetaObject value) {
+			Expression expr;
 			var propInfo = target.LimitType.GetProperty(Name);
-			if (propInfo == null)
-				return RuntimeBinderException.CreateMetaObject(
-					Name + "という属性を持っていません。",
-					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
-			if (propInfo.CanWrite == false)
-				return RuntimeBinderException.CreateMetaObject(
-					Name + "という属性に書き込みできません。",
-					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
-			return
-				new DynamicMetaObject(
-					Expression.Assign(Expression.Property(target.Expression, propInfo), value.Expression),
-					BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType));
+			if (propInfo != null && propInfo.CanWrite) {
+				expr = Expression.Assign(
+					Expression.Property(target.Expression, propInfo),
+					Expression.Convert(value.Expression, propInfo.DeclaringType));
+			}
+			else {
+				var ctorInfo = typeof(PropertyNotFoundException).GetConstructor(
+					new[] { typeof(string), typeof(PropertyAccessMode) });
+				expr = Expression.Throw(
+					Expression.New(ctorInfo, Expression.Constant(this.Name), Expression.Constant(PropertyAccessMode.Read)),
+					this.ReturnType);
+			}
+			var rest = BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType);
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 }

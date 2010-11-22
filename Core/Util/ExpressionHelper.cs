@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Util {
-	public static class ExpressionUtil {
+	public static class ExpressionHelper {
 
 		private static readonly List<Type> _FuncTypeCache = new List<Type>();
 
@@ -15,8 +16,9 @@ namespace Kurogane.Util {
 		/// <param name="argCount">関数の引数の個数</param>
 		/// <returns>Funcを指すType型の値</returns>
 		public static Type GetFuncType(int argCount) {
-			if (argCount < 0)
-				throw new ArgumentOutOfRangeException("argCount");
+			Contract.Requires<ArgumentOutOfRangeException>(argCount >= 0);
+			Contract.Ensures(Contract.Result<Type>() != null);
+
 			int addSize = argCount - _FuncTypeCache.Count + 1;
 			for (int i = 0; i < addSize; i++)
 				_FuncTypeCache.Add(null);
@@ -29,6 +31,12 @@ namespace Kurogane.Util {
 				_FuncTypeCache[argCount] = type;
 			}
 			return type;
+		}
+
+		public static Expression Wrap(Expression expr, Type type) {
+			if (expr.Type == type)
+				return expr;
+			return Expression.Convert(expr, type);
 		}
 
 		#region BetaReduction

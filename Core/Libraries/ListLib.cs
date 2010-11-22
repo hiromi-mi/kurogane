@@ -40,5 +40,23 @@ namespace Kurogane.Libraries {
 			}
 			return func(obj, start);
 		}
+
+		public static object Map(SuffixFunc<Func<object, object>> func, object list) {
+			return Map(func.Func, list);
+		}
+
+		public static object Map(Func<object, object> func, object list) {
+			if (list is ListCell) {
+				return ListCell.Map(func, (ListCell)list);
+			}
+			var tuple = list as Tuple<object, object>;
+			if (tuple == null) {
+				return func(list);
+			}
+			var fst = func(tuple.Item1);
+			var snd = Map(func, tuple.Item2);
+			return new Tuple<object, object>(fst, snd);
+		}
+
 	}
 }

@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Linq.Expressions;
 using Kurogane.Util;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -16,6 +17,13 @@ namespace Kurogane.RuntimeBinder {
 
 		public ArithmeticBinder(ExpressionType operation, string name)
 			: base(operation) {
+			Contract.Requires<ArgumentException>(
+				operation == ExpressionType.Add ||
+				operation == ExpressionType.Subtract ||
+				operation == ExpressionType.Multiply ||
+				operation == ExpressionType.Divide ||
+				operation == ExpressionType.Modulo);
+
 			_name = name;
 		}
 
@@ -53,6 +61,7 @@ namespace Kurogane.RuntimeBinder {
 					BinderHelper.Wrap(expr, this.ReturnType),
 					BinderHelper.GetTypeRestriction(left, right));
 			}
+			// 右辺のキャスト
 			mInfo = BinderHelper.GetImplicitCast(right.LimitType, left.LimitType);
 			if (mInfo != null) {
 				Expression expr = Expression.MakeBinary(this.Operation,

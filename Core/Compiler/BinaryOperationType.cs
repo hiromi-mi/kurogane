@@ -29,5 +29,6 @@ namespace Kurogane.Compiler {
 		Modulo,
 
 		Concat,
+		Cons,
 	}
 }

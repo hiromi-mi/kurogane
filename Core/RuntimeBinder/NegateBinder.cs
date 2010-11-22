@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Kurogane.Util;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -28,9 +29,10 @@ namespace Kurogane.RuntimeBinder {
 				return new DynamicMetaObject(expr, rest);
 			}
 			catch (InvalidOperationException) {
-				var format = typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) });
-				var msgExpr = Expression.Call(format, Expression.Constant(errorMsg), target.Expression);
-				var ctorInfo = typeof(RuntimeBinderException).GetConstructor(new[] { typeof(string) });
+				var msgExpr = ExpressionHelper.BetaReduction<string, object, string>(
+					(format, obj) => String.Format(format, obj),
+					Expression.Constant(errorMsg), target.Expression);
+				var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
 				var expr = Expression.Throw(Expression.New(ctorInfo, msgExpr), this.ReturnType);
 				var rest = BindingRestrictions.GetTypeRestriction(target.Expression, target.LimitType);
 				return new DynamicMetaObject(expr, rest);

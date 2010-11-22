@@ -14,16 +14,25 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public override DynamicMetaObject FallbackConvert(DynamicMetaObject target, DynamicMetaObject errorSuggestion) {
-			if (target.LimitType == typeof(bool)) {
-				return new DynamicMetaObject(
-					Expression.Convert(target.Expression, typeof(bool)),
-					BindingRestrictions.GetTypeRestriction(target.Expression, typeof(bool)));
+			Expression boolExpr;
+			BindingRestrictions rest;
+			if (target.Value == null) {
+				boolExpr = Expression.Constant(false);
+				rest = BindingRestrictions.GetExpressionRestriction(BinderHelper.IsNull(target.Expression));
+			}
+			else if (target.LimitType == typeof(bool)) {
+				boolExpr = target.Expression;
+				rest = BindingRestrictions.GetTypeRestriction(target.Expression, typeof(bool));
 			}
 			else {
-				return new DynamicMetaObject(
-					Expression.TypeIs(target.Expression, typeof(object)),
-					BindingRestrictions.GetExpressionRestriction(Expression.Not(Expression.TypeIs(target.Expression, typeof(bool)))));
+				boolExpr = Expression.Constant(true);
+				rest = BindingRestrictions.GetExpressionRestriction(
+					Expression.AndAlso(
+						BinderHelper.IsNotNull(target.Expression),
+						Expression.Not(Expression.TypeIs(target.Expression, typeof(bool)))));
 			}
+			var expr = BinderHelper.Wrap(boolExpr, this.ReturnType);
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 }

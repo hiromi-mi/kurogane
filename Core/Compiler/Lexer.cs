@@ -20,10 +20,12 @@ namespace Kurogane.Compiler {
 		private const char kanaEnd = 'ん';
 
 		private static readonly char[] OperatorCharacter = {
-			'+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '=',
+			'+', '-', '*', '/', '%', '&', '|', '!', '<', '>', '=', ':',
 			'＋', '－', '×', '＊', '÷', '／', '％', // 四則演算
 			'＜', '≦', '＝', '≧', '＞', '≠', // 比較演算
-			'∧', '∨', '￢', // 論理演算
+			'∧', '∨', '￢', '＆', '｜', '！', // 論理演算
+			'…', // 結合演算子
+			'：', '・' // cons 演算子
 		};
 
 		private static readonly char[] PunctuationToken = {
@@ -258,16 +260,31 @@ namespace Kurogane.Compiler {
 		private AbstractOperatorToken ReadOperatorToken() {
 			LineNumber = line;
 			CharCount = ch;
+			int prevLineNum;
+			int prevCharCnt;
+
 
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {
+				prevLineNum = LineNumber;
+				prevCharCnt = CharCount;
 				char c = (char)_NextChar();
 				if (Array.IndexOf(OperatorCharacter, c) == -1)
 					break;
 				buff.Append(c);
 			}
 			var op = buff.ToString();
+			// １×-1のような場合に気をつける。
+			Token afterToken = null;
+			if (op.Length > 1) {
+				string[] unaryOps = { "!", "！", "￢", "-", "－" };
+				foreach (var uOp in unaryOps) {
+					if (op.EndsWith(uOp)) {
+					}
+				}
+			}
+
 			switch (op) {
 			case "+":
 			case "＋":
@@ -318,6 +335,14 @@ namespace Kurogane.Compiler {
 			case "！":
 			case "￢":
 				return new NotOpToken(this);
+
+			case "…":
+				return new ConcatOpToken(this);
+
+			case ":":
+			case "：":
+			case "・":
+				return new ConsOpToken(this);
 
 			default:
 				return new UnknownOperatorToken(this, op);

@@ -261,6 +261,11 @@ namespace Kurogane.Compiler {
 		public override string Value { get { return "…"; } }
 	}
 
+	public class ConsOpToken : AbstractOperatorToken {
+		public ConsOpToken(Lexer lexer) : base(lexer) { }
+		public override string Value { get { return "："; } }
+	}
+
 	#endregion
 
 	/// <summary>

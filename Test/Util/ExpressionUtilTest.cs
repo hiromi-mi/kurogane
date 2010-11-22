@@ -14,7 +14,7 @@ namespace Kurogane.Test.Util {
 		[TestMethod]
 		public void Test1() {
 			var param = Expression.Parameter(typeof(int), "foo");
-			var expr = ExpressionUtil.BetaReduction((int a) => a + a, param);
+			var expr = ExpressionHelper.BetaReduction((int a) => a + a, param);
 			Assert.AreEqual(Expression.Add(param, param).ToString(), expr.ToString());
 		}
 
@@ -22,7 +22,7 @@ namespace Kurogane.Test.Util {
 		public void Test2() {
 			var param1 = Expression.Parameter(typeof(int), "foo");
 			var param2 = Expression.Parameter(typeof(int), "bar");
-			var expr = ExpressionUtil.BetaReduction((int a, int b) => a - b, param1, param2);
+			var expr = ExpressionHelper.BetaReduction((int a, int b) => a - b, param1, param2);
 			Assert.AreEqual(Expression.Subtract(param1, param2).ToString(), expr.ToString());
 		}
 
@@ -31,7 +31,7 @@ namespace Kurogane.Test.Util {
 			var param1 = Expression.Parameter(typeof(int), "foo");
 			var param2 = Expression.Parameter(typeof(int), "bar");
 			var param3 = Expression.Parameter(typeof(bool), "baz");
-			var actual = ExpressionUtil.BetaReduction((int a, int b, bool c) => a < b != c, param1, param2, param3);
+			var actual = ExpressionHelper.BetaReduction((int a, int b, bool c) => a < b != c, param1, param2, param3);
 			var expected = Expression.NotEqual(Expression.LessThan(param1, param2), param3);
 			Assert.AreEqual(expected.ToString(), actual.ToString());
 		}
@@ -41,7 +41,7 @@ namespace Kurogane.Test.Util {
 			var param = Expression.Parameter(typeof(int), "foo");
 			Expression<Func<int, int>> square = a => a * a;
 			var lambda = (LambdaExpression)square;
-			var expr = ExpressionUtil.BetaReduction(lambda, param);
+			var expr = ExpressionHelper.BetaReduction(lambda, param);
 			Assert.AreEqual(Expression.Multiply(param, param).ToString(), expr.ToString());
 			Assert.AreNotEqual(Expression.Multiply(param, param).ToString(), lambda.ToString());
 		}

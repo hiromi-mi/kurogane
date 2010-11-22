@@ -9,19 +9,6 @@ namespace Kurogane.Compiler {
 
 	#region 文
 
-	public class DocumentLocation {
-		public int StartLine { get; private set; }
-		public int StartColumn { get; private set; }
-		public int EndLine { get; private set; }
-		public int EndColumn { get; private set; }
-
-		public DocumentLocation(int startLine, int startColumn, int endLine, int endColumn) {
-			this.StartLine = startLine;
-			this.StartColumn = startColumn;
-			this.EndLine = EndLine;
-			this.EndColumn = endColumn;
-		}
-	}
 
 	/// <summary>文</summary>
 	public abstract class IStatement {

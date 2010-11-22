@@ -35,6 +35,14 @@ namespace Kurogane {
 			return new ListCell(tor.Current, ConvertFrom(tor));
 		}
 
+		public static ListCell Map(Func<object, object> func, ListCell list) {
+			if (list == null)
+				return null;
+			var head = func(list.Head);
+			var tail = Map(func, list.Tail);
+			return new ListCell(head, tail);
+		}
+
 		#endregion
 
 		public virtual object Head { get; private set; }

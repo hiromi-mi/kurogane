@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System;
 using System.Dynamic;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -79,6 +80,9 @@ namespace Kurogane.RuntimeBinder {
 		/// <param name="right">右辺</param>
 		/// <returns>Throw式あるいはnull</returns>
 		public static DynamicMetaObject NullErrorOnOperation(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
+			Contract.Requires<ArgumentException>(String.IsNullOrWhiteSpace(name) == false);
+			Contract.Requires<ArgumentException>(left.Value == null || right.Value == null);
+	
 			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
 			var format = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object) });
 			if (left.Value == null && right.Value == null) {
@@ -104,6 +108,7 @@ namespace Kurogane.RuntimeBinder {
 				var rest = BindingRestrictions.GetExpressionRestriction(Expression.AndAlso(IsNull(left.Expression), IsNotNull(right.Expression)));
 				return new DynamicMetaObject(expr, rest);
 			}
+			Contract.Assert(false);
 			return null;
 		}
 
@@ -111,7 +116,7 @@ namespace Kurogane.RuntimeBinder {
 		/// 適切な計算方法が見つからなかった場合、RuntimeBinderExceptionを投げる。
 		/// </summary>
 		public static DynamicMetaObject NoResult(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
-			var ctorInfo = typeof(RuntimeBinderException).GetConstructor(new[] { typeof(string) });
+			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
 			var errorMsg = "{0}と{1}を" + name + "出来ません。";
 			var mInfo = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object), typeof(object) });
 			var msgExpr = Expression.Call(mInfo,

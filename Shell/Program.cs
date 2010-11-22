@@ -34,6 +34,8 @@ namespace Kurogane.Shell {
 		/// コンソールで一行ずつ実行するモード
 		/// </summary>
 		private static void StartRepl() {
+			//ShowStartMessage();
+
 			string before = String.Empty;
 			var engine = new Engine();
 			Console.Write(ConsoleWait);
@@ -69,5 +71,13 @@ namespace Kurogane.Shell {
 			}
 			Console.WriteLine("See you ...");
 		}
+
+		private static void ShowStartMessage() {
+			var width = Console.WindowWidth;
+			for (int i = 1; i < width - 1; i+= 2 )
+				Console.Write(" *");
+			Console.WriteLine("");
+		}
+
 	}
 }

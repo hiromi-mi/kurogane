@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Diagnostics;
 using Kurogane.Util;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -18,85 +19,106 @@ namespace Kurogane.RuntimeBinder {
 
 		public EqualityBinder(ExpressionType operation, string ilMethodName)
 			: base(operation) {
+			Contract.Requires<ArgumentException>(
+				operation == ExpressionType.Equal ||
+				operation == ExpressionType.NotEqual);
+
 			_ilMethodName = ilMethodName;
 		}
 
-		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject target, DynamicMetaObject arg, DynamicMetaObject errorSuggestion) {
-			if (target.Value == null || arg.Value == null)
-				return FallbackOnNull(target, arg);
-
-			if (target.LimitType == arg.LimitType)
-				return CalcOnSameType(target, arg);
-			else
-				return CalcOnDefferentType(target, arg);
+		public override DynamicMetaObject FallbackBinaryOperation(DynamicMetaObject left, DynamicMetaObject right, DynamicMetaObject errorSuggestion) {
+			if (left.Value == null || right.Value == null)
+				return FallbackOnNull(left, right);
+			return
+				TryCalcOnDefferentNumericType(left, right) ??
+				TryImplicitCast(left, right) ??
+				TryUseIEquatableT(left, right) ??
+				TryReferenceEqual(left, right) ??
+				Default(left, right);
 		}
 
+		/// <summary>
+		/// 左辺か右辺のいずれかがnullの場合の比較
+		/// </summary>
 		private DynamicMetaObject FallbackOnNull(DynamicMetaObject left, DynamicMetaObject right) {
-			var nullExpr = Expression.Constant(null);
-			return new DynamicMetaObject(
-				Expression.Convert(
-					Expression.MakeBinary(this.Operation,
-						Expression.Convert(left.Expression,typeof(object)),
-						Expression.Convert(right.Expression, typeof(object))),
-					typeof(object)),
-				BindingRestrictions.GetExpressionRestriction(
-					Expression.OrElse(
-						Expression.Equal(left.Expression, nullExpr),
-						Expression.Equal(right.Expression, nullExpr))));
+			bool value = this.Operation == ExpressionType.Equal;
+			Expression restExpr = null;
+			if (left.Value == null && right.Value == null) {
+				restExpr = Expression.And(
+					BinderHelper.IsNull(left.Expression),
+					BinderHelper.IsNull(right.Expression));
+			}
+			else if (left.Value == null) {
+				value ^= true;
+				restExpr = Expression.AndAlso(
+					BinderHelper.IsNull(left.Expression),
+					BinderHelper.IsNotNull(right.Expression));
+			}
+			else {
+				value ^= true;
+				restExpr = Expression.AndAlso(
+					BinderHelper.IsNull(right.Expression),
+					BinderHelper.IsNotNull(left.Expression));
+			}
+			var expr = BinderHelper.Wrap(Expression.Constant(value), this.ReturnType);
+			var rest = BindingRestrictions.GetExpressionRestriction(restExpr);
+			return new DynamicMetaObject(expr, rest);
 		}
 
-		private DynamicMetaObject CalcOnDefferentType(DynamicMetaObject left, DynamicMetaObject right) {
+		/// <summary>
+		/// 整数と小数の比較
+		/// </summary>
+		private DynamicMetaObject TryCalcOnDefferentNumericType(DynamicMetaObject left, DynamicMetaObject right) {
+			Expression binExpr = null;
+
 			if (left.LimitType == typeof(int) && right.LimitType == typeof(double)) {
-				return new DynamicMetaObject(
-					Expression.Convert(
-						Expression.MakeBinary(this.Operation,
-							Expression.Convert(Expression.Convert(left.Expression, typeof(int)), typeof(double)),
-							Expression.Convert(right.Expression, typeof(double))),
-						typeof(object)),
-					BindingRestrictions.GetExpressionRestriction(
-						Expression.AndAlso(
-						Expression.TypeIs(left.Expression, typeof(int)),
-						Expression.TypeIs(right.Expression, typeof(double)))));
+				binExpr = Expression.MakeBinary(this.Operation,
+					BinderHelper.Wrap(left.Expression, typeof(int), typeof(double)),
+					BinderHelper.Wrap(right.Expression, typeof(double)));
 			}
 			if (left.LimitType == typeof(double) && right.LimitType == typeof(int)) {
-				return new DynamicMetaObject(
-					Expression.Convert(
-						Expression.MakeBinary(this.Operation,
-							Expression.Convert(left.Expression, typeof(double)),
-							Expression.Convert(Expression.Convert(right.Expression, typeof(int)), typeof(double))),
-						typeof(object)),
-					BindingRestrictions.GetExpressionRestriction(
-						Expression.AndAlso(
-						Expression.TypeIs(left.Expression, typeof(double)),
-						Expression.TypeIs(right.Expression, typeof(int)))));
+				binExpr = Expression.MakeBinary(this.Operation,
+					BinderHelper.Wrap(left.Expression, typeof(double)),
+					BinderHelper.Wrap(right.Expression, typeof(int), typeof(double)));
 			}
-			return new DynamicMetaObject(
-				Expression.Constant(this.Operation != ExpressionType.Equal, typeof(object)),
-				BindingRestrictions.GetExpressionRestriction(
-					Expression.AndAlso(
-						Expression.TypeIs(left.Expression, left.LimitType),
-						Expression.TypeIs(right.Expression, right.LimitType))));
-		}
-
-		private DynamicMetaObject CalcOnSameType(DynamicMetaObject left, DynamicMetaObject right) {
-			return TryCallOperator(left, right)
-				?? TryUseIEquatableT(left, right)
-				?? ReferenceEqual(left, right);
-		}
-
-		private DynamicMetaObject TryCallOperator(DynamicMetaObject left, DynamicMetaObject right) {
-			var types = new[] { left.LimitType, right.LimitType };
-			var mInfo = left.LimitType.GetMethod(_ilMethodName, types) ?? right.LimitType.GetMethod(_ilMethodName, types);
-			if (mInfo == null)
+			if (binExpr == null)
 				return null;
-			return new DynamicMetaObject(
-				Expression.Convert(Expression.Call(mInfo,
-						Expression.Convert(left.Expression, left.LimitType),
-						Expression.Convert(right.Expression, right.LimitType)),
-					typeof(object)),
-				GetTypeRestriction(left, right));
+			var expr = BinderHelper.Wrap(binExpr, this.ReturnType);
+			var rest = BinderHelper.GetTypeRestriction(left, right);
+			return new DynamicMetaObject(expr, rest);
 		}
 
+		/// <summary>
+		/// 暗黙の型変換が存在する場合，それを利用する。
+		/// </summary>
+		private DynamicMetaObject TryImplicitCast(DynamicMetaObject left, DynamicMetaObject right) {
+			Expression cmpExpr = null;
+			if (BinderHelper.GetImplicitCast(left.LimitType, right.LimitType) != null) {
+				try {
+					cmpExpr = Expression.MakeBinary(this.Operation,
+						BinderHelper.Wrap(left.Expression, left.LimitType, right.LimitType),
+						BinderHelper.Wrap(right.Expression, right.LimitType));
+				}
+				catch (InvalidCastException) { }
+			}
+			if (BinderHelper.GetImplicitCast(right.LimitType, left.LimitType) != null) {
+				try {
+					cmpExpr = Expression.MakeBinary(this.Operation,
+						BinderHelper.Wrap(left.Expression, left.LimitType),
+						BinderHelper.Wrap(right.Expression, right.LimitType, left.LimitType));
+				}
+				catch (InvalidCastException) { }
+			}
+			if (cmpExpr == null)
+				return null;
+			var expr = BinderHelper.Wrap(cmpExpr, this.ReturnType);
+			var rest = BinderHelper.GetTypeRestriction(left, right);
+			return new DynamicMetaObject(expr, rest);
+		}
+
+		/// <summary>
+		/// 左辺がIEquatable<T>を継承している場合，それを利用する。
+		/// </summary>
 		private DynamicMetaObject TryUseIEquatableT(DynamicMetaObject left, DynamicMetaObject right) {
 			var types = left.LimitType.GetInterfaces();
 			var cmpType = typeof(IEquatable<>).MakeGenericType(right.LimitType);
@@ -107,25 +129,44 @@ namespace Kurogane.RuntimeBinder {
 				Expression.Convert(left.Expression, cmpType),
 				cmpType.GetMethod("Equals", new[] { right.LimitType }),
 				Expression.Convert(right.Expression, right.LimitType));
-			var result = Expression.Constant(this.Operation == ExpressionType.Equal ? true : false, typeof(bool));
-			var expr = Expression.Convert(Expression.Equal(callExpr, result), typeof(object));
-			return new DynamicMetaObject(expr, GetTypeRestriction(left, right));
+			var result = Expression.Constant(this.Operation == ExpressionType.Equal);
+			var expr = BinderHelper.Wrap(Expression.Equal(callExpr, result), this.ReturnType);
+			var rest = BinderHelper.GetTypeRestriction(left, right);
+			return new DynamicMetaObject(expr, rest);
 		}
 
-		private DynamicMetaObject ReferenceEqual(DynamicMetaObject left, DynamicMetaObject right) {
-			var boolResult = Expression.Constant(this.Operation == ExpressionType.Equal ? true : false, typeof(bool));
-			var expr = ExpressionUtil.BetaReduction(
+		/// <summary>
+		/// 左辺と右辺を参照比較する。
+		/// </summary>
+		private DynamicMetaObject TryReferenceEqual(DynamicMetaObject left, DynamicMetaObject right) {
+			if (left.LimitType.IsValueType || right.LimitType.IsValueType)
+				return null;
+			var boolResult = Expression.Constant(this.Operation == ExpressionType.Equal);
+			Expression expr = ExpressionHelper.BetaReduction(
 				(object objA, object objB, bool result) => (object)(Object.ReferenceEquals(objA, objB) == result),
 				left.Expression, right.Expression, boolResult);
-			return new DynamicMetaObject(expr, GetTypeRestriction(left, right));
+			expr = BinderHelper.Wrap(expr, this.ReturnType);
+			var rest = BinderHelper.GetTypeRestriction(left, right);
+			return new DynamicMetaObject(expr, rest);
 		}
 
-		private BindingRestrictions GetTypeRestriction(DynamicMetaObject left, DynamicMetaObject right) {
-			var nullExpr = Expression.Constant(null);
-			return BindingRestrictions.GetExpressionRestriction(
-				Expression.AndAlso(
-					Expression.TypeIs(left.Expression, left.LimitType),
-					Expression.TypeIs(right.Expression, right.LimitType)));
+		/// <summary>
+		/// 標準の比較を用いる。
+		/// 失敗した場合，右辺と左辺は等しくないものとする。
+		/// </summary>
+		private DynamicMetaObject Default(DynamicMetaObject left, DynamicMetaObject right) {
+			Expression eqExpr = null;
+			try {
+				eqExpr = Expression.MakeBinary(this.Operation,
+						BinderHelper.Wrap(left.Expression, left.LimitType),
+						BinderHelper.Wrap(right.Expression, right.LimitType));
+			}
+			catch (InvalidOperationException) {
+				eqExpr = Expression.Constant(this.Operation != ExpressionType.Equal);
+			}
+			var expr = BinderHelper.Wrap(eqExpr, this.ReturnType);
+			var rest = BinderHelper.GetTypeRestriction(left, right);
+			return new DynamicMetaObject(expr, rest);
 		}
 	}
 }
