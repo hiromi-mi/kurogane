@@ -5,20 +5,44 @@ using System.Text;
 
 namespace Kurogane {
 
+	/// <summary>
+	/// 指定の変数が見つからない時に発生する例外。
+	/// </summary>
+	public class VariableNotFoundException : Exception {
+		const string ErrorMsg = "「{0}」という変数は存在しません。";
+
+		/// <summary>
+		/// 変数名
+		/// </summary>
+		public string Name { get; private set; }
+
+		public override string Message { get { return String.Format(ErrorMsg, this.Name); } }
+
+		/// <summary>
+		/// コンストラクタ
+		/// </summary>
+		/// <param name="name">見つからなかった変数の名前</param>
+		public VariableNotFoundException(string name) {
+			this.Name = name;
+		}
+	}
+
 	/// <summary>属性へのアクセス方法</summary>
 	public enum PropertyAccessMode {
 		Read,
 		Write
 	}
 
-	public class PropertyNotFoundException :Exception {
-
+	/// <summary>
+	/// 指定の属性への読み書きの時に発生する例外。
+	/// </summary>
+	public class PropertyNotFoundException : Exception {
 		private const string readErrorMsg = "{0}という属性から読み取りできません。";
 		private const string writeErrorMsg = "{0}という属性に書き込みできません。";
 
 		/// <summary>属性名</summary>
 		public string Name { get; private set; }
-		
+
 		/// <summary>属性へのアクセス方法</summary>
 		public PropertyAccessMode Mode { get; private set; }
 
@@ -44,4 +68,5 @@ namespace Kurogane {
 			this.Mode = mode;
 		}
 	}
+
 }

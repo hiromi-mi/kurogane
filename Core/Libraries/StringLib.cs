@@ -31,7 +31,7 @@ namespace Kurogane.Libraries {
 
 		[JpName("文字列連結")]
 		public static string Join([Suffix("を")] object obj) {
-			return ListLib.FlattenFoldLeft(obj, new StringBuilder(), (o, b) => b.Append(o)).ToString();
+			return ListLib.FlattenFoldLeft(new StringBuilder(), obj, (o, b) => b.Append(o)).ToString();
 		}
 	}
 }

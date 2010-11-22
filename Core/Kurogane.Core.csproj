@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="Compiler\BinaryOperationType.cs" />
     <Compile Include="Compiler\BlockGenerator.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Expressions\ExpressionOptimizer.cs" />
     <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
@@ -87,7 +88,6 @@
     <Compile Include="Libraries\StringLib.cs" />
     <Compile Include="LibraryAttribute.cs" />
     <Compile Include="ListCell.cs" />
-    <Compile Include="PropertyNotFoundException.cs" />
     <Compile Include="RuntimeBinder\BinderHelper.cs" />
     <Compile Include="RuntimeBinder\BooleanBinder.cs" />
     <Compile Include="RuntimeBinder\BinderFactory.cs" />
@@ -117,7 +117,6 @@
     <Compile Include="Scope.cs" />
     <Compile Include="Util\EncodeDetecter.cs" />
     <Compile Include="SuffixFunc.cs" />
-    <Compile Include="VariableNotFoundException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

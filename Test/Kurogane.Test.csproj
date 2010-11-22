@@ -59,6 +59,7 @@
     <Compile Include="Spec\ComparingTest.cs" />
     <Compile Include="Spec\EqualityTest.cs" />
     <Compile Include="Spec\BooleanTest.cs" />
+    <Compile Include="Spec\Language.cs" />
     <Compile Include="Util\ExpressionUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>
