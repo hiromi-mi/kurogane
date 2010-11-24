@@ -6,6 +6,7 @@ using System.IO;
 using Kurogane.Compiler;
 
 namespace Kurogane.Shell {
+
 	public class Program {
 
 		const string ConsoleWait = "> ";
@@ -34,7 +35,7 @@ namespace Kurogane.Shell {
 		/// コンソールで一行ずつ実行するモード
 		/// </summary>
 		private static void StartRepl() {
-			//ShowStartMessage();
+			ShowStartMessage();
 
 			string before = String.Empty;
 			var engine = new Engine();
@@ -69,14 +70,56 @@ namespace Kurogane.Shell {
 					Console.Write(ConsoleWait);
 				}
 			}
-			Console.WriteLine("See you ...");
+			Console.WriteLine("終了します ...");
 		}
 
 		private static void ShowStartMessage() {
 			var width = Console.WindowWidth;
-			for (int i = 1; i < width - 1; i+= 2 )
+			const string titleTxt = "プログラミング言語「クロガネ」";
+			var versionTxt = "ver." + typeof(Engine).Assembly.GetName().Version;
+
+			// start line
+			for (int i = 1; i < width - 1; i += 2)
 				Console.Write(" *");
-			Console.WriteLine("");
+			Console.WriteLine();
+			Console.WriteLine();
+			// show title
+			Console.WriteLine("    " + titleTxt);
+			// show version
+			Console.WriteLine(versionTxt.PadLeft(width - 4));
+			// end line
+			Console.WriteLine();
+			for (int i = 1; i < width - 1; i += 2)
+				Console.Write(" *");
+			Console.WriteLine();
+		}
+
+		private static void ShowStartMessage2() {
+			var width = Console.WindowWidth;
+			const string titleTxt = "プログラミング言語「クロガネ」";
+			var versionTxt = "ver." + typeof(Engine).Assembly.GetName().Version;
+			string title = (titleTxt + "  " + versionTxt + "    * ").PadLeft(width - titleTxt.Length - 3);
+
+			// 1st
+			for (int i = 1; i < width - 1; i += 2)
+				Console.Write(" *");
+			Console.WriteLine();
+			// 2nd
+			Console.Write(" *");
+			for (int i = 0; i < width - 5; i++)
+				Console.Write(" ");
+			Console.WriteLine("*");
+			// 3rd
+			Console.WriteLine(" *" + title);
+			// 4th
+			Console.Write(" *");
+			for (int i = 0; i < width - 5; i++)
+				Console.Write(" ");
+			Console.WriteLine("*");
+			// 5th
+			for (int i = 1; i < width - 1; i += 2)
+				Console.Write(" *");
+			Console.WriteLine();
 		}
 
 	}

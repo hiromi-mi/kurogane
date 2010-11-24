@@ -54,8 +54,7 @@ namespace Kurogane {
 		}
 
 		public object ExecuteFile(string filepath) {
-			using (var file = File.OpenRead(filepath))
-			using (var stream = new StreamReader(file, DefaultEncoding)) {
+			using (var stream = new StreamReader(filepath, DefaultEncoding)) {
 				return ExecuteCore(stream, filepath);
 			}
 		}

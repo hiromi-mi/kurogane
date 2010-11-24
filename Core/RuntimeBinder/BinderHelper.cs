@@ -79,7 +79,7 @@ namespace Kurogane.RuntimeBinder {
 		/// <param name="left">左辺</param>
 		/// <param name="right">右辺</param>
 		/// <returns>Throw式あるいはnull</returns>
-		public static DynamicMetaObject NullErrorOnOperation(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
+		internal static DynamicMetaObject NullErrorOnOperation(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
 			Contract.Requires<ArgumentException>(String.IsNullOrWhiteSpace(name) == false);
 			Contract.Requires<ArgumentException>(left.Value == null || right.Value == null);
 	

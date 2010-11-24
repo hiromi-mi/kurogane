@@ -2,6 +2,7 @@
 
 namespace Kurogane.Compiler {
 
+	[Serializable]
 	public abstract class CompilerException : Exception {
 
 		public string FileName { get; private set; }
@@ -17,15 +18,18 @@ namespace Kurogane.Compiler {
 		}
 	}
 
+	[Serializable]
 	public sealed class LexicalException : CompilerException {
 		public LexicalException(string message) : base(message) { }
 	}
 
+	[Serializable]
 	public sealed class SyntaxException : CompilerException {
 		public SyntaxException(string message, string filename, int lineNumber, int charCount)
 			: base(message, filename, lineNumber, charCount) { }
 	}
 
+	[Serializable]
 	public sealed class SemanticException : CompilerException {
 		public SemanticException(string message) : base(message) { }
 	}

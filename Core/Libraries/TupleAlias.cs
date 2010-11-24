@@ -6,7 +6,7 @@ using System.Text;
 namespace Kurogane.Libraries {
 
 	[JpName("対"), AliasFor(typeof(Tuple<object, object>))]
-	public interface TupleAlias {
+	internal interface TupleAlias {
 
 		[JpName(ConstantNames.Head)]
 		object Item1 { get; }

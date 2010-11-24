@@ -34,4 +34,12 @@ namespace Kurogane.Libraries {
 			return ListLib.FlattenFoldLeft(new StringBuilder(), obj, (o, b) => b.Append(o)).ToString();
 		}
 	}
+
+	[AliasFor(typeof(string))]
+	internal interface StringAlias {
+
+		[JpName("文字数")]
+		int Length { get; }
+	}
+
 }

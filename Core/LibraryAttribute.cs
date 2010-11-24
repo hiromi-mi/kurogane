@@ -9,7 +9,7 @@ namespace Kurogane {
 	public sealed class LibraryAttribute : Attribute {
 	}
 
-	[AttributeUsage(AttributeTargets.Interface)]
+	[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class)]
 	public sealed class AliasForAttribute : Attribute {
 		public Type Type { get; private set; }
 		public AliasForAttribute(Type type) {

@@ -38,7 +38,7 @@ namespace Kurogane {
 
 		#region IDynamicMetaObjectProvider
 
-		DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) {
+		public DynamicMetaObject GetMetaObject(Expression parameter) {
 			return new ScopeMetaObject(this, parameter);
 		}
 

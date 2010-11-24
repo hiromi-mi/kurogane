@@ -8,6 +8,7 @@ namespace Kurogane {
 	/// <summary>
 	/// 指定の変数が見つからない時に発生する例外。
 	/// </summary>
+	[Serializable]
 	public class VariableNotFoundException : Exception {
 		const string ErrorMsg = "「{0}」という変数は存在しません。";
 
@@ -36,6 +37,7 @@ namespace Kurogane {
 	/// <summary>
 	/// 指定の属性への読み書きの時に発生する例外。
 	/// </summary>
+	[Serializable]
 	public class PropertyNotFoundException : Exception {
 		private const string readErrorMsg = "{0}という属性から読み取りできません。";
 		private const string writeErrorMsg = "{0}という属性に書き込みできません。";
