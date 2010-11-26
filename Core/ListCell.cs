@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Kurogane.Util;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane {
 
@@ -15,6 +16,14 @@ namespace Kurogane {
 
 		#region static
 
+		/// <summary>
+		/// 二つの要素から対を作成する。
+		/// もし，後者がnullかListCellである場合，ListCellを作成する。
+		/// 他の場合，Tuple<object, object>を作成する。
+		/// </summary>
+		/// <param name="left"></param>
+		/// <param name="right"></param>
+		/// <returns></returns>
 		public static object Cons(object left, object right) {
 			var tail = right as ListCell;
 			if (tail == right)
@@ -23,7 +32,14 @@ namespace Kurogane {
 				return new Tuple<object, object>(left, right);
 		}
 
+		/// <summary>
+		/// 与えられたIEnumerableからListCellによるリストを作成する。
+		/// </summary>
+		/// <param name="list"></param>
+		/// <returns></returns>
 		public static ListCell ConvertFrom(IEnumerable list) {
+			if (list == null)
+				return null;
 			var tor = list.GetEnumerator();
 			using (var disp = tor as IDisposable) {
 				return ConvertFrom(tor);
@@ -31,17 +47,17 @@ namespace Kurogane {
 		}
 
 		private static ListCell ConvertFrom(IEnumerator tor) {
+			Contract.Requires<ArgumentNullException>(tor != null);
 			if (tor.MoveNext() == false)
 				return null;
 			return new ListCell(tor.Current, ConvertFrom(tor));
 		}
 
 		public static ListCell Map(Func<object, object> func, ListCell list) {
+			Contract.Requires<ArgumentNullException>(func != null);
 			if (list == null)
 				return null;
-			var head = func(list.Head);
-			var tail = Map(func, list.Tail);
-			return new ListCell(head, tail);
+			return new ListCell(func(list.Head), Map(func, list.Tail));
 		}
 
 		#endregion
@@ -71,6 +87,7 @@ namespace Kurogane {
 		}
 
 		private void AppendItem(StringBuilder buff) {
+			Contract.Requires<ArgumentNullException>(buff != null);
 			buff.Append(Head);
 			if (Tail != null) {
 				buff.Append(", ");

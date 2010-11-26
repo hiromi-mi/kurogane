@@ -35,7 +35,7 @@ namespace Kurogane.Test {
 			object num = _engine.Execute(
 				"※これは、コメントです。" +
 				"1をパスする。" +
-				"※（括弧で囲むよ。複数でもOK！。。。）" +
+				"※｛括弧で囲むよ。複数でもOK！。。。｝" +
 				"3をパスする。");
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 3);

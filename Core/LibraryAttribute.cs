@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane {
 
@@ -13,6 +14,7 @@ namespace Kurogane {
 	public sealed class AliasForAttribute : Attribute {
 		public Type Type { get; private set; }
 		public AliasForAttribute(Type type) {
+			Contract.Requires<ArgumentNullException>(type != null);
 			this.Type = type;
 		}
 	}
@@ -27,6 +29,7 @@ namespace Kurogane {
 	public sealed class JpNameAttribute : Attribute {
 		public string Name { get; private set; }
 		public JpNameAttribute(string name) {
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
 			this.Name = name;
 		}
 	}
@@ -35,6 +38,7 @@ namespace Kurogane {
 	public sealed class SuffixAttribute : Attribute {
 		public string Name { get; private set; }
 		public SuffixAttribute(string name) {
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
 			this.Name = name;
 		}
 	}

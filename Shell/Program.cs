@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
 using Kurogane.Compiler;
 
 namespace Kurogane.Shell {
 
 	public class Program {
-
-		const string ConsoleWait = "> ";
 
 		/// <summary>エントリポイント</summary>
 		public static void Main(string[] args) {
@@ -32,11 +30,11 @@ namespace Kurogane.Shell {
 		}
 
 		/// <summary>
-		/// コンソールで一行ずつ実行するモード
+		/// REPL(Read-Eval-Print Loop)モードを実行する。
 		/// </summary>
 		private static void StartRepl() {
 			ShowStartMessage();
-
+			const string ConsoleWait = "> ";
 			string before = String.Empty;
 			var engine = new Engine();
 			Console.Write(ConsoleWait);
@@ -49,17 +47,14 @@ namespace Kurogane.Shell {
 					Console.Write(ConsoleWait);
 					continue;
 				}
+				line = before + Environment.NewLine + line;
 				try {
-					var result = engine.Execute(before + line);
-					if (result != null)
-						Console.WriteLine(result);
-					else
-						Console.WriteLine(ConstantNames.NullText);
+					Console.WriteLine(engine.Execute(line, "-- console input --"));
 					before = String.Empty;
 					Console.Write(ConsoleWait);
 				}
 				catch (CompilerException) {
-					before = before + line;
+					before = line;
 					Console.Write("... ");
 				}
 				catch (Exception e) {
@@ -73,10 +68,11 @@ namespace Kurogane.Shell {
 			Console.WriteLine("終了します ...");
 		}
 
+		/// <summary>REPLモードで最初に表示するメッセージ</summary>
 		private static void ShowStartMessage() {
 			var width = Console.WindowWidth;
 			const string titleTxt = "プログラミング言語「クロガネ」";
-			var versionTxt = "ver." + typeof(Engine).Assembly.GetName().Version;
+			var versionTxt = "ver." + Engine.Version;
 
 			// start line
 			for (int i = 1; i < width - 1; i += 2)
@@ -93,34 +89,5 @@ namespace Kurogane.Shell {
 				Console.Write(" *");
 			Console.WriteLine();
 		}
-
-		private static void ShowStartMessage2() {
-			var width = Console.WindowWidth;
-			const string titleTxt = "プログラミング言語「クロガネ」";
-			var versionTxt = "ver." + typeof(Engine).Assembly.GetName().Version;
-			string title = (titleTxt + "  " + versionTxt + "    * ").PadLeft(width - titleTxt.Length - 3);
-
-			// 1st
-			for (int i = 1; i < width - 1; i += 2)
-				Console.Write(" *");
-			Console.WriteLine();
-			// 2nd
-			Console.Write(" *");
-			for (int i = 0; i < width - 5; i++)
-				Console.Write(" ");
-			Console.WriteLine("*");
-			// 3rd
-			Console.WriteLine(" *" + title);
-			// 4th
-			Console.Write(" *");
-			for (int i = 0; i < width - 5; i++)
-				Console.Write(" ");
-			Console.WriteLine("*");
-			// 5th
-			for (int i = 1; i < width - 1; i += 2)
-				Console.Write(" *");
-			Console.WriteLine();
-		}
-
 	}
 }

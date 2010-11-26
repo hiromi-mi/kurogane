@@ -9,10 +9,18 @@ using System.Text;
 using Kurogane.Compiler;
 using Kurogane.Expressions;
 using Kurogane.RuntimeBinder;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane {
+
+	/// <summary>
+	/// クロガネのプログラムを実行するエンジン。
+	/// </summary>
 	public class Engine {
 		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
+
+		/// <summary>言語のバージョン</summary>
+		public static Version Version { get { return typeof(Engine).Assembly.GetName().Version; } }
 
 		protected BinderFactory Factory { get; private set; }
 
@@ -27,6 +35,18 @@ namespace Kurogane {
 
 		public Encoding DefaultEncoding { get; set; }
 
+		/// <summary>
+		/// コンパイルが終了したときに発生するイベント。
+		/// 例外発生時は呼ばれない。
+		/// </summary>
+		public event EventHandler<EngineEventArgs> OnCompiled;
+
+		/// <summary>
+		/// 実行が終了したときに発生するイベント。
+		/// 例外発生時は呼ばれない。
+		/// </summary>
+		public event EventHandler<EngineEventArgs> OnExecuted;
+
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
 		/// <summary>通常のコンストラクタ</summary>
@@ -36,7 +56,7 @@ namespace Kurogane {
 		}
 
 		protected Engine(BinderFactory factory) {
-			Debug.Assert(factory != null, "factory is null");
+			Contract.Requires<ArgumentNullException>(factory != null);
 
 			Factory = factory;
 			Global = new Scope();
@@ -47,42 +67,80 @@ namespace Kurogane {
 
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
 
+		/// <summary>
+		/// ファイル名を指定せずに，クロガネのプログラムを実行する。
+		/// </summary>
+		/// <param name="code">実行するプログラム</param>
+		/// <returns>実行結果</returns>
 		public object Execute(string code) {
+			return Execute(code, "-- on memory text --");
+		}
+
+		/// <summary>
+		/// クロガネのプログラムを実行する。
+		/// </summary>
+		/// <param name="code">プログラム</param>
+		/// <param name="filename">プログラムのファイル名</param>
+		/// <returns>実行結果</returns>
+		public object Execute(string code, string filename) {
 			using (var reader = new StringReader(code)) {
-				return ExecuteCore(reader, null);
+				return ExecuteCore(reader, filename);
 			}
 		}
 
+		/// <summary>
+		/// クロガネのプログラムを実行する。
+		/// </summary>
+		/// <param name="filepath">プログラムのファイル名</param>
+		/// <returns>実行結果</returns>
 		public object ExecuteFile(string filepath) {
 			using (var stream = new StreamReader(filepath, DefaultEncoding)) {
 				return ExecuteCore(stream, filepath);
 			}
 		}
 
+		/// <summary>
+		/// クロガネのプログラムを実行する。
+		/// </summary>
+		/// <param name="stream">プログラム</param>
+		/// <param name="filename">プログラムのファイル名</param>
+		/// <returns>実行結果</returns>
 		private object ExecuteStream(Stream stream, string filename) {
 			using (var reader = new StreamReader(stream, DefaultEncoding)) {
 				return ExecuteCore(reader, filename);
 			}
 		}
 
+		/// <summary>
+		/// 実際に実行する部分。
+		/// </summary>
 		private object ExecuteCore(TextReader stream, string filename) {
-			//var sw = new Stopwatch();
-			//sw.Start();
-			var token = Tokenizer.Tokenize(stream, filename);
-			var ast = Parser.Parse(token, filename);
-			var expr = Generator.Generate(ast, this.Factory, filename);
-			expr = ExpressionOptimizer.Analyze(expr);
-			var func = expr.Compile();
-			//sw.Stop();
-			//var compileTime = sw.ElapsedMilliseconds;
-			//sw.Reset();
-			//sw.Start();
-			var result = func(this.Global);
-			//sw.Stop();
-			//var executeTime = sw.ElapsedMilliseconds;
-			//Console.WriteLine("Compile : " + compileTime);
-			//Console.WriteLine("Execute : " + executeTime);
-			return result;
+			Contract.Requires<ArgumentNullException>(stream != null);
+			Contract.Requires<ArgumentNullException>(filename != null);
+			Func<Scope, object> program;
+			{
+				// Compile
+				var sw = Stopwatch.StartNew();
+				var token = Tokenizer.Tokenize(stream, filename);
+				var ast = Parser.Parse(token, filename);
+				var expr = Generator.Generate(ast, this.Factory, filename);
+				expr = ExpressionOptimizer.Analyze(expr);
+				program = expr.Compile();
+				sw.Stop();
+				var ev = OnCompiled;
+				if (ev != null)
+					ev(this, new EngineEventArgs(sw.ElapsedMilliseconds));
+			}
+			{
+				// Execute
+				var sw = Stopwatch.StartNew();
+				var result = program(this.Global);
+				sw.Stop();
+				var ev = OnExecuted;
+				if (ev != null)
+					ev(this, new EngineEventArgs(sw.ElapsedMilliseconds));
+				return result;
+			}
 		}
 
 		#region LoadLibrary
@@ -184,6 +242,20 @@ namespace Kurogane {
 					var a = nAttr as JpNameAttribute;
 					Global.SetVariable(a.Name, exec());
 				}
+			}
+		}
+
+		#endregion
+
+		#region InternalClass
+
+		/// <summary>エンジン内で発生したイベント</summary>
+		public class EngineEventArgs : EventArgs {
+			/// <summary>処理にかかった時間</summary>
+			public long Milliseconds { get; private set; }
+
+			internal EngineEventArgs(long millis) {
+				this.Milliseconds = millis;
 			}
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compiler {
 
@@ -16,6 +17,10 @@ namespace Kurogane.Compiler {
 		/// <param name="filename">ファイル名（デバッグ用）</param>
 		/// <returns>構文解析した結果</returns>
 		public static Block Parse(Token token, string filename) {
+			Contract.Requires<ArgumentNullException>(token != null);
+			Contract.Requires<ArgumentNullException>(filename != null);
+			Contract.Ensures(Contract.Result<Block>() != null);
+
 			var p = new Parser(filename);
 			var pair = p.ParseBlock(token);
 
@@ -23,15 +28,14 @@ namespace Kurogane.Compiler {
 				return pair.Node;
 			}
 			else {
-				throw new SyntaxException(
-					"プログラムを最後まで読み取ることができませんでした。",
-					filename, pair.Token.LineNumber, pair.Token.CharCount);
+				throw Error("プログラムを最後まで読み取ることができませんでした。", filename, pair.Token);
 			}
 		}
 
 		private readonly string _FileName;
 
 		private Parser(string filename) {
+			Contract.Requires<ArgumentNullException>(filename != null);
 			_FileName = filename;
 		}
 
@@ -255,7 +259,7 @@ namespace Kurogane.Compiler {
 				token = argPair.Token;
 				if (token.Match((SuffixToken t) => true)) {
 					var sfx = ((SuffixToken)token).Value;
-					lst.Add(new ArgSuffixPair(NullLiteral.Instant, sfx));
+					lst.Add(new ArgSuffixPair(NullLiteral.Instance, sfx));
 					token = token.Next;
 				}
 			}
@@ -728,7 +732,7 @@ namespace Kurogane.Compiler {
 			}
 
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText))
-				return MakePair(NullLiteral.Instant, nextToken);
+				return MakePair(NullLiteral.Instance, nextToken);
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.ElseText))
 				return MakePair(BoolLiteral.True, nextToken);
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.TrueText))
@@ -746,12 +750,15 @@ namespace Kurogane.Compiler {
 
 		#region Util
 
-		[DebuggerStepThrough]
 		private SyntaxException Error(string message, Token token) {
-			return new SyntaxException(message, _FileName, token.LineNumber, token.CharCount);
+			return Error(message, _FileName, token);
 		}
 
-		private static IPair<T> MakePair<T>(T node, Token token) {
+		private static SyntaxException Error(string message, string filename, Token token) {
+			return new SyntaxException(message, filename, token.Range.Start);
+		}
+
+		private static IPair<T> MakePair<T>(T node, Token token) where T : class {
 			return new Pair<T>(node, token);
 		}
 
@@ -760,16 +767,15 @@ namespace Kurogane.Compiler {
 			Token Token { get; }
 		}
 
-		private class Pair<T> : IPair<T> {
-			private T _node;
-			private Token _token;
-
-			public T Node { get { return _node; } }
-			public Token Token { get { return _token; } }
+		private class Pair<T> : IPair<T> where T : class {
+			public T Node { get; private set; }
+			public Token Token { get; private set; }
 
 			public Pair(T node, Token token) {
-				_node = node;
-				_token = token;
+				Contract.Requires<ArgumentNullException>(node != null);
+				Contract.Requires<ArgumentNullException>(token != null);
+				this.Node = node;
+				this.Token = token;
 			}
 		}
 

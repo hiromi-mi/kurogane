@@ -8,6 +8,7 @@ namespace Kurogane.Util {
 	internal static class ReflectionHelper {
 
 		public static string PropertyName<T>(Expression<Func<T, object>> expr) {
+			Contract.Requires<ArgumentNullException>(expr != null);
 			var body = expr.Body;
 			var unary = body as UnaryExpression;
 			if (unary != null)
@@ -16,6 +17,7 @@ namespace Kurogane.Util {
 		}
 
 		public static PropertyInfo PropertyInfo<T>(Expression<Func<T, object>> expr) {
+			Contract.Requires<ArgumentNullException>(expr != null);
 			var body = expr.Body;
 			var unary = body as UnaryExpression;
 			if (unary != null)
@@ -24,6 +26,7 @@ namespace Kurogane.Util {
 		}
 
 		public static MemberExpression MemberExpression<T>(Expression<Func<T, object>> expr) {
+			Contract.Requires<ArgumentNullException>(expr != null);
 			return (MemberExpression)expr.Body;
 		}
 
@@ -35,6 +38,8 @@ namespace Kurogane.Util {
 		/// <param name="type">デリゲート型の型インスタンス</param>
 		/// <returns></returns>
 		public static Type[] GetDelegateType(Type type) {
+			Contract.Requires<ArgumentNullException>(type != null);
+			Contract.Ensures(Contract.Result<Type[]>() == null || Contract.ForAll(Contract.Result<Type[]>(), t => t != null));
 			bool isDelegate = typeof(Delegate).IsAssignableFrom(type);
 			if (isDelegate == false)
 				return null;

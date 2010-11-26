@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane {
 
@@ -24,6 +25,7 @@ namespace Kurogane {
 		/// </summary>
 		/// <param name="name">見つからなかった変数の名前</param>
 		public VariableNotFoundException(string name) {
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
 			this.Name = name;
 		}
 	}
@@ -66,6 +68,7 @@ namespace Kurogane {
 		/// <param name="name">属性名</param>
 		/// <param name="mode">属性へのアクセス</param>
 		public PropertyNotFoundException(string name, PropertyAccessMode mode) {
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(name));
 			this.Name = name;
 			this.Mode = mode;
 		}

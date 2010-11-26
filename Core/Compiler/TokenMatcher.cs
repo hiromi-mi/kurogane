@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compiler {
 
@@ -56,7 +57,7 @@ namespace Kurogane.Compiler {
 			where T : TToken
 			where TToken : class, IToken<TToken> {
 
-			Debug.Assert(pred != null, "pred is null");
+			Contract.Requires<ArgumentNullException>(pred != null);
 			if (token != null && token is T)
 				return pred((T)token);
 			return false;

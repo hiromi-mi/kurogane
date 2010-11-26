@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compiler {
 
@@ -13,8 +14,6 @@ namespace Kurogane.Compiler {
 	public class Lexer {
 
 		#region static
-
-		private const string NoFile = "-- no file --";
 
 		private const char kanaBegin = 'ぁ';
 		private const char kanaEnd = 'ん';
@@ -43,20 +42,24 @@ namespace Kurogane.Compiler {
 
 		#endregion
 
+		/// <summary>
+		/// 読み取り先
+		/// </summary>
 		private readonly TextReader _reader;
 
-		private int _CurrentChar = 0;
+		/// <summary>
+		/// 読み取り中の文字
+		/// </summary>
+		private int _CurrentChar;
 
-		/// <summary>読み取り中の行数</summary>
-		private int line = 1;
+		/// <summary>
+		/// 読み取り中の位置
+		/// </summary>
+		private TextLocation _Location = new TextLocation();
 
-		/// <summary>読み取り中の行の何文字目</summary>
-		private int ch = 0;
-
-		// これらはTokenをnewする時に書き換えること。
-		public int LineNumber { get; private set; }
-		public int CharCount { get; private set; }
-
+		/// <summary>
+		/// 読み取り中のファイル名
+		/// </summary>
 		private string _FileName;
 
 		/// <summary>Windowsの改行で2カウントしないためのフラグ</summary>
@@ -65,9 +68,12 @@ namespace Kurogane.Compiler {
 		private Stack<Token> _stack = new Stack<Token>();
 
 		public Lexer(TextReader reader, string filename) {
+			Contract.Requires<ArgumentNullException>(reader != null);
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(filename));
+
 			_reader = reader;
 			_NextChar();
-			_FileName = filename ?? NoFile;
+			_FileName = filename;
 		}
 
 		/// <summary>
@@ -84,13 +90,11 @@ namespace Kurogane.Compiler {
 			switch (_CurrentChar) {
 			case '\r':
 				flagLF = true;
-				line++;
-				ch = 1;
+				_Location = _Location.NextLine();
 				break;
 			case '\n':
 				if (flagLF == false) {
-					line++;
-					ch = 1;
+					_Location = _Location.NextLine();
 				}
 				else {
 					flagLF = false;
@@ -98,7 +102,7 @@ namespace Kurogane.Compiler {
 				break;
 			default:
 				flagLF = false;
-				ch++;
+				_Location = _Location.Next();
 				break;
 			}
 			return (_CurrentChar = _reader.Read());
@@ -117,7 +121,7 @@ namespace Kurogane.Compiler {
 			while (Char.IsWhiteSpace((char)_CurrentChar)) _NextChar();
 
 			if (_CurrentChar == -1)
-				return new NullToken(this);
+				return new NullToken(this, _Location);
 
 			char c = (char)_CurrentChar;
 
@@ -145,9 +149,7 @@ namespace Kurogane.Compiler {
 			if (Char.IsLetter(c))
 				return ReadSymbolLetterToken();
 
-			throw new LexicalException(String.Format(
-				"{0}の{1}行{2}文字目に，未知のトークンが出現しました。",
-				_FileName, LineNumber, CharCount));
+			throw Error("未知のトークン「" + ((char)c) + "」が出現しました。");
 		}
 
 		private void SkipComment() {
@@ -155,21 +157,21 @@ namespace Kurogane.Compiler {
 			int[] endChar = { '。', '.', '．' };
 			int c = _NextChar();
 			switch (c) {
-			case '(':
-			case '（':
-				endChar = new int[] { ')', '）' };
-				break;
+			//case '(':
+			//case '（':
+			//    endChar = new int[] { ')', '）' };
+			//    break;
 			case '{':
 			case '｛':
 				endChar = new int[] { '}', '｝' };
 				break;
-			case '[':
-			case '［':
-				endChar = new int[] { ']', '］' };
-				break;
-			case '「':
-				endChar = new int[] { '」' };
-				break;
+			//case '[':
+			//case '［':
+			//    endChar = new int[] { ']', '］' };
+			//    break;
+			//case '「':
+			//    endChar = new int[] { '」' };
+			//    break;
 			}
 			while (c != -1 && Array.IndexOf(endChar, c) == -1) {
 				c = _NextChar();
@@ -183,27 +185,26 @@ namespace Kurogane.Compiler {
 
 
 		private LiteralToken ReadLiteralToken() {
-			LineNumber = line;
-			CharCount = ch;
+			var startLoc = _Location;
 
 			var buff = new StringBuilder();
 			while (true) {
 				int c = _NextChar();
 				if (c == -1) {
-					throw new LexicalException(
-						"\"「\"に対応する \"」\" が見つかりませんでした。");
+					throw Error("\"「\"に対応する \"」\" が見つかりませんでした。");
 				}
 				else if (c == '」') {
-					_NextChar();
-					return new LiteralToken(this, buff.ToString());
+					break;
 				}
 				buff.Append((char)c);
 			}
+			var range = new TextRange(startLoc, _Location);
+			_NextChar();
+			return new LiteralToken(this, range, buff.ToString());
 		}
 
 		private NumberToken ReadNumberToken() {
-			LineNumber = line;
-			CharCount = ch;
+			var startLoc = _Location;
 
 			int num = 0;
 			while (true) {
@@ -239,133 +240,128 @@ namespace Kurogane.Compiler {
 					numer = numer * 10 + n;
 					denom *= 10;
 				}
-				return new DecimalToken(this, num + (1.0 * numer / denom));
+				var range = new TextRange(startLoc, _Location);
+				return new DecimalToken(this, range, num + (1.0 * numer / denom));
 			}
 			else {
-				return new IntegerToken(this, num);
+				var range = new TextRange(startLoc, _Location);
+				return new IntegerToken(this, range, num);
 			}
 		}
 
 		private Token ReadLambdSpaceToken() {
-			LineNumber = line;
-			CharCount = ch;
+			var startLoc = _Location;
 			var buff = new StringBuilder();
 			while (Array.IndexOf(LambdaSpaceToken, (char)_CurrentChar) >= 0) {
 				buff.Append((char)_CurrentChar);
 				_NextChar();
 			}
-			return new LambdaSpaceToken(this, buff.ToString());
+			var range = new TextRange(startLoc, _Location);
+			return new LambdaSpaceToken(this, range, buff.ToString());
 		}
 
 		private AbstractOperatorToken ReadOperatorToken() {
-			LineNumber = line;
-			CharCount = ch;
-			int prevLineNum;
-			int prevCharCnt;
-
-
+			var startLoc = _Location;
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
 			while (true) {
-				prevLineNum = LineNumber;
-				prevCharCnt = CharCount;
 				char c = (char)_NextChar();
 				if (Array.IndexOf(OperatorCharacter, c) == -1)
 					break;
 				buff.Append(c);
 			}
+			var range = new TextRange(startLoc, _Location);
 			var op = buff.ToString();
 
 			switch (op) {
 			case "+":
 			case "＋":
-				return new AddOpToken(this);
+				return new AddOpToken(this, range);
 			case "-":
 			case "－":
-				return new SubOpToken(this);
+				return new SubOpToken(this, range);
 			case "*":
 			case "＊":
 			case "×":
-				return new MultipleOpToken(this);
+				return new MultipleOpToken(this, range);
 			case "/":
 			case "／":
 			case "÷":
-				return new DivideOpToken(this);
+				return new DivideOpToken(this, range);
 			case "%":
 			case "％":
-				return new ModuloOpToken(this);
+				return new ModuloOpToken(this, range);
 
 			case "=":
 			case "＝":
-				return new EqualOpToken(this);
+				return new EqualOpToken(this, range);
 			case "!=":
 			case "≠":
-				return new NotEqualOpToken(this);
+				return new NotEqualOpToken(this, range);
 			case "<":
 			case "＜":
-				return new LessThanOpToken(this);
+				return new LessThanOpToken(this, range);
 			case "<=":
 			case "≦":
-				return new LessThanEqualOpToken(this);
+				return new LessThanEqualOpToken(this, range);
 			case ">=":
 			case "≧":
-				return new GreaterThanEqualOpToken(this);
+				return new GreaterThanEqualOpToken(this, range);
 			case ">":
 			case "＞":
-				return new GreaterThanOpToken(this);
+				return new GreaterThanOpToken(this, range);
 
 			case "&":
 			case "＆":
 			case "∧":
-				return new AndOpToken(this);
+				return new AndOpToken(this, range);
 			case "|":
 			case "｜":
 			case "∨":
-				return new OrOpToken(this);
+				return new OrOpToken(this, range);
 			case "!":
 			case "！":
 			case "￢":
-				return new NotOpToken(this);
+				return new NotOpToken(this, range);
 
 			case "…":
-				return new ConcatOpToken(this);
+				return new ConcatOpToken(this, range);
 
 			case ":":
 			case "：":
 			case "・":
-				return new ConsOpToken(this);
+				return new ConsOpToken(this, range);
 
 			default:
-				return new UnknownOperatorToken(this, op);
+				return new UnknownOperatorToken(this, range, op);
 			}
 		}
 
 		private PunctuationToken ReadPunctuationToken() {
-			LineNumber = line;
-			CharCount = ch;
+			var startLoc = _Location;
 
 			char c = (char)_CurrentChar;
 			_NextChar();
+			var range = new TextRange(startLoc, _Location);
 			switch (c) {
 			case ',':
 			case '，':
 			case '、':
-				return new CommaToken(this, c.ToString());
+				return new CommaToken(this, range);
 			case '。':
 			case '．':
 			case '.':
-				return new PeriodToken(this, c.ToString());
+				return new PeriodToken(this, range);
 			case ';':
 			case '；':
-				return new SemicolonToken(this);
+				return new SemicolonToken(this, range);
 			}
-			Debug.Assert(false, "到達不可能" + Environment.NewLine + "プログラムを見直すこと。");
-			return null;
+			Contract.Assert(false, "到達不可能" + Environment.NewLine + "プログラムを見直すこと。");
+			throw new InvalidOperationException();
 		}
 
 		private Token ReadSymbolLetterToken() {
-			LineNumber = line;
-			CharCount = ch;
+			var startLoc = _Location;
 
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
@@ -381,21 +377,21 @@ namespace Kurogane.Compiler {
 				ConstantNames.TrueText, ConstantNames.FalseText, ConstantNames.ElseText,
 				ConstantNames.NullText };
 			string str = buff.ToString();
+			var range = new TextRange(startLoc, _Location);
 			if (Array.IndexOf(reserved, str) >= 0)
-				return new ReservedToken(this, str);
+				return new ReservedToken(this, range, str);
 			else
-				return new SymbolToken(this, buff.ToString());
+				return new SymbolToken(this, range, str);
 		}
 
 		private Token ReadPostPositionToken() {
-			LineNumber = line;
-			CharCount = ch;
-			int soLine = -1;
-			int soCh = -1;
+			var startLoc = _Location;
+			var soLoc = new TextLocation();
 
 			if (_CurrentChar == 'と') {
 				_NextChar();
-				return new SuffixToken(this, "と");
+				var range = new TextRange(startLoc, _Location);
+				return new SuffixToken(this, range, "と");
 			}
 			var buff = new StringBuilder();
 			buff.Append((char)_CurrentChar);
@@ -403,9 +399,8 @@ namespace Kurogane.Compiler {
 				char c = (char)_NextChar();
 				if (kanaBegin <= c && c <= kanaEnd) {
 					buff.Append(c);
-					if (ch == 'そ') {
-						soLine = line;
-						soCh = ch;
+					if (c == 'そ') {
+						soLoc = _Location;
 					}
 				}
 				else
@@ -413,65 +408,67 @@ namespace Kurogane.Compiler {
 			}
 			string[] reserved = { "もし", "なら", ConstantNames.ReturnText, "してみて", "してみる", "して", "し", "する" };
 			string str = buff.ToString();
+			var fullRange = new TextRange(startLoc, _Location);
 			if (Array.IndexOf(reserved, str) >= 0)
-				return new ReservedToken(this, str);
+				return new ReservedToken(this, fullRange, str);
 
 			const string mapKeyword = "それぞれ";
 			if (str.EndsWith(mapKeyword)) {
 				if (mapKeyword == str) {
-					return new ReservedToken(this, mapKeyword);
+					return new ReservedToken(this, fullRange, mapKeyword);
 				}
-				var token = new SuffixToken(this, str.Substring(0, str.Length - mapKeyword.Length));
-				LineNumber = soLine;
-				CharCount = soCh;
-				var soToken = new ReservedToken(this, mapKeyword);
-				_stack.Push(soToken);
-				return token;
+				else {
+					var sfxRange = new TextRange(startLoc, soLoc);
+					var soRange = new TextRange(soLoc, _Location);
+					_stack.Push( new ReservedToken(this,  soRange, mapKeyword) );
+					var sfxTxt = str.Substring(0, str.Length - mapKeyword.Length);
+					return new SuffixToken(this, sfxRange, sfxTxt);
+				}
 			}
 
-			return new SuffixToken(this, str);
+			return new SuffixToken(this, fullRange, str);
 		}
 
 
 		private Token ReadBracketsToken() {
-			LineNumber = line;
-			CharCount = ch;
-
+			var startLoc = _Location;
 			char c = (char)_CurrentChar;
 			_NextChar();
+			var range = new TextRange(startLoc, _Location);
 			switch (c) {
 			case '(':
 			case '（':
-				return new OpenParenthesisToken(this);
+				return new OpenParenthesisToken(this, range);
 			case ')':
 			case '）':
-				return new CloseParenthesisToken(this);
+				return new CloseParenthesisToken(this, range);
 			case '[':
 			case '［':
-				return new OpenBracketToken(this);
+				return new OpenBracketToken(this, range);
 			case ']':
 			case '］':
-				return new CloseBracketToken(this);
+				return new CloseBracketToken(this, range);
 			case '{':
 			case '｛':
-				return new OpenBraceToken(this);
+				return new OpenBraceToken(this, range);
 			case '}':
 			case '｝':
-				return new CloseBraceToken(this);
+				return new CloseBraceToken(this, range);
 			case '【':
-				return new OpenSumiBracketToken(this);
+				return new OpenSumiBracketToken(this, range);
 			case '】':
-				return new CloseSumiBracketToken(this);
+				return new CloseSumiBracketToken(this, range);
 			}
-			Debug.Assert(false, "到着不可能フロー" + Environment.NewLine + "プログラムを見直すこと。");
-			throw new NotImplementedException();
+			Contract.Assert(false, "到着不可能フロー" + Environment.NewLine + "プログラムを見直すこと。");
+			throw new InvalidOperationException();
 		}
 
 		#endregion
 
-		public void Dispose() {
-			_reader.Dispose();
+		private LexicalException Error(string message) {
+			return new LexicalException(message, _FileName, _Location);
 		}
+
 	}
 }
 

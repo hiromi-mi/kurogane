@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compiler {
 
@@ -18,8 +19,7 @@ namespace Kurogane.Compiler {
 		private Lexer _lexer;
 		private Token _next;
 
-		public readonly int LineNumber;
-		public readonly int CharCount;
+		public TextRange Range { get; private set; }
 
 		public abstract string Value { get; }
 		public virtual bool HasNext { get { return true; } }
@@ -37,10 +37,10 @@ namespace Kurogane.Compiler {
 			}
 		}
 
-		public Token(Lexer lexer) {
+		public Token(Lexer lexer, TextRange range) {
+			Contract.Requires<ArgumentNullException>(lexer != null);
 			_lexer = lexer;
-			this.LineNumber = lexer.LineNumber;
-			this.CharCount = lexer.CharCount;
+			this.Range = range;
 		}
 
 		public override string ToString() {
@@ -52,7 +52,7 @@ namespace Kurogane.Compiler {
 	/// 最後をnullにする代わりにこのトークンを用いる。
 	/// </summary>
 	public class NullToken : Token {
-		public NullToken(Lexer lexer) : base(lexer) { }
+		public NullToken(Lexer lexer, TextLocation location) : base(lexer, new TextRange(location, location)) { }
 		public override bool HasNext { get { return false; } }
 
 		public override string Value {
@@ -64,7 +64,7 @@ namespace Kurogane.Compiler {
 	/// SymbolやLiteralなど、名詞として対象となりえるトークン
 	/// </summary>
 	public abstract class TargetToken : Token {
-		public TargetToken(Lexer lexer) : base(lexer) { }
+		public TargetToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -74,8 +74,9 @@ namespace Kurogane.Compiler {
 		private readonly string _value;
 		public override string Value { get { return _value; } }
 
-		public SymbolToken(Lexer lexer, string value)
-			: base(lexer) {
+		public SymbolToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_value = value;
 		}
 	}
@@ -87,8 +88,9 @@ namespace Kurogane.Compiler {
 		private readonly string _value;
 		public override string Value { get { return _value; } }
 
-		public LambdaSpaceToken(Lexer lexer, string value)
-			: base(lexer) {
+		public LambdaSpaceToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_value = value;
 		}
 	}
@@ -100,8 +102,9 @@ namespace Kurogane.Compiler {
 		private readonly string _value;
 		public override string Value { get { return _value; } }
 
-		public LiteralToken(Lexer lexer, string value)
-			: base(lexer) {
+		public LiteralToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_value = value;
 		}
 	}
@@ -110,7 +113,7 @@ namespace Kurogane.Compiler {
 	/// 数値リテラルを示すトークン
 	/// </summary>
 	public abstract class NumberToken : TargetToken {
-		public NumberToken(Lexer lexer) : base(lexer) { }
+		public NumberToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -121,8 +124,8 @@ namespace Kurogane.Compiler {
 		public int IntValue { get { return _value; } }
 		public override string Value { get { return _value.ToString(); } }
 
-		public IntegerToken(Lexer lexer, int value)
-			: base(lexer) {
+		public IntegerToken(Lexer lexer, TextRange range, int value)
+			: base(lexer, range) {
 			_value = value;
 		}
 	}
@@ -135,8 +138,8 @@ namespace Kurogane.Compiler {
 		public double DecimalValue { get { return _value; } }
 		public override string Value { get { return _value.ToString(); } }
 
-		public DecimalToken(Lexer lexer, double value)
-			: base(lexer) {
+		public DecimalToken(Lexer lexer, TextRange range, double value)
+			: base(lexer, range) {
 			_value = value;
 		}
 	}
@@ -148,8 +151,9 @@ namespace Kurogane.Compiler {
 		private readonly string _value;
 		public override string Value { get { return _value; } }
 
-		public SuffixToken(Lexer lexer, string value)
-			: base(lexer) {
+		public SuffixToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_value = value;
 		}
 	}
@@ -160,7 +164,7 @@ namespace Kurogane.Compiler {
 	/// 演算子を示すトークン
 	/// </summary>
 	public abstract class AbstractOperatorToken : Token {
-		public AbstractOperatorToken(Lexer lexer) : base(lexer) { }
+		public AbstractOperatorToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	public class UnknownOperatorToken : AbstractOperatorToken {
@@ -168,8 +172,9 @@ namespace Kurogane.Compiler {
 
 		public override string Value { get { return _Value; } }
 
-		public UnknownOperatorToken(Lexer lexer, string value)
-			: base(lexer) {
+		public UnknownOperatorToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_Value = value;
 		}
 	}
@@ -177,27 +182,27 @@ namespace Kurogane.Compiler {
 	#region 算術演算
 
 	public class AddOpToken : AbstractOperatorToken {
-		public AddOpToken(Lexer lexer) : base(lexer) { }
+		public AddOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "＋"; } }
 	}
 
 	public class SubOpToken : AbstractOperatorToken {
-		public SubOpToken(Lexer lexer) : base(lexer) { }
+		public SubOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "－"; } }
 	}
 
 	public class MultipleOpToken : AbstractOperatorToken {
-		public MultipleOpToken(Lexer lexer) : base(lexer) { }
+		public MultipleOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "×"; } }
 	}
 
 	public class DivideOpToken : AbstractOperatorToken {
-		public DivideOpToken(Lexer lexer) : base(lexer) { }
+		public DivideOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "÷"; } }
 	}
 
 	public class ModuloOpToken : AbstractOperatorToken {
-		public ModuloOpToken(Lexer lexer) : base(lexer) { }
+		public ModuloOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "％"; } }
 	}
 
@@ -206,32 +211,32 @@ namespace Kurogane.Compiler {
 	#region 比較演算
 
 	public class EqualOpToken : AbstractOperatorToken {
-		public EqualOpToken(Lexer lexer) : base(lexer) { }
+		public EqualOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "＝"; } }
 	}
 
 	public class NotEqualOpToken : AbstractOperatorToken {
-		public NotEqualOpToken(Lexer lexer) : base(lexer) { }
+		public NotEqualOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "≠"; } }
 	}
 
 	public class GreaterThanOpToken : AbstractOperatorToken {
-		public GreaterThanOpToken(Lexer lexer) : base(lexer) { }
+		public GreaterThanOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "＞"; } }
 	}
 
 	public class LessThanOpToken : AbstractOperatorToken {
-		public LessThanOpToken(Lexer lexer) : base(lexer) { }
+		public LessThanOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "＜"; } }
 	}
 
 	public class GreaterThanEqualOpToken : AbstractOperatorToken {
-		public GreaterThanEqualOpToken(Lexer lexer) : base(lexer) { }
+		public GreaterThanEqualOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "≧"; } }
 	}
 
 	public class LessThanEqualOpToken : AbstractOperatorToken {
-		public LessThanEqualOpToken(Lexer lexer) : base(lexer) { }
+		public LessThanEqualOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "≦"; } }
 	}
 
@@ -240,29 +245,29 @@ namespace Kurogane.Compiler {
 	#region 論理演算子
 
 	public class AndOpToken : AbstractOperatorToken {
-		public AndOpToken(Lexer lexer) : base(lexer) { }
+		public AndOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "∧"; } }
 	}
 
 	public class OrOpToken : AbstractOperatorToken {
-		public OrOpToken(Lexer lexer) : base(lexer) { }
+		public OrOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "∨"; } }
 	}
 
 	public class NotOpToken : AbstractOperatorToken {
-		public NotOpToken(Lexer lexer) : base(lexer) { }
+		public NotOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "￢"; } }
 	}
 
 	#endregion
 
 	public class ConcatOpToken : AbstractOperatorToken {
-		public ConcatOpToken(Lexer lexer) : base(lexer) { }
+		public ConcatOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "…"; } }
 	}
 
 	public class ConsOpToken : AbstractOperatorToken {
-		public ConsOpToken(Lexer lexer) : base(lexer) { }
+		public ConsOpToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 		public override string Value { get { return "："; } }
 	}
 
@@ -274,8 +279,9 @@ namespace Kurogane.Compiler {
 	public class ReservedToken : Token {
 		private readonly string _value;
 		public override string Value { get { return _value; } }
-		public ReservedToken(Lexer lexer, string value)
-			: base(lexer) {
+		public ReservedToken(Lexer lexer, TextRange range, string value)
+			: base(lexer, range) {
+			Contract.Requires<ArgumentNullException>(value != null);
 			_value = value;
 		}
 
@@ -285,35 +291,28 @@ namespace Kurogane.Compiler {
 	/// 句読点を示すトークン
 	/// </summary>
 	public abstract class PunctuationToken : Token {
-		private readonly string _value;
-		public override string Value { get { return _value; } }
-
-		public PunctuationToken(Lexer lexer, string value)
-			: base(lexer) {
-			_value = value;
-		}
+		public PunctuationToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
 	/// 句点を示すトークン
 	/// </summary>
 	public class PeriodToken : PunctuationToken {
-		public PeriodToken(Lexer lexer, string value)
-			: base(lexer, value) {
-		}
+		public override string Value { get { return "。"; } }
+		public PeriodToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
 	/// 読点を示すトークン
 	/// </summary>
 	public class CommaToken : PunctuationToken {
-		public CommaToken(Lexer lexer, string value)
-			: base(lexer, value) {
-		}
+		public override string Value { get { return "，"; } }
+		public CommaToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	public class SemicolonToken : PunctuationToken {
-		public SemicolonToken(Lexer lexer) : base(lexer, ";") { }
+		public override string Value { get { return "；"; } }
+		public SemicolonToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	#region 括弧群
@@ -323,7 +322,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class OpenParenthesisToken : Token {
 		public override string Value { get { return "("; } }
-		public OpenParenthesisToken(Lexer lexer) : base(lexer) { }
+		public OpenParenthesisToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -331,7 +330,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class CloseParenthesisToken : Token {
 		public override string Value { get { return ")"; } }
-		public CloseParenthesisToken(Lexer lexer) : base(lexer) { }
+		public CloseParenthesisToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -339,7 +338,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class OpenBracketToken : Token {
 		public override string Value { get { return "["; } }
-		public OpenBracketToken(Lexer lexer) : base(lexer) { }
+		public OpenBracketToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -347,7 +346,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class CloseBracketToken : Token {
 		public override string Value { get { return "]"; } }
-		public CloseBracketToken(Lexer lexer) : base(lexer) { }
+		public CloseBracketToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -355,7 +354,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class OpenBraceToken : Token {
 		public override string Value { get { return "{"; } }
-		public OpenBraceToken(Lexer lexer) : base(lexer) { }
+		public OpenBraceToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -363,7 +362,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class CloseBraceToken : Token {
 		public override string Value { get { return "}"; } }
-		public CloseBraceToken(Lexer lexer) : base(lexer) { }
+		public CloseBraceToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 
@@ -372,7 +371,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class OpenSumiBracketToken : Token {
 		public override string Value { get { return "【"; } }
-		public OpenSumiBracketToken(Lexer lexer) : base(lexer) { }
+		public OpenSumiBracketToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
 
 	/// <summary>
@@ -380,9 +379,8 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class CloseSumiBracketToken : Token {
 		public override string Value { get { return "】"; } }
-		public CloseSumiBracketToken(Lexer lexer) : base(lexer) { }
+		public CloseSumiBracketToken(Lexer lexer, TextRange range) : base(lexer, range) { }
 	}
-
 
 	#endregion
 

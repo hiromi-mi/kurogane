@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Kurogane {
+
 	public static class ConstantNames {
 
 		public const string Defun = "定義";

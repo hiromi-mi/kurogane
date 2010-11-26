@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Compiler {
 
@@ -17,6 +18,7 @@ namespace Kurogane.Compiler {
 		/// <param name="code">プログラム</param>
 		/// <returns></returns>
 		public static Token Tokenize(TextReader code, string filename) {
+			Contract.Requires<ArgumentException>(!String.IsNullOrWhiteSpace(filename));
 			var lexer = new Lexer(code, filename);
 			return lexer.Next();
 		}

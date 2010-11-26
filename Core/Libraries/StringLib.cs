@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.Libraries {
 
@@ -31,6 +32,7 @@ namespace Kurogane.Libraries {
 
 		[JpName("文字列連結")]
 		public static string Join([Suffix("を")] object obj) {
+			Contract.Ensures(Contract.Result<string>() != null);
 			return ListLib.FlattenFoldLeft(new StringBuilder(), obj, (o, b) => b.Append(o)).ToString();
 		}
 	}

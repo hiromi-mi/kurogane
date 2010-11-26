@@ -10,7 +10,7 @@ namespace Kurogane.Test.Compiler {
 		public void Tokenize_AをBにCする() {
 			string code = "AをBにCする。";
 			using (var reader = new StringReader(code)) {
-				var token = Tokenizer.Tokenize(reader, null);
+				var token = Tokenizer.Tokenize(reader, "-- text program --");
 				Assert.IsTrue(token
 					.MatchFlow((SymbolToken t) => t.Value == "A")
 					.MatchFlow((SuffixToken t) => t.Value == "を")
@@ -29,7 +29,7 @@ namespace Kurogane.Test.Compiler {
 				"	「こんにちは」を表示する。" +
 				"以上。";
 			using (var reader = new StringReader(code)) {
-				var token = Tokenizer.Tokenize(reader, null);
+				var token = Tokenizer.Tokenize(reader, "-- text program --");
 				Assert.IsTrue(token
 					.MatchFlow((ReservedToken t) => t.Value == "以下")
 					.MatchFlow((SuffixToken t) => t.Value == "の")
@@ -56,7 +56,7 @@ namespace Kurogane.Test.Compiler {
 				"他なら" +
 				"	「間違い」を表示する。";
 			using (var reader = new StringReader(code)) {
-				var token = Tokenizer.Tokenize(reader, null);
+				var token = Tokenizer.Tokenize(reader, "-- text program --");
 				var token2 = token
 					.MatchFlow((ReservedToken t) => t.Value == "もし")
 					.MatchFlow((OpenParenthesisToken t) => true)
