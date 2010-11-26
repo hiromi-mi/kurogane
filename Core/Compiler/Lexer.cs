@@ -55,7 +55,7 @@ namespace Kurogane.Compiler {
 		/// <summary>
 		/// 読み取り中の位置
 		/// </summary>
-		private TextLocation _Location = new TextLocation();
+		private TextLocation _Location = TextLocation.Start;
 
 		/// <summary>
 		/// 読み取り中のファイル名

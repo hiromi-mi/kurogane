@@ -27,8 +27,10 @@ namespace Kurogane.Util {
 				var types = new Type[argCount + 1];
 				for (int i = 0; i < types.Length; i++)
 					types[i] = typeof(object);
-				type = Expression.GetFuncType(types);
-				_FuncTypeCache[argCount] = type;
+				if (Expression.TryGetFuncType(types, out type))
+					_FuncTypeCache[argCount] = type;
+				else
+					_FuncTypeCache[argCount] = Expression.GetDelegateType(types);
 			}
 			return type;
 		}
@@ -51,12 +53,14 @@ namespace Kurogane.Util {
 			return func.Body;
 		}
 
-		public static Expression BetaReduction<T1, TResult>(Expression<Func<T1, TResult>> func, Expression arg) {
+		public static Expression BetaReduction<T1, TResult>(Expression<Func<T1, TResult>> func, Expression arg1) {
 			Contract.Requires<ArgumentNullException>(func != null);
-			Contract.Requires<ArgumentNullException>(arg != null);
+			Contract.Requires<ArgumentNullException>(arg1 != null);
+			Contract.Requires<ArgumentException>(arg1.Type == typeof(T1));
 			Contract.Ensures(Contract.Result<Expression>() != null);
+			Contract.Ensures(Contract.Result<Expression>().Type == typeof(TResult));
 			var param = func.Parameters[0];
-			var lst = new[] { new KeyValuePair<ParameterExpression, Expression>(param, arg) };
+			var lst = new[] { new KeyValuePair<ParameterExpression, Expression>(param, arg1) };
 			return new Visitor(lst).Visit(func.Body);
 		}
 
@@ -64,7 +68,10 @@ namespace Kurogane.Util {
 			Contract.Requires<ArgumentNullException>(func != null);
 			Contract.Requires<ArgumentNullException>(arg1 != null);
 			Contract.Requires<ArgumentNullException>(arg2 != null);
+			Contract.Requires<ArgumentException>(arg1.Type == typeof(T1));
+			Contract.Requires<ArgumentException>(arg2.Type == typeof(T2));
 			Contract.Ensures(Contract.Result<Expression>() != null);
+			Contract.Ensures(Contract.Result<Expression>().Type == typeof(TResult));
 			var param1 = func.Parameters[0];
 			var param2 = func.Parameters[1];
 			var lst = new[] {
@@ -79,7 +86,11 @@ namespace Kurogane.Util {
 			Contract.Requires<ArgumentNullException>(arg1 != null);
 			Contract.Requires<ArgumentNullException>(arg2 != null);
 			Contract.Requires<ArgumentNullException>(arg3 != null);
+			Contract.Requires<ArgumentException>(arg1.Type == typeof(T1));
+			Contract.Requires<ArgumentException>(arg2.Type == typeof(T2));
+			Contract.Requires<ArgumentException>(arg3.Type == typeof(T3));
 			Contract.Ensures(Contract.Result<Expression>() != null);
+			Contract.Ensures(Contract.Result<Expression>().Type == typeof(TResult));
 			var param = func.Parameters;
 			var lst = new[] {
 				new KeyValuePair<ParameterExpression, Expression>(param[0], arg1),

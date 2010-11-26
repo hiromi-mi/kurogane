@@ -51,7 +51,7 @@
     <CodeContractsBaseLineFile />
     <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -82,7 +82,7 @@
     <CodeContractsExtraAnalysisOptions />
     <CodeContractsBaseLineFile />
     <CodeContractsCacheAnalysisResults>False</CodeContractsCacheAnalysisResults>
-    <CodeContractsRuntimeCheckingLevel>Preconditions</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsRuntimeCheckingLevel>ReleaseRequires</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>Build</CodeContractsReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
@@ -96,14 +96,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\BinaryOperationType.cs" />
-    <Compile Include="Compiler\BlockGenerator.cs" />
+    <Compile Include="Compiler\ExpressionGenerator.cs" />
     <Compile Include="Compiler\TextLocation.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Expressions\ExpressionOptimizer.cs" />
-    <Compile Include="Compiler\LambdaGenerator.cs" />
     <Compile Include="Compiler\Parser.cs" />
     <Compile Include="Compiler\CompilerException.cs" />
-    <Compile Include="Compiler\Generator.cs" />
     <Compile Include="ConstantNames.cs" />
     <Compile Include="Expressions\InvokeStatic.cs" />
     <Compile Include="Expressions\LambdaFinder.cs" />
@@ -154,7 +152,7 @@
     <EmbeddedResource Include="Libraries\io.krg" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Libraries\math.krg" />
+    <EmbeddedResource Include="Libraries\math.krg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

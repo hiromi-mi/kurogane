@@ -33,7 +33,7 @@ namespace Kurogane {
 		}
 
 		public object SetVariable(string name, object value) {
-			return _values[name] = value;
+			return _values[name] = value; ;
 		}
 
 		#region IDynamicMetaObjectProvider

@@ -11,29 +11,28 @@ namespace Kurogane.Compiler {
 	#region 文
 
 	/// <summary>文</summary>
-	public abstract class IStatement {
-		internal IStatement() {
-		}
+	public abstract class Statement {
+		internal Statement() { }
 	}
 
 	/// <summary>
 	/// If文の中身になれる文
 	/// </summary>
-	public abstract class INormalStatement : IStatement {
-		internal INormalStatement() {
-		}
+	public abstract class NormalStatement : Statement {
+		internal NormalStatement() { }
 	}
 
 	#region もし文
 
 	/// <summary>If/Caseをまとめる文</summary>
-	public class IfStatement : IStatement {
-		public readonly IList<CondThenPair> Thens;
+	public class IfStatement : Statement {
+		public readonly ReadOnlyCollection<CondThenPair> Thens;
 
 		public IfStatement(IList<CondThenPair> thens) {
 			Contract.Requires<ArgumentNullException>(thens != null);
 			Contract.Requires<ArgumentException>(thens.Count > 0);
-			this.Thens = thens;
+			Contract.Requires<ArgumentException>(Contract.ForAll(thens, then => then != null));
+			this.Thens = Array.AsReadOnly(thens.ToArray());
 		}
 
 		public override string ToString() {
@@ -44,9 +43,9 @@ namespace Kurogane.Compiler {
 	/// <summary>If/Case文の中身</summary>
 	public class CondThenPair {
 		public readonly Element Condition;
-		public readonly INormalStatement Statement;
+		public readonly NormalStatement Statement;
 
-		public CondThenPair(Element cond, INormalStatement stmt) {
+		public CondThenPair(Element cond, NormalStatement stmt) {
 			Contract.Requires<ArgumentNullException>(cond != null);
 			Contract.Requires<ArgumentNullException>(stmt != null);
 			this.Condition = cond;
@@ -65,23 +64,23 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 関数定義
 	/// </summary>
-	public class Defun : INormalStatement {
+	public class Defun : NormalStatement {
 		/// <summary>関数名</summary>
 		public string Name { get; private set; }
 
 		/// <summary>各引数名とその助詞の対</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public IList<ParamSuffixPair> Params { get; private set; }
+		public ReadOnlyCollection<ParamSuffixPair> Params { get; private set; }
 
 		/// <summary>関数の中身</summary>
 		public Block Block { get; private set; }
 
-		public Defun(string name, IList<ParamSuffixPair> parameters, Block block) {
+		public Defun(string name, IEnumerable<ParamSuffixPair> parameters, Block block) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			Contract.Requires<ArgumentNullException>(parameters != null);
 			Contract.Requires<ArgumentNullException>(block != null);
 			this.Name = name;
-			this.Params = parameters;
+			this.Params = Array.AsReadOnly(parameters.ToArray());
 			this.Block = block;
 		}
 
@@ -117,7 +116,7 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// ブロックをそのまま実行する文
 	/// </summary>
-	public class BlockExecute : INormalStatement {
+	public class BlockExecute : NormalStatement {
 
 		/// <summary>実行するブロック</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -129,18 +128,18 @@ namespace Kurogane.Compiler {
 		}
 	}
 
-	public class ExprBlock : INormalStatement, IExpr {
+	public class ExprBlock : NormalStatement, IExpr {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public IList<IExpr> Exprs { get; private set; }
+		public ReadOnlyCollection<IExpr> Exprs { get; private set; }
 
-		public ExprBlock(IList<IExpr> exprs) {
+		public ExprBlock(IEnumerable<IExpr> exprs) {
 			Contract.Requires<ArgumentNullException>(exprs != null);
-			this.Exprs = exprs;
+			this.Exprs = Array.AsReadOnly(exprs.ToArray());
 		}
 	}
 
-	public class Return : INormalStatement {
+	public class Return : NormalStatement {
 		public Element Value { get; private set; }
 
 		public Return(Element value) {
@@ -153,15 +152,15 @@ namespace Kurogane.Compiler {
 		}
 	}
 
-	public class PhraseChain : INormalStatement {
+	public class PhraseChain : NormalStatement {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public IList<IPhrase> Phrases { get; private set; }
+		public ReadOnlyCollection<Phrase> Phrases { get; private set; }
 
-		public PhraseChain(IList<IPhrase> phrases) {
+		public PhraseChain(IList<Phrase> phrases) {
 			Contract.Requires<ArgumentNullException>(phrases != null);
 			Contract.Requires<ArgumentException>(phrases.Count > 0);
-			this.Phrases = phrases;
+			this.Phrases = Array.AsReadOnly(phrases.ToArray());
 		}
 
 		public override string ToString() {
@@ -173,8 +172,17 @@ namespace Kurogane.Compiler {
 
 	#region 句
 
-	public abstract class IPhrase {
-		internal IPhrase() {
+	public abstract class Phrase {
+
+		/// <summary>Maybe呼び出しを行っているかどうか</summary>
+		public bool IsMaybe { get; private set; }
+
+		/// <summary>プログラム中の位置</summary>
+		public TextRange Range { get; private set; }
+
+		internal Phrase(bool isMaybe, TextRange range) {
+			this.IsMaybe = isMaybe;
+			this.Range = range;
 		}
 	}
 
@@ -183,23 +191,20 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 関数呼び出しを表すクラス。
 	/// </summary>
-	public class Call : IPhrase {
+	public class Call : Phrase {
 		/// <summary>呼び出す関数の名前</summary>
 		public string Name { get; private set; }
 
 		/// <summary>呼び出す際の実引数</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public IList<ArgSuffixPair> Arguments { get; private set; }
+		public ReadOnlyCollection<ArgumentTuple> Arguments { get; private set; }
 
-		/// <summary>Maybe呼び出しを行っているかどうか</summary>
-		public bool IsMaybe { get; private set; }
-
-		public Call(string name, IList<ArgSuffixPair> args, bool isMaybe) {
+		public Call(string name, IEnumerable<ArgumentTuple> args, bool isMaybe, TextRange range)
+			: base(isMaybe, range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			Contract.Requires<ArgumentNullException>(args != null);
 			this.Name = name;
-			this.Arguments = args;
-			this.IsMaybe = isMaybe;
+			Arguments = Array.AsReadOnly(args.ToArray());
 		}
 
 		public override string ToString() {
@@ -216,10 +221,10 @@ namespace Kurogane.Compiler {
 		/// 「それぞれ」の対象となる引数。
 		/// これがnullになる場合、暗黙の引数が用いられていると判断すること。
 		/// </summary>
-		public ArgSuffixPair FirstArg { get; private set; }
+		public ArgumentTuple FirstArg { get; private set; }
 
-		public MapCall(string name, ArgSuffixPair firstArg, IList<ArgSuffixPair> args, bool isMaybe)
-			: base(name, args, isMaybe) {
+		public MapCall(string name, ArgumentTuple firstArg, IList<ArgumentTuple> args, bool isMaybe, TextRange range)
+			: base(name, args, isMaybe, range) {
 			this.FirstArg = firstArg;
 		}
 
@@ -231,11 +236,11 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 実引数と助詞の対
 	/// </summary>
-	public class ArgSuffixPair {
+	public class ArgumentTuple {
 		public Element Argument { get; private set; }
 		public string Suffix { get; private set; }
 
-		public ArgSuffixPair(Element arg, string sfx) {
+		public ArgumentTuple(Element arg, string sfx) {
 			Contract.Requires<ArgumentNullException>(arg != null);
 			Contract.Requires<ArgumentNullException>(sfx != null);
 			this.Argument = arg;
@@ -252,14 +257,15 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 代入文を示すクラス。
 	/// </summary>
-	public class Assign : IPhrase {
+	public class Assign : Phrase {
 		/// <summary>代入の対象。</summary>
 		public string Name { get; private set; }
 
 		/// <summary>代入する引数。nullの場合、暗黙の引数を用いること。</summary>
 		public Element Value { get; private set; }
 
-		public Assign(string name, Element value) {
+		public Assign(string name, Element value, bool isMaybe, TextRange range)
+			: base(isMaybe, range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			this.Name = name;
 			this.Value = value;
@@ -273,7 +279,7 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// プロパティへの代入を示すクラス。
 	/// </summary>
-	public class PropertySet : IPhrase {
+	public class PropertySet : Phrase {
 
 		/// <summary>代入先</summary>
 		public PropertyAccess Property { get; private set; }
@@ -281,7 +287,8 @@ namespace Kurogane.Compiler {
 		/// <summary>代入する引数。nullの場合、暗黙の引数を用いること。</summary>
 		public Element Value { get; private set; }
 
-		public PropertySet(PropertyAccess property, Element value) {
+		public PropertySet(PropertyAccess property, Element value, bool isMaybe, TextRange range)
+			: base(isMaybe, range) {
 			Contract.Requires<ArgumentNullException>(property != null);
 			this.Property = property;
 			this.Value = value;
@@ -295,7 +302,7 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 変数の束縛を表すクラス。
 	/// </summary>
-	public class DefineValue : IPhrase {
+	public class DefineValue : Phrase {
 
 		/// <summary>変数名</summary>
 		public string Name;
@@ -303,7 +310,8 @@ namespace Kurogane.Compiler {
 		/// <summary>値。nullなら暗黙の引数を用いること。</summary>
 		public Element Value;
 
-		public DefineValue(string name, Element value) {
+		public DefineValue(string name, Element value, TextRange range)
+			: base(false, range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			this.Name = name;
 			this.Value = value;
@@ -318,12 +326,15 @@ namespace Kurogane.Compiler {
 	/// 「以下」「以上」で囲まれた、複数の文の集合。
 	/// </summary>
 	public class Block {
-		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public readonly IList<IStatement> Statements;
+		public TextRange Range { get; private set; }
 
-		public Block(IList<IStatement> stmts) {
+		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+		public ReadOnlyCollection<Statement> Statements { get; private set; }
+
+		public Block(IEnumerable<Statement> stmts, TextRange range) {
 			Contract.Requires<ArgumentNullException>(stmts != null);
-			this.Statements = stmts;
+			this.Statements = Array.AsReadOnly(stmts.ToArray());
+			this.Range = range;
 		}
 	}
 
@@ -334,17 +345,33 @@ namespace Kurogane.Compiler {
 	public interface IExpr {
 	}
 
+	public enum ElementType {
+		None = 0,
+
+		// リテラル値
+		Integer, Float, String, Bool, Null,
+		// 式
+		Tuple, List, Binary, Unary, Property, Lambda,
+		// 変数
+		Symbol, LambdaParam,
+	}
+
 	/// <summary>要素</summary>
 	public abstract class Element : IExpr {
-		internal Element() {
+		public TextRange Range { get; private set; }
+
+		/// <summary>要素の種類</summary>
+		public abstract ElementType Type { get; }
+
+		internal Element(TextRange range) {
+			this.Range = range;
 		}
 	}
 
 	#region リテラル値
 
 	public abstract class Literal : Element {
-		internal Literal() {
-		}
+		internal Literal(TextRange range) : base(range) { }
 	}
 
 	/// <summary>
@@ -353,12 +380,14 @@ namespace Kurogane.Compiler {
 	public class ListLiteral : Literal {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public IList<Element> Elements { get; private set; }
+		public ReadOnlyCollection<Element> Elements { get; private set; }
+		public override ElementType Type { get { return ElementType.List; } }
 
-		public ListLiteral(IList<Element> elems) {
+		public ListLiteral(IEnumerable<Element> elems, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(elems != null);
 			Contract.Requires<ArgumentException>(Contract.ForAll(elems, e => e != null));
-			this.Elements = elems;
+			this.Elements = Array.AsReadOnly(elems.ToArray());
 		}
 
 		public override string ToString() {
@@ -373,7 +402,10 @@ namespace Kurogane.Compiler {
 		public Element Head { get; private set; }
 		public Element Tail { get; private set; }
 
-		public TupleLiteral(Element head, Element tail) {
+		public override ElementType Type { get { return ElementType.Tuple; } }
+
+		public TupleLiteral(Element head, Element tail, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(head != null);
 			Contract.Requires<ArgumentNullException>(tail != null);
 			this.Head = head;
@@ -390,8 +422,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class StringLiteral : Literal {
 		public string Value { get; private set; }
+		public override ElementType Type { get { return ElementType.String; } }
 
-		public StringLiteral(string value) {
+		public StringLiteral(string value, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(value != null);
 			this.Value = value;
 		}
@@ -406,8 +440,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class IntLiteral : Literal {
 		public readonly int Value;
+		public override ElementType Type { get { return ElementType.Integer; } }
 
-		public IntLiteral(int value) {
+		public IntLiteral(int value, TextRange range)
+			: base(range) {
 			this.Value = value;
 		}
 
@@ -421,8 +457,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class FloatLiteral : Literal {
 		public readonly double Value;
+		public override ElementType Type { get { return ElementType.Float; } }
 
-		public FloatLiteral(double value) {
+		public FloatLiteral(double value, TextRange range)
+			: base(range) {
 			this.Value = value;
 		}
 
@@ -435,12 +473,11 @@ namespace Kurogane.Compiler {
 	/// 真偽値のリテラルを示すクラス。
 	/// </summary>
 	public sealed class BoolLiteral : Literal {
-		public static readonly BoolLiteral True = new BoolLiteral(true);
-		public static readonly BoolLiteral False = new BoolLiteral(false);
-
 		public readonly bool Value;
+		public override ElementType Type { get { return ElementType.Bool; } }
 
-		private BoolLiteral(bool value) {
+		public BoolLiteral(bool value, TextRange range)
+			: base(range) {
 			this.Value = value;
 		}
 
@@ -453,9 +490,8 @@ namespace Kurogane.Compiler {
 	/// Nullのリテラルを示すクラス。
 	/// </summary>
 	public sealed class NullLiteral : Literal {
-		public static readonly NullLiteral Instance = new NullLiteral();
-
-		private NullLiteral() { }
+		public override ElementType Type { get { return ElementType.Null; } }
+		public NullLiteral(TextRange range) : base(range) { }
 
 		public override string ToString() {
 			return "null";
@@ -472,14 +508,16 @@ namespace Kurogane.Compiler {
 	public class BinaryExpr : Element {
 		public Element Left { get; private set; }
 		public Element Right { get; private set; }
-		public BinaryOperationType Type { get; private set; }
+		public BinaryOperationType ExprType { get; private set; }
+		public override ElementType Type { get { return ElementType.Binary; } }
 
-		public BinaryExpr(Element left, BinaryOperationType type, Element right) {
+		public BinaryExpr(Element left, BinaryOperationType type, Element right, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(left != null);
 			Contract.Requires<ArgumentNullException>(right != null);
 			this.Left = left;
 			this.Right = right;
-			this.Type = type;
+			this.ExprType = type;
 		}
 	}
 
@@ -487,12 +525,14 @@ namespace Kurogane.Compiler {
 	/// 単項演算を示すクラス。
 	/// </summary>
 	public class UnaryExpr : Element {
-		public UnaryOperationType Type { get; private set; }
 		public Element Value { get; private set; }
+		public UnaryOperationType ExprType { get; private set; }
+		public override ElementType Type { get { return ElementType.Unary; } }
 
-		public UnaryExpr(UnaryOperationType type, Element value) {
+		public UnaryExpr(UnaryOperationType type, Element value, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(value != null);
-			this.Type = type;
+			this.ExprType = type;
 			this.Value = value;
 		}
 	}
@@ -503,8 +543,10 @@ namespace Kurogane.Compiler {
 	public class FuncCall : Element {
 		public string Name { get; private set; }
 		public IList<Element> Arguments { get; private set; }
+		public override ElementType Type { get { return ElementType.None; } }
 
-		public FuncCall(string name, IList<Element> args) {
+		public FuncCall(string name, IList<Element> args, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			Contract.Requires<ArgumentNullException>(args != null);
 			Contract.Requires<ArgumentException>(Contract.ForAll(args, e => e != null));
@@ -519,8 +561,10 @@ namespace Kurogane.Compiler {
 	public class PropertyAccess : Element {
 		public Element Value { get; private set; }
 		public string Name { get; private set; }
+		public override ElementType Type { get { return ElementType.Property; } }
 
-		public PropertyAccess(Element value, string name) {
+		public PropertyAccess(Element value, string name, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(value != null);
 			Contract.Requires<ArgumentNullException>(name != null);
 			this.Value = value;
@@ -537,8 +581,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class Symbol : Element {
 		public string Name { get; private set; }
+		public override ElementType Type { get { return ElementType.Symbol; } }
 
-		public Symbol(string name) {
+		public Symbol(string name, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			this.Name = name;
 		}
@@ -553,8 +599,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class Lambda : Element {
 		public Element Element { get; private set; }
+		public override ElementType Type { get { return ElementType.Lambda; } }
 
-		public Lambda(Element elem) {
+		public Lambda(Element elem, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(elem != null);
 			this.Element = elem;
 		}
@@ -569,8 +617,10 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class LambdaParameter : Literal {
 		public string Name { get; private set; }
+		public override ElementType Type { get { return ElementType.LambdaParam; } }
 
-		public LambdaParameter(string name) {
+		public LambdaParameter(string name, TextRange range)
+			: base(range) {
 			Contract.Requires<ArgumentNullException>(name != null);
 			this.Name = name;
 		}

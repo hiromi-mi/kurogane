@@ -16,6 +16,8 @@ namespace Kurogane {
 
 		#region static
 
+		public static readonly ListCell Null = null;
+
 		/// <summary>
 		/// 二つの要素から対を作成する。
 		/// もし，後者がnullかListCellである場合，ListCellを作成する。

@@ -35,6 +35,9 @@ namespace Kurogane {
 
 		public Encoding DefaultEncoding { get; set; }
 
+		/// <summary>初期化されたかどうか</summary>
+		protected bool Initialized { get; set; }
+
 		/// <summary>
 		/// コンパイルが終了したときに発生するイベント。
 		/// 例外発生時は呼ばれない。
@@ -50,10 +53,7 @@ namespace Kurogane {
 		// ----- ----- ----- ----- ----- ctor ----- ----- ----- ----- -----
 
 		/// <summary>通常のコンストラクタ</summary>
-		public Engine()
-			: this(new BinderFactory()) {
-			LoadLibrary(this.GetType().Assembly);
-		}
+		public Engine() : this(new BinderFactory()) { }
 
 		protected Engine(BinderFactory factory) {
 			Contract.Requires<ArgumentNullException>(factory != null);
@@ -66,6 +66,17 @@ namespace Kurogane {
 		}
 
 		// ----- ----- ----- ----- ----- methods ----- ----- ----- ----- -----
+
+		protected virtual void Initialize() {
+			if (Initialized)
+				return;
+			lock (this) {
+				if (Initialized)
+					return;
+				Initialized = true;
+				LoadLibrary(typeof(Engine).Assembly);
+			}
+		}
 
 		/// <summary>
 		/// ファイル名を指定せずに，クロガネのプログラムを実行する。
@@ -114,16 +125,18 @@ namespace Kurogane {
 		/// <summary>
 		/// 実際に実行する部分。
 		/// </summary>
-		private object ExecuteCore(TextReader stream, string filename) {
+		protected virtual object ExecuteCore(TextReader stream, string filename) {
 			Contract.Requires<ArgumentNullException>(stream != null);
 			Contract.Requires<ArgumentNullException>(filename != null);
+			Initialize();
 			Func<Scope, object> program;
 			{
 				// Compile
 				var sw = Stopwatch.StartNew();
 				var token = Tokenizer.Tokenize(stream, filename);
 				var ast = Parser.Parse(token, filename);
-				var expr = Generator.Generate(ast, this.Factory, filename);
+				//var expr = Generator.Generate(ast, this.Factory, filename);
+				var expr = ExpressionGenerator.Generate(ast, this.Factory, filename);
 				expr = ExpressionOptimizer.Analyze(expr);
 				program = expr.Compile();
 				sw.Stop();

@@ -5,6 +5,7 @@ using System.Text;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Diagnostics.Contracts;
 
 namespace Kurogane.RuntimeBinder {
 
@@ -16,10 +17,13 @@ namespace Kurogane.RuntimeBinder {
 		private static readonly Dictionary<Type, AliasReflectionCacher> _alias = new Dictionary<Type, AliasReflectionCacher>();
 
 		public static void RegisterAlias(Type target, Type alias) {
+			Contract.Requires<ArgumentNullException>(target != null);
+			Contract.Requires<ArgumentNullException>(alias != null);
 			_alias[target] = new AliasReflectionCacher(target, alias);
 		}
 
 		public static AliasReflectionCacher GetAlias(Type type) {
+			Contract.Requires<ArgumentNullException>(type != null);
 			AliasReflectionCacher value;
 			if (_alias.TryGetValue(type, out value))
 				return value;
@@ -37,6 +41,8 @@ namespace Kurogane.RuntimeBinder {
 		private IDictionary<string, MemberInfo> _members = null;
 
 		public AliasReflectionCacher(Type target, Type alias) {
+			Contract.Requires<ArgumentNullException>(target != null);
+			Contract.Requires<ArgumentNullException>(alias != null);
 			this.Target = target;
 			this.Alias = alias;
 			var attrs = Alias.GetCustomAttributes(typeof(JpNameAttribute), true);
@@ -77,6 +83,7 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		public MemberInfo GetMemberInfo(string name) {
+			Contract.Requires<ArgumentNullException>(name != null);
 			Load();
 			MemberInfo info;
 			if (_members.TryGetValue(name, out info))

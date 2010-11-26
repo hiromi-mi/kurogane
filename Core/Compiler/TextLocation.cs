@@ -11,6 +11,8 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public struct TextLocation : IComparable<TextLocation>, IEquatable<TextLocation>{
 
+		public static readonly TextLocation Start = new TextLocation(1, 1);
+
 		/// <summary>行番号</summary>
 		public readonly int Line;
 
@@ -33,7 +35,7 @@ namespace Kurogane.Compiler {
 		/// 次の行の位置
 		/// </summary>
 		public TextLocation NextLine() {
-			return new TextLocation(this.Line + 1, 0);
+			return new TextLocation(this.Line + 1, 1);
 		}
 
 		#region IEquatable<TextLocation> + IComparable<TextLocation> メンバー
@@ -94,6 +96,12 @@ namespace Kurogane.Compiler {
 			Contract.Requires<ArgumentOutOfRangeException>(start <= end);
 			this.Start = start;
 			this.End = end;
+		}
+
+		public static TextRange IncludeRange(TextRange left, TextRange right) {
+			var start = left.Start;
+			var end = right.End;
+			return new TextRange(start, end);
 		}
 	}
 }

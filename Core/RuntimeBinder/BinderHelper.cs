@@ -13,6 +13,8 @@ namespace Kurogane.RuntimeBinder {
 		/// 値が「nullである」かどうかを判定する式を返す。
 		/// </summary>
 		public static Expression IsNull(Expression expr) {
+			Contract.Requires<ArgumentNullException>(expr != null);
+			Contract.Ensures(Contract.Result<Expression>() != null);
 			return Expression.Not(IsNotNull(expr));
 		}
 
@@ -20,6 +22,8 @@ namespace Kurogane.RuntimeBinder {
 		/// 値が「nullでない」かどうかを判定する式を返す。
 		/// </summary>
 		public static Expression IsNotNull(Expression expr) {
+			Contract.Requires<ArgumentNullException>(expr != null);
+			Contract.Ensures(Contract.Result<Expression>() != null);
 			return Expression.TypeIs(expr, typeof(object));
 		}
 
@@ -27,6 +31,8 @@ namespace Kurogane.RuntimeBinder {
 		/// 暗黙の型変換が存在すれば、そのメソッドを返す。
 		/// </summary>
 		public static MethodInfo GetImplicitCast(Type from, Type to) {
+			Contract.Requires<ArgumentNullException>(from != null);
+			Contract.Requires<ArgumentNullException>(to != null);
 			const string name = "op_Implicit";
 			var types = new[] { from };
 			var mInfo = to.GetMethod(name, types);
@@ -46,6 +52,9 @@ namespace Kurogane.RuntimeBinder {
 		/// 式木の型をチェックして、必要があればキャストする。
 		/// </summary>
 		public static Expression Wrap(Expression expr, Type type1) {
+			Contract.Requires<ArgumentNullException>(expr != null);
+			Contract.Requires<ArgumentNullException>(type1 != null);
+			Contract.Ensures(Contract.Result<Expression>().Type == type1);
 			if (expr.Type == type1)
 				return expr;
 			return Expression.Convert(expr, type1);
@@ -55,6 +64,10 @@ namespace Kurogane.RuntimeBinder {
 		/// 式木の型をチェックして、必要があればキャストする。
 		/// </summary>
 		public static Expression Wrap(Expression expr, Type type1, Type type2) {
+			Contract.Requires<ArgumentNullException>(expr != null);
+			Contract.Requires<ArgumentNullException>(type1 != null);
+			Contract.Requires<ArgumentNullException>(type2 != null);
+			Contract.Ensures(Contract.Result<Expression>().Type == type2);
 			if (expr.Type == type2)
 				return expr;
 			return Expression.Convert(Wrap(expr, type1), type2);
@@ -64,6 +77,9 @@ namespace Kurogane.RuntimeBinder {
 		/// それぞれのLimitTypeからRestrictionを作成する。
 		/// </summary>
 		public static BindingRestrictions GetTypeRestriction(DynamicMetaObject left, DynamicMetaObject right) {
+			Contract.Requires<ArgumentNullException>(left != null);
+			Contract.Requires<ArgumentNullException>(right != null);
+			Contract.Ensures(Contract.Result<BindingRestrictions>() != null);
 			return BindingRestrictions.GetExpressionRestriction(
 				Expression.AndAlso(
 					Expression.TypeIs(left.Expression, left.LimitType),
@@ -82,6 +98,7 @@ namespace Kurogane.RuntimeBinder {
 		internal static DynamicMetaObject NullErrorOnOperation(string name, Type type, DynamicMetaObject left, DynamicMetaObject right) {
 			Contract.Requires<ArgumentException>(String.IsNullOrWhiteSpace(name) == false);
 			Contract.Requires<ArgumentException>(left.Value == null || right.Value == null);
+			Contract.Ensures(Contract.Result<DynamicMetaObject>() != null);
 	
 			var ctorInfo = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) });
 			var format = typeof(String).GetMethod("Format", new[] { typeof(string), typeof(object) });
@@ -109,7 +126,7 @@ namespace Kurogane.RuntimeBinder {
 				return new DynamicMetaObject(expr, rest);
 			}
 			Contract.Assert(false);
-			return null;
+			throw new InvalidOperationException();
 		}
 
 		/// <summary>

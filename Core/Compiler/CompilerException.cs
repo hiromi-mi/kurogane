@@ -27,9 +27,6 @@ namespace Kurogane.Compiler {
 	public sealed class SyntaxException : CompilerException {
 		public SyntaxException(string message, string filename, TextLocation location)
 			: base(message, filename, location) { }
-
-		public SyntaxException(string message, string filename, int lineNumber, int charCount)
-			: this(message, filename, new TextLocation(lineNumber, charCount)) { }
 	}
 
 	[Serializable]

@@ -42,7 +42,8 @@ namespace Kurogane.Compiler {
 		#region Parse
 
 		private IPair<Block> ParseBlock(Token token) {
-			List<IStatement> stmtList = new List<IStatement>();
+			List<Statement> stmtList = new List<Statement>();
+			var startLoc = token.Range.Start;
 			while (true) {
 				var pair = ParseIStatement(token);
 				if (pair == null)
@@ -50,13 +51,14 @@ namespace Kurogane.Compiler {
 				token = pair.Token;
 				stmtList.Add(pair.Node);
 			}
-			return MakePair(new Block(stmtList), token);
+			var range = new TextRange(startLoc, token.Range.Start);
+			return MakePair(new Block(stmtList, range), token);
 		}
 
-		private IPair<IStatement> ParseIStatement(Token token) {
+		private IPair<Statement> ParseIStatement(Token token) {
 			return
 				ParseIfStatement(token) ??
-				ParseINormalStatement(token) as IPair<IStatement>;
+				ParseINormalStatement(token) as IPair<Statement>;
 		}
 
 		#region もし文
@@ -99,13 +101,13 @@ namespace Kurogane.Compiler {
 
 		#endregion
 
-		private IPair<INormalStatement> ParseINormalStatement(Token token) {
+		private IPair<NormalStatement> ParseINormalStatement(Token token) {
 			return
 				ParseExprBlock(token) ??
 				ParseDefun(token) ??
 				ParseBlockExecute(token) ??
 				ParseReturn(token) ??
-				ParsePhraseChain(token) as IPair<INormalStatement>;
+				ParsePhraseChain(token) as IPair<NormalStatement>;
 		}
 
 		#region 関数定義
@@ -179,9 +181,9 @@ namespace Kurogane.Compiler {
 			if (elemPair == null)
 				return null;
 			token = elemPair.Token;
-			var lst = new List<ArgSuffixPair>();
+			var lst = new List<ArgumentTuple>();
 			while (token.Match((SuffixToken t) => t.Value == "と")) {
-				lst.Add(new ArgSuffixPair(elemPair.Node, "と"));
+				lst.Add(new ArgumentTuple(elemPair.Node, "と"));
 				elemPair = ParseProperty(token.Next);
 				if (elemPair == null)
 					break;
@@ -192,7 +194,7 @@ namespace Kurogane.Compiler {
 				retValue = elemPair.Node;
 			}
 			else {
-				lst.Add(new ArgSuffixPair(elemPair.Node, "で"));
+				lst.Add(new ArgumentTuple(elemPair.Node, "で"));
 				retValue = CreateTuple(lst).Argument;
 			}
 			var nextToken = elemPair.Token
@@ -206,7 +208,7 @@ namespace Kurogane.Compiler {
 		#region PhraseChain
 
 		private IPair<PhraseChain> ParsePhraseChain(Token token) {
-			var list = new List<IPhrase>();
+			var list = new List<Phrase>();
 			bool isFirst = true;
 			while (true) {
 				var pair = ParsePhrase(token, isFirst);
@@ -229,10 +231,11 @@ namespace Kurogane.Compiler {
 			return MakePair(new PhraseChain(list), token);
 		}
 
-		private IPair<IPhrase> ParsePhrase(Token token, bool isFirst) {
-			var lst = new List<ArgSuffixPair>();
+		private IPair<Phrase> ParsePhrase(Token token, bool isFirst) {
+			var startLoc = token.Range.Start;
+			var lst = new List<ArgumentTuple>();
 			bool isMap = false;
-			ArgSuffixPair mappedArg = null;
+			ArgumentTuple mappedArg = null;
 			while (true) {
 				if (token.Match((ReservedToken t) => t.Value == "それぞれ")) {
 					if (isMap)
@@ -259,24 +262,28 @@ namespace Kurogane.Compiler {
 				token = argPair.Token;
 				if (token.Match((SuffixToken t) => true)) {
 					var sfx = ((SuffixToken)token).Value;
-					lst.Add(new ArgSuffixPair(NullLiteral.Instance, sfx));
+					var range = new TextRange(token.Range.End, token.Range.End);
+					lst.Add(new ArgumentTuple(new NullLiteral(range), sfx));
 					token = token.Next;
 				}
 			}
 
 			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
-				var dfn = CreateDefine(lst);
+				var range = new TextRange(startLoc, token.Range.End);
+				var dfn = CreateDefine(lst, range);
 				if (dfn == null)
 					throw Error("引数が正しくありません。", token);
 				return MakePair(dfn, token.Next);
 			}
-			var last = token
-				.MatchFlow((SymbolToken t) => true)
+			var execToken = token
+				.MatchFlow((SymbolToken t) => true);
+			if (execToken == null)
+				return null;
+			var last = execToken
 				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "する");
 			bool isMaybe = false;
 			if (last == null) {
-				last = token
-					.MatchFlow((SymbolToken t) => true)
+				last = execToken
 					.MatchFlow((ReservedToken t) => t.Value == "してみ" || t.Value == "してみて");
 				if (last == null)
 					return null;
@@ -284,21 +291,22 @@ namespace Kurogane.Compiler {
 			}
 			if (last != null) {
 				string verb = ((SymbolToken)token).Value;
+				var range = new TextRange(startLoc, execToken.Range.End);
 				if (verb == ConstantNames.Assign) {
-					var assign = CreateAssign(lst, isFirst);
+					var assign = CreateAssign(lst, isFirst,isMaybe, range);
 					if (assign == null)
 						return null;
 					return MakePair(assign, last);
 				}
 				if (isMap)
-					return MakePair(new MapCall(verb, mappedArg, lst, isMaybe), last);
+					return MakePair(new MapCall(verb, mappedArg, lst, isMaybe, range), last);
 				else
-					return MakePair(new Call(verb, lst, isMaybe), last);
+					return MakePair(new Call(verb, lst, isMaybe, range), last);
 			}
 			return null;
 		}
 
-		private DefineValue CreateDefine(List<ArgSuffixPair> args) {
+		private DefineValue CreateDefine(List<ArgumentTuple> args, TextRange range) {
 			if (args.Count == 0)
 				return null;
 			var last = args.Last();
@@ -310,19 +318,19 @@ namespace Kurogane.Compiler {
 			var name = symbol.Name;
 			args.RemoveAt(args.Count - 1);
 			if (args.Count == 0)
-				return new DefineValue(name, null);
+				return new DefineValue(name, null, range);
 			if (args.Last().Suffix != "を")
 				return null;
 			var tuple = CreateTuple(args).Argument;
 			if (tuple == null)
 				return null;
-			return new DefineValue(name, tuple);
+			return new DefineValue(name, tuple, range);
 		}
 
-		private IPhrase CreateAssign(List<ArgSuffixPair> lst, bool isFirst) {
+		private Phrase CreateAssign(List<ArgumentTuple> lst, bool isFirst, bool isMaybe, TextRange range) {
 			if (lst.Count == 0)
 				return null;
-			Func<ArgSuffixPair, string> getName = pair => {
+			Func<ArgumentTuple, string> getName = pair => {
 				if (pair.Suffix != "に")
 					return null;
 				var sym = pair.Argument as Symbol;
@@ -330,7 +338,7 @@ namespace Kurogane.Compiler {
 					return null;
 				return sym.Name;
 			};
-			Func<ArgSuffixPair, PropertyAccess> getProp = pair => {
+			Func<ArgumentTuple, PropertyAccess> getProp = pair => {
 				if (pair.Suffix != "に")
 					return null;
 				return pair.Argument as PropertyAccess;
@@ -340,9 +348,9 @@ namespace Kurogane.Compiler {
 			if (name != null || prop != null) {
 				if (isFirst == false && lst.Count == 1) {
 					if (name != null)
-						return new Assign(name, null);
+						return new Assign(name, null,isMaybe, range);
 					else
-						return new PropertySet(prop, null);
+						return new PropertySet(prop, null,isMaybe, range);
 				}
 
 				lst.RemoveAt(lst.Count - 1);
@@ -350,9 +358,9 @@ namespace Kurogane.Compiler {
 				if (value == null)
 					return null;
 				if (name != null)
-					return new Assign(name, value);
+					return new Assign(name, value,isMaybe, range);
 				else
-					return new PropertySet(prop, value);
+					return new PropertySet(prop, value, isMaybe,range);
 			}
 			name = getName(lst[0]);
 			prop = getProp(lst[0]);
@@ -362,33 +370,36 @@ namespace Kurogane.Compiler {
 				if (value == null)
 					return null;
 				if (name != null)
-					return new Assign(name, value);
+					return new Assign(name, value,isMaybe, range);
 				else
-					return new PropertySet(prop, value);
+					return new PropertySet(prop, value,isMaybe, range);
 			}
 			return null;
 		}
 
-		private ArgSuffixPair CreateTuple(List<ArgSuffixPair> args) {
-			var tuple = args.Last().Argument;
-			var sfx = args.Last().Suffix;
+		private ArgumentTuple CreateTuple(List<ArgumentTuple> args) {
+			var last = args.Last();
+			var tuple = last.Argument;
+			var sfx = last.Suffix;
+			var endLoc = last.Argument.Range.End;
 			for (int i = args.Count - 2; i >= 0; i--) {
 				var elem = args[i];
 				if (elem.Suffix != "と")
 					return null;
-				tuple = new TupleLiteral(elem.Argument, tuple);
+				var range = new TextRange(elem.Argument.Range.Start, endLoc);
+				tuple = new TupleLiteral(elem.Argument, tuple, range);
 			}
-			return new ArgSuffixPair(tuple, sfx);
+			return new ArgumentTuple(tuple, sfx);
 		}
 
-		private IPair<ArgSuffixPair> ParseArgSfxPair(Token token) {
+		private IPair<ArgumentTuple> ParseArgSfxPair(Token token) {
 			var elemPair = ParseProperty(token);
 			if (elemPair == null)
 				return null;
 			var sfxToken = elemPair.Token as SuffixToken;
 			if (sfxToken == null)
 				return null;
-			return MakePair(new ArgSuffixPair(elemPair.Node, sfxToken.Value), sfxToken.Next);
+			return MakePair(new ArgumentTuple(elemPair.Node, sfxToken.Value), sfxToken.Next);
 		}
 
 		#endregion
@@ -430,14 +441,17 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseUnit(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				var nextToken = pair.Token
 					.MatchFlow((SuffixToken t) => t.Value == "の")
 					.MatchFlow((SymbolToken t) => true);
 				if (nextToken == null)
 					break;
-				var propName = ((SymbolToken)pair.Token.Next).Value;
-				pair = MakePair(new PropertyAccess(pair.Node, propName), nextToken);
+				var propToken = (SymbolToken)pair.Token.Next;
+				var propName = propToken.Value;
+				var range = new TextRange(startLoc, propToken.Range.End);
+				pair = MakePair(new PropertyAccess(pair.Node, propName, range), nextToken);
 			}
 			return pair;
 		}
@@ -463,6 +477,7 @@ namespace Kurogane.Compiler {
 		/// unExpr  ::= unary   |  unExpr UnknownOp unary
 		private IPair<Element> ParseBinaryExpr(Token token) {
 			// concatExprのみ右優先結合であることに注意すること
+			var startLoc = token.Range.Start;
 			IPair<Element> pair = ParseConcatExpr(token);
 			if (pair == null)
 				return null;
@@ -472,12 +487,14 @@ namespace Kurogane.Compiler {
 				var rightPair = ParseBinaryExpr(token.Next);
 				if (rightPair == null)
 					throw Error("右辺が見つかりません。", token.Next);
-				pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Cons, rightPair.Node), rightPair.Token);
+				var range = new TextRange(startLoc, rightPair.Token.Range.End);
+				pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Cons, rightPair.Node, range), rightPair.Token);
 			}
 			return pair;
 		}
 
 		private IPair<Element> ParseConcatExpr(Token token) {
+			var startLoc = token.Range.Start;
 			IPair<Element> pair = ParseOrExpr(token);
 			if (pair == null)
 				return null;
@@ -488,7 +505,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseOrExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Concat, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Concat, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -497,6 +515,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<Element> ParseOrExpr(Token token) {
+			var startLoc = token.Range.Start;
 			IPair<Element> pair = ParseAndExpr(token);
 			if (pair == null)
 				return null;
@@ -507,7 +526,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseAndExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Or, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -519,6 +539,7 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseCompareExpr(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				token = pair.Token;
 				if (token is AndOpToken) {
@@ -526,7 +547,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseCompareExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.And, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -538,6 +560,7 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseAddExpr(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				token = pair.Token;
 				var opType =
@@ -553,7 +576,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseAddExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -565,6 +589,7 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseMultipleExpr(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				token = pair.Token;
 				var opType =
@@ -576,7 +601,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseMultipleExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -588,6 +614,7 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseUnknownMultipleExpr(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				token = pair.Token;
 				var opType =
@@ -600,7 +627,8 @@ namespace Kurogane.Compiler {
 					var rightPair = ParseUnknownMultipleExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, opType, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -612,13 +640,15 @@ namespace Kurogane.Compiler {
 			IPair<Element> pair = ParseUnaryExpr(token);
 			if (pair == null)
 				return null;
+			var startLoc = token.Range.Start;
 			while (true) {
 				token = pair.Token;
 				if (token is UnknownOperatorToken) {
 					var rightPair = ParseUnaryExpr(token.Next);
 					if (rightPair == null)
 						throw Error("右辺が見つかりません。", token.Next);
-					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node), rightPair.Token);
+					var range = new TextRange(startLoc, rightPair.Token.Range.End);
+					pair = MakePair(new BinaryExpr(pair.Node, BinaryOperationType.Unknown, rightPair.Node, range), rightPair.Token);
 				}
 				else
 					break;
@@ -632,6 +662,7 @@ namespace Kurogane.Compiler {
 
 		private IPair<Element> ParseUnaryExpr(Token token) {
 			UnaryOperationType? op = null;
+			var startLoc = token.Range.Start;
 			if (token.Match((AbstractOperatorToken t) => true)) {
 				var opType =
 					token is SubOpToken ? UnaryOperationType.Negate :
@@ -644,7 +675,8 @@ namespace Kurogane.Compiler {
 			var propPair = ParseProperty(token);
 			if (op == null)
 				return propPair;
-			return MakePair(new UnaryExpr(op.Value, propPair.Node), propPair.Token);
+			var range = new TextRange(startLoc, propPair.Node.Range.End);
+			return MakePair(new UnaryExpr(op.Value, propPair.Node, range), propPair.Token);
 		}
 
 		#endregion
@@ -664,18 +696,20 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<Element> ParseSumiBracketExpr(Token token) {
-			token = token.MatchFlow((OpenSumiBracketToken t) => true);
-			if (token == null)
+			var bodyToken = token.MatchFlow((OpenSumiBracketToken t) => true);
+			if (bodyToken == null)
 				return null;
-			var elemPair = ParseBinaryExpr(token);
+			var elemPair = ParseBinaryExpr(bodyToken);
 			var lastToken = elemPair.Token
 				.MatchFlow((CloseSumiBracketToken t) => true);
 			if (lastToken == null)
 				throw Error("閉じ括弧が出現していません。", elemPair.Token);
-			return MakePair(new Lambda(elemPair.Node), lastToken);
+			var range = TextRange.IncludeRange(token.Range, elemPair.Token.Range);
+			return MakePair(new Lambda(elemPair.Node, range), lastToken);
 		}
 
 		private IPair<ListLiteral> ParseList(Token token) {
+			var startLoc = token.Range.Start;
 			token = token.MatchFlow((OpenBracketToken t) => true);
 			if (token == null)
 				return null;
@@ -698,7 +732,8 @@ namespace Kurogane.Compiler {
 					break;
 				throw Error("リストの要素が解析できません。", token);
 			}
-			return MakePair(new ListLiteral(elemList), token.Next);
+			var range = new TextRange(startLoc, token.Range.End);
+			return MakePair(new ListLiteral(elemList, range), token.Next);
 		}
 
 		#endregion
@@ -710,35 +745,38 @@ namespace Kurogane.Compiler {
 			if (symToken == null)
 				return null;
 			else
-				return MakePair(new Symbol(symToken.Value), token.Next);
+				return MakePair(new Symbol(symToken.Value, token.Range), token.Next);
 		}
 
 		private IPair<Literal> ParseLiteral(Token token) {
 			var nextToken = token.Next;
 			if (token is LiteralToken) {
 				var value = ((LiteralToken)token).Value;
-				return MakePair(new StringLiteral(value), nextToken);
+				return MakePair(new StringLiteral(value, token.Range), nextToken);
 			}
 			if (token is IntegerToken) {
 				int value = ((IntegerToken)token).IntValue;
-				return MakePair(new IntLiteral(value), nextToken);
+				return MakePair(new IntLiteral(value, token.Range), nextToken);
 			}
 			if (token is DecimalToken) {
 				double value = ((DecimalToken)token).DecimalValue;
-				return MakePair(new FloatLiteral(value), nextToken);
+				return MakePair(new FloatLiteral(value, token.Range), nextToken);
 			}
 			if (token is LambdaSpaceToken) {
-				return MakePair(new LambdaParameter(((LambdaSpaceToken)token).Value), nextToken);
+				return MakePair(new LambdaParameter(((LambdaSpaceToken)token).Value, token.Range), nextToken);
 			}
 
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText))
-				return MakePair(NullLiteral.Instance, nextToken);
+				return MakePair(new NullLiteral(token.Range), nextToken);
+
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.ElseText))
-				return MakePair(BoolLiteral.True, nextToken);
+				return MakePair(new BoolLiteral(true, token.Range), nextToken);
+
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.TrueText))
-				return MakePair(BoolLiteral.True, nextToken);
+				return MakePair(new BoolLiteral(true, token.Range), nextToken);
+
 			if (token.Match((ReservedToken t) => t.Value == ConstantNames.FalseText))
-				return MakePair(BoolLiteral.False, nextToken);
+				return MakePair(new BoolLiteral(false, token.Range), nextToken);
 			return null;
 		}
 

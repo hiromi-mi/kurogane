@@ -27,9 +27,9 @@ namespace Kurogane.RuntimeBinder {
 			Expression rest = null;
 			var funcType = typeof(Func<object, object>);
 			if (target.LimitType == funcType) {
+				var funcExpr = BinderHelper.Wrap(target.Expression, funcType);
 				expr = ExpressionHelper.BetaReduction<Func<object, object>, object, object>(
-					(func, lst) => ListLib.Map(func, lst),
-					BinderHelper.Wrap(target.Expression, funcType), arg.Expression);
+					(func, lst) => ListLib.Map(func, lst), funcExpr, arg.Expression);
 				rest = Expression.TypeIs(target.Expression, funcType);
 			}
 			funcType = typeof(SuffixFunc<Func<object, object>>);

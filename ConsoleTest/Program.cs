@@ -10,7 +10,8 @@ namespace ConsoleTest {
 	class Program {
 
 		static void Main(string[] args) {
-			FibTest2();
+			//EngineTest.Run();
+			FibTest();
 		}
 
 		static void ArithTest() {
@@ -144,9 +145,10 @@ namespace ConsoleTest {
 				"		(A+B)である。" +
 				"	以上。" +
 				"以上。" +
-				"39をFIB変換し、出力する。改行を出力する。";
+				"38をFIB変換し、出力する。改行を出力する。";
 			var sw = Stopwatch.StartNew();
 			var engine = new Engine();
+			//engine.Initialize();
 			engine.Execute(code);
 			sw.Stop();
 			Console.WriteLine(sw.ElapsedMilliseconds);
