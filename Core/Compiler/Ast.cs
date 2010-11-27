@@ -193,22 +193,22 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class Call : Phrase {
 		/// <summary>呼び出す関数の名前</summary>
-		public string Name { get; private set; }
+		public Element Target { get; private set; }
 
 		/// <summary>呼び出す際の実引数</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public ReadOnlyCollection<ArgumentTuple> Arguments { get; private set; }
 
-		public Call(string name, IEnumerable<ArgumentTuple> args, bool isMaybe, TextRange range)
+		public Call(Element target, IEnumerable<ArgumentTuple> args, bool isMaybe, TextRange range)
 			: base(isMaybe, range) {
-			Contract.Requires<ArgumentNullException>(name != null);
+			Contract.Requires<ArgumentNullException>(target != null);
 			Contract.Requires<ArgumentNullException>(args != null);
-			this.Name = name;
+			this.Target = target;
 			Arguments = Array.AsReadOnly(args.ToArray());
 		}
 
 		public override string ToString() {
-			return Name + "する。";
+			return Target + "する。";
 		}
 	}
 
@@ -223,13 +223,13 @@ namespace Kurogane.Compiler {
 		/// </summary>
 		public ArgumentTuple FirstArg { get; private set; }
 
-		public MapCall(string name, ArgumentTuple firstArg, IList<ArgumentTuple> args, bool isMaybe, TextRange range)
+		public MapCall(Element name, ArgumentTuple firstArg, IList<ArgumentTuple> args, bool isMaybe, TextRange range)
 			: base(name, args, isMaybe, range) {
 			this.FirstArg = firstArg;
 		}
 
 		public override string ToString() {
-			return "それぞれ" + Name + "する。";
+			return "それぞれ" + Target + "する。";
 		}
 	}
 

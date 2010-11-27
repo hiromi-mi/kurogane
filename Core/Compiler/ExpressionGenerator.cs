@@ -240,20 +240,23 @@ namespace Kurogane.Compiler {
 				Contract.Ensures(Contract.Result<ExprParamPair>().Expression != null);
 				Contract.Ensures(Contract.Result<ExprParamPair>().Expression.Type != typeof(void));
 
-				ParameterExpression tmpVar = null;
 				ParamList assigned = null;
+				Expression lastExpr = null;
 				var exprs = new List<Expression>();
 				var local = new List<ParameterExpression>();
 				foreach (var ph in stmt.Phrases) {
+					ParameterExpression tmpVar = null;
+					if (lastExpr != null) {
+						tmpVar = Expression.Parameter(lastExpr.Type);
+						exprs.Add(Expression.Assign(tmpVar, lastExpr));
+						local.Add(tmpVar);
+					}
 					exprs.Add(DebugInfo(ph.Range));
-					var phExpr = GenPhrase(ph, tmpVar, assigned, overlapCandidate);
-					assigned = phExpr.Parameters;
-					tmpVar = Expression.Parameter(phExpr.Expression.Type);
-					local.Add(tmpVar);
-					exprs.Add(Expression.Assign(tmpVar, phExpr.Expression));
+					var pair = GenPhrase(ph, tmpVar, assigned, overlapCandidate);
+					assigned = ParamList.Merge(pair.Parameters, assigned);
+					lastExpr = pair.Expression;
 				}
-				exprs.Add(ClearInfo());
-				exprs.Add(tmpVar);
+				exprs.Add(lastExpr);
 				return new ExprParamPair(Expression.Block(local, exprs), assigned);
 			}
 
@@ -325,14 +328,14 @@ namespace Kurogane.Compiler {
 					args.Add(prev);
 				args.AddRange(ph.Arguments.Select(a => ElemGen.GenElem(a.Argument)));
 				var callInfo = new CallInfo(sfxs.Length + (prev == null ? 0 : 1), sfxs);
-				args[0] = GetValue(ph.Name);
+				args[0] = ElemGen.GenElemCore(ph.Target);
 				DynamicMetaObjectBinder binder;
-				if (args[0] is ParameterExpression) {
-					binder = Factory.InvokeBinder(callInfo);
+				if (ph.Target.Type == ElementType.Symbol && !(args[0] is ParameterExpression)) {
+					binder = Factory.InvokeMemberBinder(((Symbol)ph.Target).Name, callInfo);
+					args[0] = Global;
 				}
 				else {
-					binder = Factory.InvokeMemberBinder(ph.Name, callInfo);
-					args[0] = Global;
+					binder = Factory.InvokeBinder(callInfo);
 				}
 				return Expression.Dynamic(binder, typeof(object), args);
 			}
@@ -348,7 +351,7 @@ namespace Kurogane.Compiler {
 				Expression lambda;
 				{
 					var param = Expression.Parameter(typeof(object), "要素");
-					var args = new List<Expression> { GetValue(ph.Name), param };
+					var args = new List<Expression> { ElemGen.GenElemCore(ph.Target), param };
 					var sfxs = new List<string>();
 					if (ph.FirstArg != null)
 						sfxs.Add(ph.FirstArg.Suffix);
@@ -358,12 +361,12 @@ namespace Kurogane.Compiler {
 					}
 					var callInfo = new CallInfo(args.Count - 1, sfxs);
 					DynamicMetaObjectBinder binder;
-					if (args[0] is ParameterExpression) {
-						binder = Factory.InvokeBinder(callInfo);
+					if (ph.Target.Type == ElementType.Symbol && !(args[0] is ParameterExpression)) {
+						binder = Factory.InvokeMemberBinder(((Symbol)ph.Target).Name, callInfo);
+						args[0] = Global;
 					}
 					else {
-						binder = Factory.InvokeMemberBinder(ph.Name, callInfo);
-						args[0] = Global;
+						binder = Factory.InvokeBinder(callInfo);
 					}
 					lambda = Expression.Lambda(Expression.Dynamic(binder, typeof(object), args), param);
 				}
@@ -611,7 +614,7 @@ namespace Kurogane.Compiler {
 			/// <summary>
 			/// そのままExpressionに直した状態。
 			/// </summary>
-			private Expression GenElemCore(Element elem) {
+			public Expression GenElemCore(Element elem) {
 				Contract.Requires<ArgumentNullException>(elem != null);
 				Contract.Ensures(Contract.Result<Expression>() != null);
 				Contract.Ensures(Contract.Result<Expression>().Type != typeof(void));

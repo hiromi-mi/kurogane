@@ -24,7 +24,34 @@ namespace Kurogane.Test.Spec {
 		}
 
 		[TestMethod]
+		public void グローバル変数は可変() {
+			// 副作用を有り。
+			var engine = new Engine();
+			var code =
+				"０を値とする。" +
+				"以下の定義で増加する。" +
+				"	（値＋１）を値に代入する。" +
+				"以上。" +
+				"増加する。増加する。値である。";
+			Assert.AreEqual(2, (int)engine.Execute(code, Statics.TestName));
+		}
+
+		[TestMethod]
+		public void ローカル変数によって上書きされない() {
+			// 副作用有り
+			var engine = new Engine();
+			var code =
+				"１を値とする。" +
+				"以下の定義で増加する。" +
+				"	２を値とする。" +
+				"以上。" +
+				"値である。";
+			Assert.AreEqual(1, (int)engine.Execute(code, Statics.TestName));
+		}
+
+		[TestMethod]
 		public void 助詞によって引数の順番を切り替える() {
+			// 副作用を有り。
 			var engine = new Engine();
 			string[] codes = {
 				"「A」が「B」を「C」にテストする。" ,
@@ -47,6 +74,20 @@ namespace Kurogane.Test.Spec {
 			foreach (var code in codes) {
 				Assert.AreEqual("ABC", (string)engine.Execute(code, Statics.TestName));
 			}
+		}
+
+		[TestMethod]
+		public void ラムダ式は第一級関数である() {
+			Assert.AreEqual(7, Execute<int>("２を【□＋５】する。"));
+			Assert.AreEqual(8, Execute<int>("３と５を【□＋△】する。"));
+
+			var actual1 = Execute<ListCell>("[1,2,3]をそれぞれ【□＋１】する。");
+			var expected1 = ListCell.ConvertFrom(2, 3, 4);
+			Assert.AreEqual(expected1, actual1);
+
+			var actual2 = Execute<ListCell>("[1:2,3:4,5:6,7:8]をそれぞれ【○＋△】する。");
+			var expected2 = ListCell.ConvertFrom(3, 7, 11, 15);
+			Assert.AreEqual(expected2, actual2);
 		}
 
 		[TestMethod]

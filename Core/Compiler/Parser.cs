@@ -275,10 +275,10 @@ namespace Kurogane.Compiler {
 					throw Error("引数が正しくありません。", token);
 				return MakePair(dfn, token.Next);
 			}
-			var execToken = token
-				.MatchFlow((SymbolToken t) => true);
-			if (execToken == null)
+			var execTarget = ParseBinaryExpr(token);
+			if (execTarget == null)
 				return null;
+			var execToken = execTarget.Token;
 			var last = execToken
 				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "する");
 			bool isMaybe = false;
@@ -290,14 +290,15 @@ namespace Kurogane.Compiler {
 				isMaybe = true;
 			}
 			if (last != null) {
-				string verb = ((SymbolToken)token).Value;
 				var range = new TextRange(startLoc, execToken.Range.End);
-				if (verb == ConstantNames.Assign) {
-					var assign = CreateAssign(lst, isFirst,isMaybe, range);
+				var sym = token as SymbolToken;
+				if (sym != null && sym.Value == ConstantNames.Assign) {
+					var assign = CreateAssign(lst, isFirst, isMaybe, range);
 					if (assign == null)
 						return null;
 					return MakePair(assign, last);
 				}
+				var verb = execTarget.Node;
 				if (isMap)
 					return MakePair(new MapCall(verb, mappedArg, lst, isMaybe, range), last);
 				else
