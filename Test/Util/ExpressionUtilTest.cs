@@ -12,14 +12,14 @@ namespace Kurogane.Test.Util {
 	public class ExpressionUtilTest {
 
 		[TestMethod]
-		public void Test1() {
+		public void BetaReduction1() {
 			var param = Expression.Parameter(typeof(int), "foo");
 			var expr = ExpressionHelper.BetaReduction((int a) => a + a, param);
 			Assert.AreEqual(Expression.Add(param, param).ToString(), expr.ToString());
 		}
 
 		[TestMethod]
-		public void Test2() {
+		public void BetaReduction2() {
 			var param1 = Expression.Parameter(typeof(int), "foo");
 			var param2 = Expression.Parameter(typeof(int), "bar");
 			var expr = ExpressionHelper.BetaReduction((int a, int b) => a - b, param1, param2);
@@ -27,7 +27,7 @@ namespace Kurogane.Test.Util {
 		}
 
 		[TestMethod]
-		public void Test3() {
+		public void BetaReduction3() {
 			var param1 = Expression.Parameter(typeof(int), "foo");
 			var param2 = Expression.Parameter(typeof(int), "bar");
 			var param3 = Expression.Parameter(typeof(bool), "baz");
@@ -37,7 +37,7 @@ namespace Kurogane.Test.Util {
 		}
 
 		[TestMethod]
-		public void TestLambda() {
+		public void BetaReductionLambda() {
 			var param = Expression.Parameter(typeof(int), "foo");
 			Expression<Func<int, int>> square = a => a * a;
 			var lambda = (LambdaExpression)square;
