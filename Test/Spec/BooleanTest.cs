@@ -7,55 +7,53 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Spec {
 
 	[TestClass]
-	public class BooleanTest {
-
-		private Engine _engine = new Engine();
+	public class BooleanTest : NoSideEffectTest {
 
 		[TestMethod]
 		public void 真偽リテラルがある() {
-			Assert.IsTrue((bool)_engine.Execute("真である。"));
-			Assert.IsFalse((bool)_engine.Execute("偽である。"));
+			Assert.IsTrue(Execute<bool>("真である。"));
+			Assert.IsFalse(Execute<bool>("偽である。"));
 		}
 
 		[TestMethod]
 		public void 演算可能() {
-			Assert.IsFalse((bool)_engine.Execute("(￢真)である。"));
-			Assert.IsTrue((bool)_engine.Execute("(￢偽)である。"));
+			Assert.IsFalse(Execute<bool>("(￢真)である。"));
+			Assert.IsTrue(Execute<bool>("(￢偽)である。"));
 
-			Assert.IsTrue((bool)_engine.Execute("(真∧真)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(真∧偽)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(偽∧真)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(偽∧偽)である。"));
+			Assert.IsTrue(Execute<bool>("(真∧真)である。"));
+			Assert.IsFalse(Execute<bool>("(真∧偽)である。"));
+			Assert.IsFalse(Execute<bool>("(偽∧真)である。"));
+			Assert.IsFalse(Execute<bool>("(偽∧偽)である。"));
 
-			Assert.IsTrue((bool)_engine.Execute("(真∨真)である。"));
-			Assert.IsTrue((bool)_engine.Execute("(真∨偽)である。"));
-			Assert.IsTrue((bool)_engine.Execute("(偽∨真)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(偽∨偽)である。"));
+			Assert.IsTrue(Execute<bool>("(真∨真)である。"));
+			Assert.IsTrue(Execute<bool>("(真∨偽)である。"));
+			Assert.IsTrue(Execute<bool>("(偽∨真)である。"));
+			Assert.IsFalse(Execute<bool>("(偽∨偽)である。"));
 		}
 
 		[TestMethod]
 		public void 無は偽でそれ以外は真として扱われる() {
-			Assert.IsTrue((bool)_engine.Execute("(！無)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(！１)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(！1.0)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(！「A」)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(！[1,2,3])である。"));
+			Assert.IsTrue(Execute<bool>("(！無)である。"));
+			Assert.IsFalse(Execute<bool>("(！１)である。"));
+			Assert.IsFalse(Execute<bool>("(！1.0)である。"));
+			Assert.IsFalse(Execute<bool>("(！「A」)である。"));
+			Assert.IsFalse(Execute<bool>("(！[1,2,3])である。"));
 
-			Assert.AreEqual(2, (int)_engine.Execute("(１＆２)である。"));
-			Assert.IsNull(_engine.Execute("(1.2＆無)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(偽＆「A」)である。"));
-			Assert.IsFalse((bool)_engine.Execute("(偽＆無)である。"));
+			Assert.AreEqual(2, Execute<int>("(１＆２)である。"));
+			Assert.IsNull(Execute("(1.2＆無)である。"));
+			Assert.IsFalse(Execute<bool>("(偽＆「A」)である。"));
+			Assert.IsFalse(Execute<bool>("(偽＆無)である。"));
 
-			Assert.AreEqual("A", (string)_engine.Execute("(「A」｜５)である。"));
-			Assert.AreEqual(3, (int)_engine.Execute("(３｜無)である。"));
-			Assert.AreEqual(2.5, (double)_engine.Execute("(偽｜2.5)である。"));
-			Assert.IsNull(_engine.Execute("(偽｜無)である。"));
+			Assert.AreEqual("A", Execute<string>("(「A」｜５)である。"));
+			Assert.AreEqual(3, Execute<int>("(３｜無)である。"));
+			Assert.AreEqual(2.5, Execute<double>("(偽｜2.5)である。"));
+			Assert.IsNull(Execute("(偽｜無)である。"));
 		}
 
 		[TestMethod]
 		public void OrよりAndの方が優先度が高い() {
-			Assert.IsTrue((bool)_engine.Execute("(真＆偽｜真)である。"));
-			Assert.IsTrue((bool)_engine.Execute("(真｜偽＆真)である。"));
+			Assert.IsTrue(Execute<bool>("(真＆偽｜真)である。"));
+			Assert.IsTrue(Execute<bool>("(真｜偽＆真)である。"));
 		}
 	}
 }

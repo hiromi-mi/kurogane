@@ -10,6 +10,7 @@ using Kurogane.Compiler;
 using Kurogane.Expressions;
 using Kurogane.RuntimeBinder;
 using System.Diagnostics.Contracts;
+using System.Threading.Tasks;
 
 namespace Kurogane {
 
@@ -79,15 +80,6 @@ namespace Kurogane {
 		}
 
 		/// <summary>
-		/// ファイル名を指定せずに，クロガネのプログラムを実行する。
-		/// </summary>
-		/// <param name="code">実行するプログラム</param>
-		/// <returns>実行結果</returns>
-		public object Execute(string code) {
-			return Execute(code, "-- on memory text --");
-		}
-
-		/// <summary>
 		/// クロガネのプログラムを実行する。
 		/// </summary>
 		/// <param name="code">プログラム</param>
@@ -135,7 +127,6 @@ namespace Kurogane {
 				var sw = Stopwatch.StartNew();
 				var token = Tokenizer.Tokenize(stream, filename);
 				var ast = Parser.Parse(token, filename);
-				//var expr = Generator.Generate(ast, this.Factory, filename);
 				var expr = ExpressionGenerator.Generate(ast, this.Factory, filename);
 				expr = ExpressionOptimizer.Analyze(expr);
 				program = expr.Compile();
@@ -160,7 +151,7 @@ namespace Kurogane {
 
 		private void LoadLibrary(Assembly asm) {
 			// 静的ライブラリのロード
-			foreach (var type in asm.GetTypes()) {
+			Array.ForEach(asm.GetTypes(), delegate(Type type) {
 				// 関数と変数
 				var typeAttrs = type.GetCustomAttributes(typeof(LibraryAttribute), false);
 				if (typeAttrs.Length > 0) {
@@ -182,8 +173,20 @@ namespace Kurogane {
 						MetaObjectLoader.RegisterAlias(type, type);
 					}
 				}
-			}
+			});
 			// 動的ライブラリのロード
+			//var pairs =
+			//    from resName in asm.GetManifestResourceNames()
+			//    where resName.EndsWith(".krg")
+			//    let stream = asm.GetManifestResourceStream(resName)
+			//    let reader = new StreamReader(stream, DefaultEncoding)
+			//    let token = Tokenizer.Tokenize(reader, resName)
+			//    let ast = Parser.Parse(token, resName)
+			//    select Tuple.Create(ast, resName);
+			//var loadExpr = ExpressionGenerator.GenerateAll(this.Factory, pairs);
+			//var loadFunc = ExpressionOptimizer.Analyze(loadExpr).Compile();
+			//loadFunc(this.Global);
+
 			foreach (var name in asm.GetManifestResourceNames())
 				if (name.EndsWith(".krg"))
 					this.ExecuteStream(asm.GetManifestResourceStream(name), name);

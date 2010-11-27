@@ -7,18 +7,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Libraries {
 
 	[TestClass]
-	public class Math {
-
-		// 使いまわし可能
-		private Engine _engine = new Engine();
+	public class Math : NoSideEffectTest {
 
 		[TestMethod]
 		public void 四則演算() {
-			Assert.AreEqual(8, (int)_engine.Execute("３に５を加算する。"));
-			Assert.AreEqual(3, (int)_engine.Execute("７から４を減算する。"));
-			Assert.AreEqual(6, (int)_engine.Execute("２と３を乗算する。"));
-			Assert.AreEqual(3, (int)_engine.Execute("７を２で除算する。"));
-			Assert.AreEqual(2, (int)_engine.Execute("８を３で剰余算する。"));
+			Assert.AreEqual(8, Execute<int>("３に５を加算する。"));
+			Assert.AreEqual(3, Execute<int>("７から４を減算する。"));
+			Assert.AreEqual(6, Execute<int>("２と３を乗算する。"));
+			Assert.AreEqual(3, Execute<int>("７を２で除算する。"));
+			Assert.AreEqual(2, Execute<int>("８を３で剰余算する。"));
 		}
 	}
 }

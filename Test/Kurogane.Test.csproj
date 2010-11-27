@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Compiler\TokenizerTest.cs" />
     <Compile Include="ExecuteTest.cs" />
+    <Compile Include="Statics.cs" />
     <Compile Include="Libraries\list.cs" />
     <Compile Include="Libraries\math.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -61,6 +62,8 @@
     <Compile Include="Spec\EqualityTest.cs" />
     <Compile Include="Spec\BooleanTest.cs" />
     <Compile Include="Spec\Language.cs" />
+    <Compile Include="Spec\Performance.cs" />
+    <Compile Include="NoSideEffectTest.cs" />
     <Compile Include="Util\ExpressionUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>

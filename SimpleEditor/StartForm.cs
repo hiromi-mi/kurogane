@@ -23,7 +23,7 @@ namespace Kurogane.SimpleEditor {
 			engine.Out = writer;
 			var code = txtProgram.Text;
 			try {
-				engine.Execute(code);
+				engine.Execute(code, "-- textbox --");
 				txtOut.ForeColor = Color.Black;
 				txtOut.Text = writer.ToString();
 			}

@@ -9,6 +9,7 @@ namespace Kurogane.Shell {
 	public sealed class ReplEngine {
 		private readonly Engine _engine;
 
+		public ConsoleColor InputColor { get; set; }
 		public ConsoleColor OutputColor { get; set; }
 		public ConsoleColor ErrorColor { get; set; }
 		public ConsoleColor ResultColor { get; set; }
@@ -27,6 +28,7 @@ namespace Kurogane.Shell {
 
 		private void Initialize() {
 			var defaultColor = Console.ForegroundColor;
+			this.InputColor = defaultColor;
 			this.OutputColor = defaultColor;
 			this.ErrorColor = defaultColor;
 			this.ResultColor = defaultColor;
@@ -74,7 +76,8 @@ namespace Kurogane.Shell {
 			String buff = String.Empty;
 			ColorIn(MessageColor, delegate { Console.Write("> "); });
 			while (true) {
-				string line = Console.ReadLine();
+				string line = String.Empty; ;
+				ColorIn(InputColor, delegate { line = Console.ReadLine(); });
 				if (line == "exit" || line.StartsWith("終了")) {
 					ColorIn(MessageColor, delegate { Console.WriteLine("終了します ..."); });
 					Environment.Exit(0);

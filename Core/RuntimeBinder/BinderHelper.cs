@@ -41,7 +41,7 @@ namespace Kurogane.RuntimeBinder {
 			foreach (var m in from.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod)) {
 				if (m.Name == name && m.ReturnType == to) {
 					var argInfo = m.GetParameters();
-					if (argInfo.Length == 1 && argInfo[1].GetType() == from)
+					if (argInfo.Length == 1 && argInfo[0].GetType() == from)
 						return m;
 				}
 			}
@@ -125,7 +125,6 @@ namespace Kurogane.RuntimeBinder {
 				var rest = BindingRestrictions.GetExpressionRestriction(Expression.AndAlso(IsNull(left.Expression), IsNotNull(right.Expression)));
 				return new DynamicMetaObject(expr, rest);
 			}
-			Contract.Assert(false);
 			throw new InvalidOperationException();
 		}
 

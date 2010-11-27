@@ -9,7 +9,6 @@ using System.Diagnostics.Contracts;
 namespace Kurogane.Shell {
 
 	public class Program {
-
 		/// <summary>エントリポイント</summary>
 		public static void Main(string[] args) {
 			var p = new Program();
@@ -41,7 +40,12 @@ namespace Kurogane.Shell {
 		}
 
 		private void RunRepl() {
-			new ReplEngine(GetEngine()).Start();
+			var engine = new ReplEngine(GetEngine()) {
+				ResultColor = ConsoleColor.Yellow,
+				OutputColor = ConsoleColor.Green,
+				ErrorColor = ConsoleColor.Red,
+			};
+			engine.Start();
 		}
 	}
 }

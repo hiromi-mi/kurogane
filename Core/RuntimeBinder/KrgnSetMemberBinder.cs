@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.Contracts;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -47,10 +45,6 @@ namespace Kurogane.RuntimeBinder {
 		}
 
 		private DynamicMetaObject MakeDynamicMetaObject(DynamicMetaObject target, PropertyInfo propInfo, DynamicMetaObject value) {
-			Contract.Requires<ArgumentNullException>(target != null);
-			Contract.Requires<ArgumentNullException>(propInfo != null);
-			Contract.Requires<ArgumentException>(propInfo.CanWrite == true);
-
 			var targetExpr = BinderHelper.Wrap(target.Expression, target.LimitType);
 			var propAccess = Expression.Property(targetExpr, propInfo);
 			var valueExpr = BinderHelper.Wrap(value.Expression, propInfo.DeclaringType);

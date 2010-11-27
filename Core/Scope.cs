@@ -6,6 +6,7 @@ namespace Kurogane {
 
 	public class Scope : IDynamicMetaObjectProvider {
 
+		private readonly object key = new object();
 		private readonly IDictionary<string, dynamic> _values = new Dictionary<string, dynamic>();
 		private readonly Scope _parent;
 
@@ -18,14 +19,19 @@ namespace Kurogane {
 		}
 
 		public bool HasVariable(string name) {
-			return _values.ContainsKey(name) ||
-				(_parent != null && _parent.HasVariable(name));
+			lock (key) {
+				if (_values.ContainsKey(name))
+					return true;
+			}
+			return _parent != null && _parent.HasVariable(name);
 		}
 
 		public object GetVariable(string name) {
-			object value = null;
-			if (_values.TryGetValue(name, out value))
-				return value;
+			lock (key) {
+				object value = null;
+				if (_values.TryGetValue(name, out value))
+					return value;
+			}
 			if (_parent == null)
 				throw new VariableNotFoundException(name);
 			else
@@ -33,7 +39,9 @@ namespace Kurogane {
 		}
 
 		public object SetVariable(string name, object value) {
-			return _values[name] = value; ;
+			lock (key) {
+				return _values[name] = value;
+			}
 		}
 
 		#region IDynamicMetaObjectProvider

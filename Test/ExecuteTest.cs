@@ -13,26 +13,24 @@ namespace Kurogane.Test {
 	[TestClass]
 	public class ExecuteTest {
 
-		private Engine _engine;
+		private Engine _engine = new Engine();
+		private object Execute(string code) { return Execute<object>(code); }
+		private T Execute<T>(string code) { return (T)_engine.Execute(code, Statics.TestName); }
 
-		[TestInitialize]
 		public void Init() {
-			_engine = new Engine();
-			_engine.Execute(
+			Execute(
 				"以下の定義でNをパスする。" +
 				"	Nである。" +
 				"以上。");
 		}
 
-
-
 		[TestMethod]
 		public void コメントを読み飛ばす() {
-			_engine.Execute(
+			Execute(
 				"以下の定義でNをパスする。" +
 				"	Nである。" +
 				"以上。");
-			object num = _engine.Execute(
+			object num = Execute(
 				"※これは、コメントです。" +
 				"1をパスする。" +
 				"※｛括弧で囲むよ。複数でもOK！。。。｝" +
@@ -52,11 +50,14 @@ namespace Kurogane.Test {
 				"	(A+B)である。" +
 				"以上。" +
 				"10をフィボナッチする。";
-			object num = _engine.Execute(code);
+			object num = Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 55);
 
 			code =
+				"以下の定義でNをパスする。" +
+				"	Nである。" +
+				"以上。"+
 				"以下の定義でNをFIB変換する。" +
 				"	以下の定義で頭と体をNまでFIB変換する。" +
 				"		頭をAに代入する。" +
@@ -69,7 +70,7 @@ namespace Kurogane.Test {
 				"	0と1をNまでFIB変換する。" +
 				"以上。" +
 				"1000をFIB変換する。";
-			num = _engine.Execute(code);
+			num = Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 1556111435);
 
@@ -82,14 +83,14 @@ namespace Kurogane.Test {
 				"　　　　(N-1)と(N-2)をそれぞれフィボナッチし、加算する。" +
 				"以上。" +
 				"10をフィボナッチする。";
-			num = _engine.Execute(code);
+			num = Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 55);
 		}
 
 		[TestMethod]
 		public void 対で引数をとれる() {
-			object num = _engine.Execute(
+			object num = Execute(
 				"以下の定義でAとBを加算する。" +
 				"	(A+B)である。" +
 				"以上。" +
@@ -100,7 +101,7 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void ローカル変数() {
-			_engine.Execute(
+			Execute(
 				"「こんにちは」をAに代入する。" +
 				"「さようなら」をBに代入する。" +
 				"以下の定義でテストする。" +
@@ -118,7 +119,7 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void と_によって対が作られる() {
-			_engine.Execute(
+			Execute(
 				"「こんにちは」と「こんばんは」をペアに代入する。" +
 				"ペアの頭をAに代入する。" +
 				"ペアの体をBに代入する。");
@@ -128,7 +129,7 @@ namespace Kurogane.Test {
 
 		[TestMethod]
 		public void もし文が動く() {
-			var result = _engine.Execute(
+			var result = Execute(
 				"3をAとする。" +
 				"もし" +
 				"　(A＝無)なら" +
@@ -160,7 +161,7 @@ namespace Kurogane.Test {
 				"	(A+B)である。" +
 				"以上。" +
 				"0を1に連結し、2に連結し、3に連結し、4に連結し、合計する。";
-			object num = _engine.Execute(code);
+			object num = Execute(code);
 			Assert.IsInstanceOfType(num, typeof(int));
 			Assert.AreEqual((int)num, 10);
 		}

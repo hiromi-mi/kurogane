@@ -23,9 +23,6 @@ namespace Kurogane {
 		/// もし，後者がnullかListCellである場合，ListCellを作成する。
 		/// 他の場合，Tuple<object, object>を作成する。
 		/// </summary>
-		/// <param name="left"></param>
-		/// <param name="right"></param>
-		/// <returns></returns>
 		public static object Cons(object left, object right) {
 			var tail = right as ListCell;
 			if (tail == right)
@@ -34,11 +31,13 @@ namespace Kurogane {
 				return new Tuple<object, object>(left, right);
 		}
 
+		public static ListCell ConvertFrom(params object[] list) {
+			return ConvertFrom((IEnumerable)list);
+		}
+
 		/// <summary>
 		/// 与えられたIEnumerableからListCellによるリストを作成する。
 		/// </summary>
-		/// <param name="list"></param>
-		/// <returns></returns>
 		public static ListCell ConvertFrom(IEnumerable list) {
 			if (list == null)
 				return null;
