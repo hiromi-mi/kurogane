@@ -52,6 +52,8 @@
   <ItemGroup>
     <Compile Include="Compiler\TokenizerTest.cs" />
     <Compile Include="ExecuteTest.cs" />
+    <Compile Include="Libraries\ListLib.cs" />
+    <Compile Include="Libraries\StringLib.cs" />
     <Compile Include="Statics.cs" />
     <Compile Include="Libraries\list.cs" />
     <Compile Include="Libraries\math.cs" />

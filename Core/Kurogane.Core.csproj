@@ -106,7 +106,6 @@
     <Compile Include="Expressions\InvokeStatic.cs" />
     <Compile Include="Expressions\LambdaFinder.cs" />
     <Compile Include="Expressions\TailRecursion.cs" />
-    <Compile Include="Libraries\Int32Alias.cs" />
     <Compile Include="Libraries\ListLib.cs" />
     <Compile Include="Libraries\StandardIO.cs" />
     <Compile Include="Libraries\StringLib.cs" />
