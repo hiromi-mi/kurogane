@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Spec {
 
 	[TestClass]
-	public class Performance : NoSideEffectTest {
+	public class Performance : TestHelper {
 
 		[TestMethod]
 		public void 末尾再帰最適化が行われる() {

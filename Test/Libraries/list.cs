@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Libraries {
 
 	[TestClass]
-	public class リスト系 : NoSideEffectTest {
+	public class リスト系 : TestHelper {
 
 		[TestMethod]
 		public void 反転() {

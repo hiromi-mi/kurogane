@@ -8,7 +8,7 @@ namespace Kurogane.Test {
 	/// <summary>
 	/// エンジンを初期化する必要が無いテストはこのクラスを継承すると良い。
 	/// </summary>
-	public abstract class NoSideEffectTest {
+	public abstract class TestHelper {
 
 		private Engine _engine = new Engine();
 

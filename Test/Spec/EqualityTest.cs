@@ -10,7 +10,7 @@ namespace Kurogane.Test.Spec {
 	/// 等価比較のテスト
 	/// </summary>
 	[TestClass]
-	public class EqualityTest : NoSideEffectTest {
+	public class EqualityTest : TestHelper {
 
 		[TestMethod]
 		public void 無の等価比較() {

@@ -54,6 +54,7 @@
     <Compile Include="ExecuteTest.cs" />
     <Compile Include="Libraries\ListLib.cs" />
     <Compile Include="Libraries\StringLib.cs" />
+    <Compile Include="Spec\Behavior.cs" />
     <Compile Include="Statics.cs" />
     <Compile Include="Libraries\list.cs" />
     <Compile Include="Libraries\math.cs" />
@@ -65,7 +66,7 @@
     <Compile Include="Spec\BooleanTest.cs" />
     <Compile Include="Spec\Language.cs" />
     <Compile Include="Spec\Performance.cs" />
-    <Compile Include="NoSideEffectTest.cs" />
+    <Compile Include="TestHelper.cs" />
     <Compile Include="Util\ExpressionUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>

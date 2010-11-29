@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Libraries {
 
 	[TestClass]
-	public class ListLib : NoSideEffectTest {
+	public class ListLib : TestHelper {
 
 		[TestMethod]
 		public void 平坦化() {

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Spec {
 
 	[TestClass]
-	public class BooleanTest : NoSideEffectTest {
+	public class BooleanTest : TestHelper {
 
 		[TestMethod]
 		public void 真偽リテラルがある() {

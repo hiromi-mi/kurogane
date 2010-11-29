@@ -172,13 +172,52 @@ namespace Kurogane.Compiler {
 
 			#region Statement
 
-			protected ExprParamPair GenStmt(Statement stmt, ParamList overlapCandidate) {
+			protected ExprParamPair GenStmt(Statement stmt) {
 				Contract.Requires<ArgumentNullException>(stmt != null);
 				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
 				if (stmt is IfStatement)
-					return GenIf((IfStatement)stmt, overlapCandidate);
+					return GenIf((IfStatement)stmt);
 				if (stmt is Defun)
-					return GenDefun((Defun)stmt, overlapCandidate);
+					return GenDefun((Defun)stmt);
+				if (stmt is NormalStatement)
+					return GenNormalStmt((NormalStatement)stmt, null);
+				Contract.Assert(false);
+				throw new InvalidOperationException();
+			}
+
+			private ExprParamPair GenIf(IfStatement stmt) {
+				Contract.Requires<ArgumentNullException>(stmt != null);
+				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
+
+				ParamList assigned = null;
+				var last = stmt.Thens.Last();
+				var pair = GenNormalStmt(last.Statement, assigned);
+				Expression expr;
+				if (last.Condition is BoolLiteral && ((BoolLiteral)last.Condition).Value) {
+					expr = pair.Expression;
+				}
+				else {
+					expr = Expression.Condition(ElemGen.GenBoolElem(last.Condition), pair.Expression, NullExpr);
+				}
+				assigned = ParamList.Merge(pair.Parameters, assigned);
+				foreach (var then in stmt.Thens.Reverse().Skip(1)) {
+					pair = GenNormalStmt(then.Statement, assigned);
+					expr = Expression.Condition(ElemGen.GenBoolElem(then.Condition), pair.Expression, expr);
+					assigned = ParamList.Merge(pair.Parameters, assigned);
+				}
+				return new ExprParamPair(expr, assigned);
+			}
+
+			private ExprParamPair GenDefun(Defun stmt) {
+				Contract.Requires<ArgumentNullException>(stmt != null);
+				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
+				var gen = new DefunGen(this);
+				return gen.Generate(stmt);
+			}
+
+			private ExprParamPair GenNormalStmt(NormalStatement stmt, ParamList overlapCandidate) {
+				Contract.Requires<ArgumentNullException>(stmt != null);
+				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
 				if (stmt is Return)
 					return GenReturn((Return)stmt, overlapCandidate);
 				if (stmt is PhraseChain)
@@ -187,35 +226,6 @@ namespace Kurogane.Compiler {
 					return GenBlockExec((BlockExecute)stmt, overlapCandidate);
 				Contract.Assert(false);
 				throw new InvalidOperationException();
-			}
-
-			private ExprParamPair GenIf(IfStatement stmt, ParamList overlapCandidate) {
-				Contract.Requires<ArgumentNullException>(stmt != null);
-				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
-
-				var last = stmt.Thens.Last();
-				var pair = GenStmt(last.Statement, overlapCandidate);
-				Expression expr;
-				if (last.Condition is BoolLiteral && ((BoolLiteral)last.Condition).Value) {
-					expr = pair.Expression;
-				}
-				else {
-					expr = Expression.Condition(ElemGen.GenBoolElem(last.Condition), pair.Expression, NullExpr);
-				}
-				overlapCandidate = ParamList.Merge(pair.Parameters, overlapCandidate);
-				foreach (var then in stmt.Thens.Reverse().Skip(1)) {
-					pair = GenStmt(then.Statement, overlapCandidate);
-					expr = Expression.Condition(ElemGen.GenBoolElem(then.Condition), pair.Expression, expr);
-					overlapCandidate = ParamList.Merge(pair.Parameters, overlapCandidate);
-				}
-				return new ExprParamPair(expr, overlapCandidate);
-			}
-
-			private ExprParamPair GenDefun(Defun stmt, ParamList overlapCandidate) {
-				Contract.Requires<ArgumentNullException>(stmt != null);
-				Contract.Ensures(Contract.Result<ExprParamPair>() != null);
-				var gen = new DefunGen(this);
-				return gen.Generate(stmt);
 			}
 
 			private ExprParamPair GenReturn(Return stmt, ParamList overlapCandidate) {
@@ -445,7 +455,7 @@ namespace Kurogane.Compiler {
 					return NullExpr;
 				var list = new List<Expression> { DebugInfo(block.Range) };
 				foreach (var stmt in block.Statements) {
-					var pair = GenStmt(stmt, null);
+					var pair = GenStmt(stmt);
 					if (pair.Parameters == null) {
 						list.Add(pair.Expression);
 					}
@@ -498,7 +508,7 @@ namespace Kurogane.Compiler {
 					return NullExpr;
 				var list = new List<Expression> { DebugInfo(block.Range) };
 				foreach (var stmt in block.Statements) {
-					var pair = GenStmt(stmt, null);
+					var pair = GenStmt(stmt);
 					UpdateLocals(pair.Parameters, block.Range.Start);
 					list.Add(pair.Expression);
 				}

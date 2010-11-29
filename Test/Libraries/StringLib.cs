@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Libraries {
 
 	[TestClass]
-	public class StringLib : NoSideEffectTest {
+	public class StringLib : TestHelper {
 
 		[TestMethod]
 		public void 文字分割() {

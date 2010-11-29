@@ -64,7 +64,7 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 関数定義
 	/// </summary>
-	public class Defun : NormalStatement {
+	public class Defun : Statement {
 		/// <summary>関数名</summary>
 		public string Name { get; private set; }
 

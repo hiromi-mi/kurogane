@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Kurogane.Test.Libraries {
 
 	[TestClass]
-	public class Math : NoSideEffectTest {
+	public class Math : TestHelper {
 
 		[TestMethod]
 		public void 和名四則演算() {

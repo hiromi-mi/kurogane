@@ -11,7 +11,7 @@ namespace Kurogane.Test.Spec {
 	/// 四則演算のテスト
 	/// </summary>
 	[TestClass]
-	public class ArithmeticTest : NoSideEffectTest {
+	public class ArithmeticTest : TestHelper {
 
 		[TestMethod]
 		public void 負の数() {

@@ -58,6 +58,7 @@ namespace Kurogane.Compiler {
 		private IPair<Statement> ParseIStatement(Token token) {
 			return
 				ParseIfStatement(token) ??
+				ParseDefun(token) ??
 				ParseINormalStatement(token) as IPair<Statement>;
 		}
 
@@ -104,7 +105,6 @@ namespace Kurogane.Compiler {
 		private IPair<NormalStatement> ParseINormalStatement(Token token) {
 			return
 				ParseExprBlock(token) ??
-				ParseDefun(token) ??
 				ParseBlockExecute(token) ??
 				ParseReturn(token) ??
 				ParsePhraseChain(token) as IPair<NormalStatement>;

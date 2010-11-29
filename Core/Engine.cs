@@ -175,6 +175,10 @@ namespace Kurogane {
 				}
 			});
 			// 動的ライブラリのロード
+			foreach (var name in asm.GetManifestResourceNames())
+				if (name.EndsWith(".krg"))
+					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
+
 			//var pairs =
 			//    from resName in asm.GetManifestResourceNames()
 			//    where resName.EndsWith(".krg")
@@ -186,10 +190,6 @@ namespace Kurogane {
 			//var loadExpr = ExpressionGenerator.GenerateAll(this.Factory, pairs);
 			//var loadFunc = ExpressionOptimizer.Analyze(loadExpr).Compile();
 			//loadFunc(this.Global);
-
-			foreach (var name in asm.GetManifestResourceNames())
-				if (name.EndsWith(".krg"))
-					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
 		}
 
 		private void SetField(FieldInfo fInfo) {

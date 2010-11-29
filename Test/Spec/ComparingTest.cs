@@ -10,7 +10,7 @@ namespace Kurogane.Test.Spec {
 	/// 比較演算のテスト
 	/// </summary>
 	[TestClass]
-	public class ComparingTest : NoSideEffectTest {
+	public class ComparingTest : TestHelper {
 
 		[TestMethod]
 		public void 整数の比較() {
