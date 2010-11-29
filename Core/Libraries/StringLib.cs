@@ -12,7 +12,7 @@ namespace Kurogane.Libraries {
 		[JpName("文字分割")]
 		public static ListCell Split([Suffix("を")]string str) {
 			if (str == null) return null;
-			return ListCell.ConvertFrom(str.ToCharArray().Select(c => c.ToString()));
+			return ListCell.From(str.ToCharArray().Select(c => c.ToString()));
 		}
 
 		[JpName("文字整数変換")]

@@ -10,7 +10,7 @@ namespace Kurogane.Test.Libraries {
 	public class Math : NoSideEffectTest {
 
 		[TestMethod]
-		public void 四則演算() {
+		public void 和名四則演算() {
 			Assert.AreEqual(8, Execute<int>("３に５を加算する。"));
 			Assert.AreEqual(3, Execute<int>("７から４を減算する。"));
 			Assert.AreEqual(6, Execute<int>("２と３を乗算する。"));

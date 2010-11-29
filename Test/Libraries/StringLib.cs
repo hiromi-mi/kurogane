@@ -14,10 +14,10 @@ namespace Kurogane.Test.Libraries {
 			Assert.AreEqual(ListCell.Null, Execute<ListCell>("無を文字分割する。"));
 			Assert.AreEqual(ListCell.Null, Execute<ListCell>("「」を文字分割する。"));
 			Assert.AreEqual(
-				ListCell.ConvertFrom(new[] { "あ" }),
+				ListCell.Of("あ"),
 				Execute<ListCell>("「あ」を文字分割する。"));
 			Assert.AreEqual(
-				ListCell.ConvertFrom("あ", "い", "う", "え", "お"),
+				ListCell.Of("あ", "い", "う", "え", "お"),
 				Execute<ListCell>("「あいうえお」を文字分割する。"));
 		}
 	}

@@ -31,14 +31,14 @@ namespace Kurogane {
 				return new Tuple<object, object>(left, right);
 		}
 
-		public static ListCell ConvertFrom(params object[] list) {
-			return ConvertFrom((IEnumerable)list);
+		public static ListCell Of(params object[] list) {
+			return From((IEnumerable)list);
 		}
 
 		/// <summary>
 		/// 与えられたIEnumerableからListCellによるリストを作成する。
 		/// </summary>
-		public static ListCell ConvertFrom(IEnumerable list) {
+		public static ListCell From(IEnumerable list) {
 			if (list == null)
 				return null;
 			var tor = list.GetEnumerator();

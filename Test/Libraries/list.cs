@@ -12,7 +12,7 @@ namespace Kurogane.Test.Libraries {
 		[TestMethod]
 		public void 反転() {
 			var result = Execute<ListCell>("[1,2,3,4,5]を反転する。");
-			var expected = ListCell.ConvertFrom(new[] { 5, 4, 3, 2, 1 });
+			var expected = ListCell.From(new[] { 5, 4, 3, 2, 1 });
 			Assert.AreEqual(expected, result);
 		}
 
@@ -25,7 +25,7 @@ namespace Kurogane.Test.Libraries {
 		[TestMethod]
 		public void 列挙() {
 			var result = Execute<ListCell>("[1,2,3,4,5]から【□％２＝０】を列挙する。");
-			var expected = ListCell.ConvertFrom(new[] { 2, 4 });
+			var expected = ListCell.From(new[] { 2, 4 });
 			Assert.AreEqual(expected, result);
 		}
 
@@ -47,7 +47,7 @@ namespace Kurogane.Test.Libraries {
 			Assert.AreEqual(ListCell.Null,  Execute<ListCell>("[]を【○×○】で射影する。"));
 
 			var result2 = Execute<ListCell>("[1,2,3,4,5]を【○×○】で射影する。");
-			var expected2 = ListCell.ConvertFrom(new[] { 1, 4, 9, 16, 25 });
+			var expected2 = ListCell.From(new[] { 1, 4, 9, 16, 25 });
 			Assert.AreEqual(expected2, result2);
 		}
 
@@ -61,6 +61,14 @@ namespace Kurogane.Test.Libraries {
 			Assert.AreEqual(expected, Execute<ListCell>("[1,2,3]と[6,7,8]を並列する。"));
 			Assert.AreEqual(expected, Execute<ListCell>("[1,2,3,4,5]と[6,7,8]を並列する。"));
 			Assert.AreEqual(expected, Execute<ListCell>("[1,2,3]と[6,7,8,9,10]を並列する。"));
+		}
+
+		[TestMethod]
+		public void 反復() {
+			Assert.AreEqual(ListCell.Null, Execute<ListCell>("１を０だけ反復する。"));
+			Assert.AreEqual(ListCell.Of(1), Execute<ListCell>("１を1だけ反復する。"));
+			Assert.AreEqual(ListCell.Of(1, 1), Execute<ListCell>("１を２だけ反復する。"));
+			Assert.AreEqual(ListCell.Of(1, 1,1), Execute<ListCell>("１を３だけ反復する。"));
 		}
 	}
 }

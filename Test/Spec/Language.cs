@@ -82,11 +82,11 @@ namespace Kurogane.Test.Spec {
 			Assert.AreEqual(8, Execute<int>("３と５を【□＋△】する。"));
 
 			var actual1 = Execute<ListCell>("[1,2,3]をそれぞれ【□＋１】する。");
-			var expected1 = ListCell.ConvertFrom(2, 3, 4);
+			var expected1 = ListCell.Of(2, 3, 4);
 			Assert.AreEqual(expected1, actual1);
 
 			var actual2 = Execute<ListCell>("[1:2,3:4,5:6,7:8]をそれぞれ【○＋△】する。");
-			var expected2 = ListCell.ConvertFrom(3, 7, 11, 15);
+			var expected2 = ListCell.Of(3, 7, 11, 15);
 			Assert.AreEqual(expected2, actual2);
 		}
 
@@ -94,7 +94,7 @@ namespace Kurogane.Test.Spec {
 		public void それぞれ_によるMap処理() {
 			// リストに対して
 			var actual1 = Execute<ListCell>("【○×○】を二乗とする。[1,2,3,4,5]をそれぞれ二乗する。");
-			var expected1 = ListCell.ConvertFrom(1, 4, 9, 16, 25);
+			var expected1 = ListCell.Of(1, 4, 9, 16, 25);
 			Assert.AreEqual(expected1, actual1);
 
 			var actual2 = Execute<Tuple<object, object>>("【○×２】を二倍とする。３と４をそれぞれ二倍する。");
