@@ -87,7 +87,9 @@ namespace Kurogane.Shell {
 				}
 				line = buff + Environment.NewLine + line;
 				try {
-					return _engine.Execute(line, "-- console input --");
+					object result = null;
+					ColorIn(this.OutputColor, delegate { result = _engine.Execute(line, "-- console input --"); });
+					return result;
 				}
 				catch (CompilerException) {
 					buff = line;
@@ -100,8 +102,12 @@ namespace Kurogane.Shell {
 			Contract.Requires<ArgumentNullException>(action != null);
 			var back = Console.ForegroundColor;
 			Console.ForegroundColor = color;
-			action();
-			Console.ForegroundColor = back;
+			try {
+				action();
+			}
+			finally {
+				Console.ForegroundColor = back;
+			}
 		}
 	}
 }

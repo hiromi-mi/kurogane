@@ -3,17 +3,17 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyProduct("プログラミング言語「クロガネ」")]
-[assembly: AssemblyTitle("クロガネに必要な基幹機能群")]
+[assembly: AssemblyTitle("クロガネの基幹機能群")]
 [assembly: AssemblyDescription(
 	"クロガネを実行するためのアセンブリです。" +
 	"構文解析器やエンジン、標準ライブラリなどを一式が含まれています。")]
 [assembly: AssemblyCulture("")]
-
+[assembly: AssemblyCopyright("ground")]
 
 // 使わない
 //[assembly: AssemblyConfiguration("")]
 //[assembly: AssemblyCompany("Microsoft")]
-//[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
+
 //[assembly: AssemblyTrademark("")]
 
 
@@ -35,7 +35,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.9.0")]
+[assembly: AssemblyVersion("1.0.0.*")]
 //[assembly: AssemblyFileVersion("1.0.0.0")]
 
 
