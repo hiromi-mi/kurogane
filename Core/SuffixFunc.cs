@@ -283,7 +283,7 @@ namespace Kurogane {
 				foreach (var p in parameters)
 					if (p == null)
 						return ThrowArgumentException(
-							"引数または助詞が合っていません。" + Environment.NewLine +
+							"引数または助詞が一致していません。" + Environment.NewLine +
 							"呼び出し先の助詞： " + String.Join("、", prmSfx) + Environment.NewLine +
 							"呼び出し元の助詞： " + String.Join("、", cInfo.ArgumentNames));
 				// create bindings

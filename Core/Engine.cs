@@ -11,6 +11,9 @@ using Kurogane.Expressions;
 using Kurogane.RuntimeBinder;
 using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using System.Reflection.Emit;
+using Microsoft.Scripting.Generation;
 
 namespace Kurogane {
 
@@ -18,10 +21,25 @@ namespace Kurogane {
 	/// クロガネのプログラムを実行するエンジン。
 	/// </summary>
 	public class Engine {
-		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
+
+		#region static
 
 		/// <summary>言語のバージョン</summary>
-		public static Version Version { get { return typeof(Engine).Assembly.GetName().Version; } }
+		public static readonly Version Version;
+
+		/// <summary>アセンブリのGUID</summary>
+		public static readonly Guid Guid;
+
+		static Engine() {
+			var asm = typeof(Engine).Assembly;
+			Version = asm.GetName().Version;
+			Guid = new Guid(((GuidAttribute)asm.GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value);
+
+		}
+
+		#endregion
+
+		// ----- ----- ----- ----- ----- fields ----- ----- ----- ----- -----
 
 		protected BinderFactory Factory { get; private set; }
 
@@ -129,7 +147,8 @@ namespace Kurogane {
 				var ast = Parser.Parse(token, filename);
 				var expr = ExpressionGenerator.Generate(ast, this.Factory, filename);
 				expr = ExpressionOptimizer.Analyze(expr);
-				program = expr.Compile();
+				program = CompilerHelpers.Compile(expr, true);
+				//program = expr.Compile();
 				sw.Stop();
 				var ev = OnCompiled;
 				if (ev != null)

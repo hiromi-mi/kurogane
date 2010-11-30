@@ -22,23 +22,23 @@ namespace Kurogane.Compiler {
 			Expression expr = gen.Generate(block);
 			if (expr.Type != typeof(object))
 				expr = Expression.Convert(expr, typeof(object));
-			return Expression.Lambda<Func<Scope, object>>(expr, global);
+			return Expression.Lambda<Func<Scope, object>>(expr, "プログラム", new[] { global });
 		}
 
-		public static Expression<Func<Scope, object>> GenerateAll(BinderFactory factory, IEnumerable<Tuple<Block, string>> programs) {
-			Contract.Requires<ArgumentNullException>(factory != null);
-			Contract.Requires<ArgumentNullException>(programs != null);
+		//public static Expression<Func<Scope, object>> GenerateAll(BinderFactory factory, IEnumerable<Tuple<Block, string>> programs) {
+		//    Contract.Requires<ArgumentNullException>(factory != null);
+		//    Contract.Requires<ArgumentNullException>(programs != null);
 
-			var global = Expression.Parameter(typeof(Scope), "global");
-			var exprs =
-				from pair in programs/*.AsParallel()*/
-				let gen = new GlobalGen(pair.Item2, factory, global)
-				select gen.Generate(pair.Item1);
-			Expression block = Expression.Block(exprs);
-			if (block.Type != typeof(object))
-				block = Expression.Convert(block, typeof(object));
-			return Expression.Lambda<Func<Scope, object>>(block, global);
-		}
+		//    var global = Expression.Parameter(typeof(Scope), "global");
+		//    var exprs =
+		//        from pair in programs/*.AsParallel()*/
+		//        let gen = new GlobalGen(pair.Item2, factory, global)
+		//        select gen.Generate(pair.Item1);
+		//    Expression block = Expression.Block(exprs);
+		//    if (block.Type != typeof(object))
+		//        block = Expression.Convert(block, typeof(object));
+		//    return Expression.Lambda<Func<Scope, object>>(block, global);
+		//}
 
 		#region InnerClass
 
@@ -378,7 +378,7 @@ namespace Kurogane.Compiler {
 					else {
 						binder = Factory.InvokeBinder(callInfo);
 					}
-					lambda = Expression.Lambda(Expression.Dynamic(binder, typeof(object), args), param);
+					lambda = Expression.Lambda(Expression.Dynamic(binder, typeof(object), args), "それぞれ", new[] { param });
 				}
 				return Expression.Dynamic(Factory.MapBinder, typeof(object), lambda, value);
 			}
@@ -442,7 +442,7 @@ namespace Kurogane.Compiler {
 				_filename = filename;
 				_factory = factory;
 				_global = global;
-				_docInfo = Expression.SymbolDocument(filename);
+				_docInfo = Expression.SymbolDocument(filename, Engine.Guid);
 			}
 
 			// ===== ===== ===== ===== ===== method ===== ===== ===== ===== =====
@@ -563,7 +563,7 @@ namespace Kurogane.Compiler {
 				var gen = new BlockGen(this);
 				var block = gen.Generate(stmt.Block);
 				// crean up
-				var lambda = Expression.Lambda(block, ParamList.ToEnum(_parameters.Next));
+				var lambda = Expression.Lambda(block, stmt.Name, ParamList.ToEnum(_parameters.Next));
 				var ctorInfo = sfxFuncType.GetConstructor(new[] { funcType, typeof(string[]) });
 				var sfxs = stmt.Params.Select(pair => pair.Suffix).ToArray();
 				var createExpr = Expression.New(ctorInfo, lambda, Expression.Constant(sfxs));

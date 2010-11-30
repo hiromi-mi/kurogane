@@ -85,7 +85,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<CondThenPair> ParseCondThenPair(Token token) {
-			var condPair = ParseProperty(token);
+			var condPair = ParseBinaryExpr(token);
 			if (condPair == null)
 				return null;
 			token = condPair.Token
@@ -177,14 +177,14 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<Return> ParseReturn(Token token) {
-			var elemPair = ParseProperty(token);
+			var elemPair = ParseBinaryExpr(token);
 			if (elemPair == null)
 				return null;
 			token = elemPair.Token;
 			var lst = new List<ArgumentTuple>();
 			while (token.Match((SuffixToken t) => t.Value == "と")) {
 				lst.Add(new ArgumentTuple(elemPair.Node, "と"));
-				elemPair = ParseProperty(token.Next);
+				elemPair = ParseBinaryExpr(token.Next);
 				if (elemPair == null)
 					break;
 				token = elemPair.Token;
@@ -394,7 +394,7 @@ namespace Kurogane.Compiler {
 		}
 
 		private IPair<ArgumentTuple> ParseArgSfxPair(Token token) {
-			var elemPair = ParseProperty(token);
+			var elemPair = ParseBinaryExpr(token);
 			if (elemPair == null)
 				return null;
 			var sfxToken = elemPair.Token as SuffixToken;

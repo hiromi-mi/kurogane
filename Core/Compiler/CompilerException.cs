@@ -28,10 +28,4 @@ namespace Kurogane.Compiler {
 		public SyntaxException(string message, string filename, TextLocation location)
 			: base(message, filename, location) { }
 	}
-
-	[Serializable]
-	public sealed class SemanticException : CompilerException {
-		public SemanticException(string message) : base(message, null, new TextLocation()) { }
-	}
-
 }

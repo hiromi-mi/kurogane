@@ -29,8 +29,8 @@
 			this.lblOut = new System.Windows.Forms.Label();
 			this.btnExecute = new System.Windows.Forms.Button();
 			this.splitContainer = new System.Windows.Forms.SplitContainer();
-			this.btnSave = new System.Windows.Forms.Button();
 			this.btnOpen = new System.Windows.Forms.Button();
+			this.btnSave = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
 			this.splitContainer.Panel1.SuspendLayout();
 			this.splitContainer.Panel2.SuspendLayout();
@@ -44,10 +44,12 @@
 			this.txtProgram.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
 						| System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtProgram.Font = new System.Drawing.Font("ＭＳ ゴシック", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
 			this.txtProgram.ImeMode = System.Windows.Forms.ImeMode.On;
 			this.txtProgram.Location = new System.Drawing.Point(5, 32);
 			this.txtProgram.Multiline = true;
 			this.txtProgram.Name = "txtProgram";
+			this.txtProgram.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.txtProgram.Size = new System.Drawing.Size(377, 533);
 			this.txtProgram.TabIndex = 0;
 			this.txtProgram.Text = "「こんにちは」を出力する。";
@@ -59,10 +61,12 @@
 						| System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtOut.BackColor = System.Drawing.Color.White;
+			this.txtOut.Font = new System.Drawing.Font("ＭＳ ゴシック", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
 			this.txtOut.Location = new System.Drawing.Point(5, 32);
 			this.txtOut.Multiline = true;
 			this.txtOut.Name = "txtOut";
 			this.txtOut.ReadOnly = true;
+			this.txtOut.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.txtOut.Size = new System.Drawing.Size(388, 533);
 			this.txtOut.TabIndex = 1;
 			this.txtOut.TabStop = false;
@@ -121,17 +125,6 @@
 			this.splitContainer.TabIndex = 5;
 			this.splitContainer.TabStop = false;
 			// 
-			// btnSave
-			// 
-			this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSave.Location = new System.Drawing.Point(226, 3);
-			this.btnSave.Name = "btnSave";
-			this.btnSave.Size = new System.Drawing.Size(75, 23);
-			this.btnSave.TabIndex = 2;
-			this.btnSave.Text = "保存";
-			this.btnSave.UseVisualStyleBackColor = true;
-			this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
-			// 
 			// btnOpen
 			// 
 			this.btnOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -142,6 +135,17 @@
 			this.btnOpen.Text = "開く";
 			this.btnOpen.UseVisualStyleBackColor = true;
 			this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+			// 
+			// btnSave
+			// 
+			this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnSave.Location = new System.Drawing.Point(226, 3);
+			this.btnSave.Name = "btnSave";
+			this.btnSave.Size = new System.Drawing.Size(75, 23);
+			this.btnSave.TabIndex = 2;
+			this.btnSave.Text = "保存";
+			this.btnSave.UseVisualStyleBackColor = true;
+			this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
 			// 
 			// StartForm
 			// 
