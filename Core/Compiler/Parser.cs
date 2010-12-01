@@ -65,7 +65,7 @@ namespace Kurogane.Compiler {
 		#region もし文
 
 		private IPair<IfStatement> ParseIfStatement(Token token) {
-			token = token.MatchFlow((ReservedToken t) => t.Value == "もし");
+			token = token.MatchFlow((ReservedToken t) => t.Text == "もし");
 			if (token == null)
 				return null;
 			if (token.Match((CommaToken t) => true))
@@ -89,7 +89,7 @@ namespace Kurogane.Compiler {
 			if (condPair == null)
 				return null;
 			token = condPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == "なら");
+				.MatchFlow((ReservedToken t) => t.Text == "なら");
 			if (token == null)
 				return null;
 			token = token.MatchFlow((CommaToken t) => true) ?? token; // 読点が存在していれば読み飛ばす。
@@ -114,10 +114,10 @@ namespace Kurogane.Compiler {
 
 		private IPair<Defun> ParseDefun(Token token) {
 			var keywordSkipped = token
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockBegin)
-				.MatchFlow((SuffixToken t) => t.Value == "の")
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.Defun)
-				.MatchFlow((SuffixToken t) => t.Value == "で");
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.BlockBegin)
+				.MatchFlow((SuffixToken t) => t.Text == "の")
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.Defun)
+				.MatchFlow((SuffixToken t) => t.Text == "で");
 			if (keywordSkipped == null)
 				return null;
 			token = keywordSkipped.MatchFlow((CommaToken t) => true) ?? keywordSkipped;
@@ -131,14 +131,14 @@ namespace Kurogane.Compiler {
 			}
 			var blockToken = token
 				.MatchFlow((SymbolToken t) => true)
-				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.MatchFlow((ReservedToken t) => t.Text == "する")
 				.MatchFlow((PeriodToken t) => true);
 			if (blockToken == null)
 				throw Error("正しく関数が定義出来ていません。", token);
-			var name = ((SymbolToken)token).Value;
+			var name = ((SymbolToken)token).Text;
 			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockEnd)
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.BlockEnd)
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
 				throw Error("関数のブロックが正しく閉じられていません。", blockPair.Token);
@@ -151,8 +151,8 @@ namespace Kurogane.Compiler {
 				.MatchFlow((SuffixToken t) => true);
 			if (lastToken == null)
 				return null;
-			var name = ((SymbolToken)token).Value;
-			var sfx = ((SuffixToken)token.Next).Value;
+			var name = ((SymbolToken)token).Text;
+			var sfx = ((SuffixToken)token.Next).Text;
 			return MakePair(new ParamSuffixPair(name, sfx), lastToken);
 		}
 
@@ -160,16 +160,16 @@ namespace Kurogane.Compiler {
 
 		private IPair<BlockExecute> ParseBlockExecute(Token token) {
 			var blockToken = token
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockBegin)
-				.MatchFlow((SuffixToken t) => t.Value == "を")
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockExec)
-				.MatchFlow((ReservedToken t) => t.Value == "する")
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.BlockBegin)
+				.MatchFlow((SuffixToken t) => t.Text == "を")
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.BlockExec)
+				.MatchFlow((ReservedToken t) => t.Text == "する")
 				.MatchFlow((PeriodToken t) => true);
 			if (blockToken == null)
 				return null;
 			var blockPair = ParseBlock(blockToken);
 			var lastToken = blockPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.BlockEnd)
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.BlockEnd)
 				.MatchFlow((PeriodToken t) => true);
 			if (lastToken == null)
 				throw Error("関数が正しく閉じられていません。", blockPair.Token);
@@ -182,7 +182,7 @@ namespace Kurogane.Compiler {
 				return null;
 			token = elemPair.Token;
 			var lst = new List<ArgumentTuple>();
-			while (token.Match((SuffixToken t) => t.Value == "と")) {
+			while (token.Match((SuffixToken t) => t.Text == "と")) {
 				lst.Add(new ArgumentTuple(elemPair.Node, "と"));
 				elemPair = ParseBinaryExpr(token.Next);
 				if (elemPair == null)
@@ -198,7 +198,7 @@ namespace Kurogane.Compiler {
 				retValue = CreateTuple(lst).Argument;
 			}
 			var nextToken = elemPair.Token
-				.MatchFlow((ReservedToken t) => t.Value == ConstantNames.ReturnText)
+				.MatchFlow((ReservedToken t) => t.Text == ConstantNames.ReturnText)
 				.MatchFlow((PeriodToken t) => true);
 			if (nextToken == null)
 				return null;
@@ -237,7 +237,7 @@ namespace Kurogane.Compiler {
 			bool isMap = false;
 			ArgumentTuple mappedArg = null;
 			while (true) {
-				if (token.Match((ReservedToken t) => t.Value == "それぞれ")) {
+				if (token.Match((ReservedToken t) => t.Text == "それぞれ")) {
 					if (isMap)
 						throw Error("「それぞれ」を二箇所で使うことはできません。", token);
 					isMap = true;
@@ -261,14 +261,14 @@ namespace Kurogane.Compiler {
 				lst.Add(argPair.Node);
 				token = argPair.Token;
 				if (token.Match((SuffixToken t) => true)) {
-					var sfx = ((SuffixToken)token).Value;
+					var sfx = ((SuffixToken)token).Text;
 					var range = new TextRange(token.Range.End, token.Range.End);
-					lst.Add(new ArgumentTuple(new NullLiteral(range), sfx));
+					lst.Add(new ArgumentTuple(new Literal(null, range), sfx));
 					token = token.Next;
 				}
 			}
 
-			if (token.Match((ReservedToken t) => t.Value == "し" || t.Value == "する")) {
+			if (token.Match((ReservedToken t) => t.Text == "し" || t.Text == "する")) {
 				var range = new TextRange(startLoc, token.Range.End);
 				var dfn = CreateDefine(lst, range);
 				if (dfn == null)
@@ -280,11 +280,11 @@ namespace Kurogane.Compiler {
 				return null;
 			var execToken = execTarget.Token;
 			var last = execToken
-				.MatchFlow((ReservedToken t) => t.Value == "し" || t.Value == "する");
+				.MatchFlow((ReservedToken t) => t.Text == "し" || t.Text == "する");
 			bool isMaybe = false;
 			if (last == null) {
 				last = execToken
-					.MatchFlow((ReservedToken t) => t.Value == "してみ" || t.Value == "してみて");
+					.MatchFlow((ReservedToken t) => t.Text == "してみ" || t.Text == "してみて");
 				if (last == null)
 					return null;
 				isMaybe = true;
@@ -292,7 +292,7 @@ namespace Kurogane.Compiler {
 			if (last != null) {
 				var range = new TextRange(startLoc, execToken.Range.End);
 				var sym = token as SymbolToken;
-				if (sym != null && sym.Value == ConstantNames.Assign) {
+				if (sym != null && sym.Text == ConstantNames.Assign) {
 					var assign = CreateAssign(lst, isFirst, isMaybe, range);
 					if (assign == null)
 						return null;
@@ -388,7 +388,7 @@ namespace Kurogane.Compiler {
 				if (elem.Suffix != "と")
 					return null;
 				var range = new TextRange(elem.Argument.Range.Start, endLoc);
-				tuple = new TupleLiteral(elem.Argument, tuple, range);
+				tuple = new TupleExpr(elem.Argument, tuple, range);
 			}
 			return new ArgumentTuple(tuple, sfx);
 		}
@@ -400,7 +400,7 @@ namespace Kurogane.Compiler {
 			var sfxToken = elemPair.Token as SuffixToken;
 			if (sfxToken == null)
 				return null;
-			return MakePair(new ArgumentTuple(elemPair.Node, sfxToken.Value), sfxToken.Next);
+			return MakePair(new ArgumentTuple(elemPair.Node, sfxToken.Text), sfxToken.Next);
 		}
 
 		#endregion
@@ -445,12 +445,12 @@ namespace Kurogane.Compiler {
 			var startLoc = token.Range.Start;
 			while (true) {
 				var nextToken = pair.Token
-					.MatchFlow((SuffixToken t) => t.Value == "の")
+					.MatchFlow((SuffixToken t) => t.Text == "の")
 					.MatchFlow((SymbolToken t) => true);
 				if (nextToken == null)
 					break;
 				var propToken = (SymbolToken)pair.Token.Next;
-				var propName = propToken.Value;
+				var propName = propToken.Text;
 				var range = new TextRange(startLoc, propToken.Range.End);
 				pair = MakePair(new PropertyAccess(pair.Node, propName, range), nextToken);
 			}
@@ -709,7 +709,7 @@ namespace Kurogane.Compiler {
 			return MakePair(new Lambda(elemPair.Node, range), lastToken);
 		}
 
-		private IPair<ListLiteral> ParseList(Token token) {
+		private IPair<ListExpr> ParseList(Token token) {
 			var startLoc = token.Range.Start;
 			token = token.MatchFlow((OpenBracketToken t) => true);
 			if (token == null)
@@ -734,7 +734,7 @@ namespace Kurogane.Compiler {
 				throw Error("リストの要素が解析できません。", token);
 			}
 			var range = new TextRange(startLoc, token.Range.End);
-			return MakePair(new ListLiteral(elemList, range), token.Next);
+			return MakePair(new ListExpr(elemList, range), token.Next);
 		}
 
 		#endregion
@@ -743,41 +743,37 @@ namespace Kurogane.Compiler {
 
 		private IPair<Symbol> ParseSymbol(Token token) {
 			var symToken = token as SymbolToken;
-			if (symToken == null)
-				return null;
-			else
-				return MakePair(new Symbol(symToken.Value, token.Range), token.Next);
+			if (symToken != null)
+				return MakePair(new Symbol(symToken.Text, token.Range), token.Next);
+
+			var lambdaParam = token as LambdaSpaceToken;
+			if (lambdaParam != null)
+				return MakePair(new LambdaParameter(lambdaParam.Text, token.Range), token.Next);
+
+			return null;
 		}
 
 		private IPair<Literal> ParseLiteral(Token token) {
 			var nextToken = token.Next;
-			if (token is LiteralToken) {
-				var value = ((LiteralToken)token).Value;
-				return MakePair(new StringLiteral(value, token.Range), nextToken);
-			}
-			if (token is IntegerToken) {
-				int value = ((IntegerToken)token).IntValue;
-				return MakePair(new IntLiteral(value, token.Range), nextToken);
-			}
-			if (token is DecimalToken) {
-				double value = ((DecimalToken)token).DecimalValue;
-				return MakePair(new FloatLiteral(value, token.Range), nextToken);
-			}
-			if (token is LambdaSpaceToken) {
-				return MakePair(new LambdaParameter(((LambdaSpaceToken)token).Value, token.Range), nextToken);
-			}
 
-			if (token.Match((ReservedToken t) => t.Value == ConstantNames.NullText))
-				return MakePair(new NullLiteral(token.Range), nextToken);
+			// リテラル値
+			var lit = token as LiteralToken;
+			if (lit != null)
+				return MakePair(new Literal(lit.Value, token.Range), nextToken);
 
-			if (token.Match((ReservedToken t) => t.Value == ConstantNames.ElseText))
-				return MakePair(new BoolLiteral(true, token.Range), nextToken);
-
-			if (token.Match((ReservedToken t) => t.Value == ConstantNames.TrueText))
-				return MakePair(new BoolLiteral(true, token.Range), nextToken);
-
-			if (token.Match((ReservedToken t) => t.Value == ConstantNames.FalseText))
-				return MakePair(new BoolLiteral(false, token.Range), nextToken);
+			// 予約語
+			var reserved = token as ReservedToken;
+			if (reserved != null) {
+				switch (reserved.Text) {
+				case ConstantNames.NullText:
+					return MakePair(new Literal(null, token.Range), nextToken);
+				case ConstantNames.TrueText:
+				case ConstantNames.ElseText:
+					return MakePair(new Literal(true, token.Range), nextToken);
+				case ConstantNames.FalseText:
+					return MakePair(new Literal(false, token.Range), nextToken);
+				}
+			}
 			return null;
 		}
 

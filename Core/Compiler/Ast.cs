@@ -348,10 +348,11 @@ namespace Kurogane.Compiler {
 	public enum ElementType {
 		None = 0,
 
-		// リテラル値
-		Integer, Float, String, Bool, Null,
+		Literal,
+
 		// 式
 		Tuple, List, Binary, Unary, Property, Lambda,
+
 		// 変数
 		Symbol, LambdaParam,
 	}
@@ -361,29 +362,41 @@ namespace Kurogane.Compiler {
 		public TextRange Range { get; private set; }
 
 		/// <summary>要素の種類</summary>
-		public abstract ElementType Type { get; }
+		public abstract ElementType ElementType { get; }
 
 		internal Element(TextRange range) {
 			this.Range = range;
 		}
 	}
 
-	#region リテラル値
+	/// <summary>
+	/// ラムダ式を示すクラス。
+	/// </summary>
+	public class Lambda : Element {
+		public Element Element { get; private set; }
+		public override ElementType ElementType { get { return ElementType.Lambda; } }
 
-	public abstract class Literal : Element {
-		internal Literal(TextRange range) : base(range) { }
+		public Lambda(Element elem, TextRange range)
+			: base(range) {
+			Contract.Requires<ArgumentNullException>(elem != null);
+			this.Element = elem;
+		}
+
+		public override string ToString() {
+			return "【" + Element + "】";
+		}
 	}
 
 	/// <summary>
 	/// リストの各要素を示すクラス。
 	/// </summary>
-	public class ListLiteral : Literal {
+	public class ListExpr : Element {
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		public ReadOnlyCollection<Element> Elements { get; private set; }
-		public override ElementType Type { get { return ElementType.List; } }
+		public override ElementType ElementType { get { return ElementType.List; } }
 
-		public ListLiteral(IEnumerable<Element> elems, TextRange range)
+		public ListExpr(IEnumerable<Element> elems, TextRange range)
 			: base(range) {
 			Contract.Requires<ArgumentNullException>(elems != null);
 			Contract.Requires<ArgumentException>(Contract.ForAll(elems, e => e != null));
@@ -398,13 +411,13 @@ namespace Kurogane.Compiler {
 	/// <summary>
 	/// 対を示すクラス。
 	/// </summary>
-	public class TupleLiteral : Literal {
+	public class TupleExpr : Element {
 		public Element Head { get; private set; }
 		public Element Tail { get; private set; }
 
-		public override ElementType Type { get { return ElementType.Tuple; } }
+		public override ElementType ElementType { get { return ElementType.Tuple; } }
 
-		public TupleLiteral(Element head, Element tail, TextRange range)
+		public TupleExpr(Element head, Element tail, TextRange range)
 			: base(range) {
 			Contract.Requires<ArgumentNullException>(head != null);
 			Contract.Requires<ArgumentNullException>(tail != null);
@@ -418,98 +431,13 @@ namespace Kurogane.Compiler {
 	}
 
 	/// <summary>
-	/// 文字列リテラルを示すクラス。
-	/// </summary>
-	public class StringLiteral : Literal {
-		public string Value { get; private set; }
-		public override ElementType Type { get { return ElementType.String; } }
-
-		public StringLiteral(string value, TextRange range)
-			: base(range) {
-			Contract.Requires<ArgumentNullException>(value != null);
-			this.Value = value;
-		}
-
-		public override string ToString() {
-			return "「" + Value + "」";
-		}
-	}
-
-	/// <summary>
-	/// 整数リテラルを示すクラス。
-	/// </summary>
-	public class IntLiteral : Literal {
-		public readonly int Value;
-		public override ElementType Type { get { return ElementType.Integer; } }
-
-		public IntLiteral(int value, TextRange range)
-			: base(range) {
-			this.Value = value;
-		}
-
-		public override string ToString() {
-			return Value.ToString();
-		}
-	}
-
-	/// <summary>
-	/// 少数リテラルを示すクラス。
-	/// </summary>
-	public class FloatLiteral : Literal {
-		public readonly double Value;
-		public override ElementType Type { get { return ElementType.Float; } }
-
-		public FloatLiteral(double value, TextRange range)
-			: base(range) {
-			this.Value = value;
-		}
-
-		public override string ToString() {
-			return Value.ToString();
-		}
-	}
-
-	/// <summary>
-	/// 真偽値のリテラルを示すクラス。
-	/// </summary>
-	public sealed class BoolLiteral : Literal {
-		public readonly bool Value;
-		public override ElementType Type { get { return ElementType.Bool; } }
-
-		public BoolLiteral(bool value, TextRange range)
-			: base(range) {
-			this.Value = value;
-		}
-
-		public override string ToString() {
-			return Value.ToString();
-		}
-	}
-
-	/// <summary>
-	/// Nullのリテラルを示すクラス。
-	/// </summary>
-	public sealed class NullLiteral : Literal {
-		public override ElementType Type { get { return ElementType.Null; } }
-		public NullLiteral(TextRange range) : base(range) { }
-
-		public override string ToString() {
-			return "null";
-		}
-	}
-
-	#endregion
-
-	#region 式
-
-	/// <summary>
 	/// 二項演算を示すクラス。
 	/// </summary>
 	public class BinaryExpr : Element {
 		public Element Left { get; private set; }
 		public Element Right { get; private set; }
 		public BinaryOperationType ExprType { get; private set; }
-		public override ElementType Type { get { return ElementType.Binary; } }
+		public override ElementType ElementType { get { return ElementType.Binary; } }
 
 		public BinaryExpr(Element left, BinaryOperationType type, Element right, TextRange range)
 			: base(range) {
@@ -527,7 +455,7 @@ namespace Kurogane.Compiler {
 	public class UnaryExpr : Element {
 		public Element Value { get; private set; }
 		public UnaryOperationType ExprType { get; private set; }
-		public override ElementType Type { get { return ElementType.Unary; } }
+		public override ElementType ElementType { get { return ElementType.Unary; } }
 
 		public UnaryExpr(UnaryOperationType type, Element value, TextRange range)
 			: base(range) {
@@ -543,7 +471,7 @@ namespace Kurogane.Compiler {
 	public class FuncCall : Element {
 		public string Name { get; private set; }
 		public IList<Element> Arguments { get; private set; }
-		public override ElementType Type { get { return ElementType.None; } }
+		public override ElementType ElementType { get { return ElementType.None; } }
 
 		public FuncCall(string name, IList<Element> args, TextRange range)
 			: base(range) {
@@ -561,7 +489,7 @@ namespace Kurogane.Compiler {
 	public class PropertyAccess : Element {
 		public Element Value { get; private set; }
 		public string Name { get; private set; }
-		public override ElementType Type { get { return ElementType.Property; } }
+		public override ElementType ElementType { get { return ElementType.Property; } }
 
 		public PropertyAccess(Element value, string name, TextRange range)
 			: base(range) {
@@ -581,7 +509,7 @@ namespace Kurogane.Compiler {
 	/// </summary>
 	public class Symbol : Element {
 		public string Name { get; private set; }
-		public override ElementType Type { get { return ElementType.Symbol; } }
+		public override ElementType ElementType { get { return ElementType.Symbol; } }
 
 		public Symbol(string name, TextRange range)
 			: base(range) {
@@ -595,42 +523,29 @@ namespace Kurogane.Compiler {
 	}
 
 	/// <summary>
-	/// ラムダ式を示すクラス。
+	/// ラムダ式の引数を示すクラス。
 	/// </summary>
-	public class Lambda : Element {
-		public Element Element { get; private set; }
-		public override ElementType Type { get { return ElementType.Lambda; } }
+	public class LambdaParameter : Symbol {
+		public override ElementType ElementType { get { return ElementType.LambdaParam; } }
 
-		public Lambda(Element elem, TextRange range)
-			: base(range) {
-			Contract.Requires<ArgumentNullException>(elem != null);
-			this.Element = elem;
-		}
-
-		public override string ToString() {
-			return "【" + Element + "】";
+		public LambdaParameter(string name, TextRange range)
+			: base(name, range) {
 		}
 	}
 
 	/// <summary>
-	/// ラムダ式の引数を示すクラス。
+	/// プログラム中のリテラルを示すクラス。
 	/// </summary>
-	public class LambdaParameter : Literal {
-		public string Name { get; private set; }
-		public override ElementType Type { get { return ElementType.LambdaParam; } }
+	public class Literal : Element {
 
-		public LambdaParameter(string name, TextRange range)
+		public object Value { get; private set; }
+		public override ElementType ElementType { get { return ElementType.Literal; } }
+
+		public Literal(object value, TextRange range)
 			: base(range) {
-			Contract.Requires<ArgumentNullException>(name != null);
-			this.Name = name;
-		}
-
-		public override string ToString() {
-			return Name;
+			this.Value = value;
 		}
 	}
-
-	#endregion
 
 	#endregion
 

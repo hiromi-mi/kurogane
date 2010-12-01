@@ -203,7 +203,7 @@ namespace Kurogane.Compiler {
 			return new LiteralToken(this, range, buff.ToString());
 		}
 
-		private NumberToken ReadNumberToken() {
+		private LiteralToken ReadNumberToken() {
 			var startLoc = _Location;
 
 			int num = 0;
@@ -241,11 +241,12 @@ namespace Kurogane.Compiler {
 					denom *= 10;
 				}
 				var range = new TextRange(startLoc, _Location);
-				return new DecimalToken(this, range, num + (1.0 * numer / denom));
+				double value = num + (1.0 * numer / denom);
+				return new LiteralToken(this, range, value);
 			}
 			else {
 				var range = new TextRange(startLoc, _Location);
-				return new IntegerToken(this, range, num);
+				return new LiteralToken(this, range, num);
 			}
 		}
 

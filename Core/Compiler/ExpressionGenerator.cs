@@ -193,7 +193,7 @@ namespace Kurogane.Compiler {
 				var last = stmt.Thens.Last();
 				var pair = GenNormalStmt(last.Statement, assigned);
 				Expression expr;
-				if (last.Condition is BoolLiteral && ((BoolLiteral)last.Condition).Value) {
+				if (last.Condition.ElementType == ElementType.Literal && (((Literal)last.Condition).Value as bool?) == true) {
 					expr = pair.Expression;
 				}
 				else {
@@ -340,7 +340,7 @@ namespace Kurogane.Compiler {
 				var callInfo = new CallInfo(sfxs.Length + (prev == null ? 0 : 1), sfxs);
 				args[0] = ElemGen.GenElemCore(ph.Target);
 				DynamicMetaObjectBinder binder;
-				if (ph.Target.Type == ElementType.Symbol && !(args[0] is ParameterExpression)) {
+				if (ph.Target.ElementType == ElementType.Symbol && !(args[0] is ParameterExpression)) {
 					binder = Factory.InvokeMemberBinder(((Symbol)ph.Target).Name, callInfo);
 					args[0] = Global;
 				}
@@ -371,7 +371,7 @@ namespace Kurogane.Compiler {
 					}
 					var callInfo = new CallInfo(args.Count - 1, sfxs);
 					DynamicMetaObjectBinder binder;
-					if (ph.Target.Type == ElementType.Symbol && !(args[0] is ParameterExpression)) {
+					if (ph.Target.ElementType == ElementType.Symbol && !(args[0] is ParameterExpression)) {
 						binder = Factory.InvokeMemberBinder(((Symbol)ph.Target).Name, callInfo);
 						args[0] = Global;
 					}
@@ -628,23 +628,14 @@ namespace Kurogane.Compiler {
 				Contract.Requires<ArgumentNullException>(elem != null);
 				Contract.Ensures(Contract.Result<Expression>() != null);
 				Contract.Ensures(Contract.Result<Expression>().Type != typeof(void));
-				switch (elem.Type) {
-				// literal
-				case ElementType.String:
-					return GenString((StringLiteral)elem);
-				case ElementType.Integer:
-					return GenInteger((IntLiteral)elem);
-				case ElementType.Float:
-					return GenFloat((FloatLiteral)elem);
-				case ElementType.Bool:
-					return GenBool((BoolLiteral)elem);
-				case ElementType.Null:
-					return GenNull((NullLiteral)elem);
-				// structure
+				switch (elem.ElementType) {
+				// data
+				case ElementType.Literal:
+					return GeLiteral((Literal)elem);
 				case ElementType.Tuple:
-					return GenTuple((TupleLiteral)elem);
+					return GenTuple((TupleExpr)elem);
 				case ElementType.List:
-					return GenList((ListLiteral)elem);
+					return GenList((ListExpr)elem);
 				// expr
 				case ElementType.Binary:
 					return GenBinary((BinaryExpr)elem);
@@ -663,49 +654,19 @@ namespace Kurogane.Compiler {
 				throw Error("未知の要素が出現しました。", elem.Range.Start);
 			}
 
-			#region リテラル
+			#region データ
 
-			private ConstantExpression GenString(StringLiteral lit) {
-				Contract.Requires<ArgumentNullException>(lit != null);
-				Contract.Ensures(Contract.Result<ConstantExpression>() != null);
-				return Expression.Constant(lit.Value);
+			private ConstantExpression GeLiteral(Literal elem) {
+				return Expression.Constant(elem.Value);
 			}
 
-			private ConstantExpression GenInteger(IntLiteral lit) {
-				Contract.Requires<ArgumentNullException>(lit != null);
-				Contract.Ensures(Contract.Result<ConstantExpression>() != null);
-				return Expression.Constant(lit.Value);
-			}
-
-			private ConstantExpression GenFloat(FloatLiteral lit) {
-				Contract.Requires<ArgumentNullException>(lit != null);
-				Contract.Ensures(Contract.Result<ConstantExpression>() != null);
-				return Expression.Constant(lit.Value);
-			}
-
-			private ConstantExpression GenBool(BoolLiteral lit) {
-				Contract.Requires<ArgumentNullException>(lit != null);
-				Contract.Ensures(Contract.Result<ConstantExpression>() != null);
-				return Expression.Constant(lit.Value);
-			}
-
-			private ConstantExpression GenNull(NullLiteral lit) {
-				Contract.Requires<ArgumentNullException>(lit != null);
-				Contract.Ensures(Contract.Result<ConstantExpression>() != null);
-				return Expression.Constant(null);
-			}
-
-			#endregion
-
-			#region データ構造
-
-			private Expression GenTuple(TupleLiteral elem) {
+			private Expression GenTuple(TupleExpr elem) {
 				Contract.Requires<ArgumentNullException>(elem != null);
 				Contract.Ensures(Contract.Result<Expression>() != null);
 				return Cons(GenElemCore(elem.Head), GenElemCore(elem.Tail));
 			}
 
-			private Expression GenList(ListLiteral elem) {
+			private Expression GenList(ListExpr elem) {
 				Contract.Requires<ArgumentNullException>(elem != null);
 				Contract.Ensures(Contract.Result<Expression>() != null);
 				Expression tail = Expression.Constant(ListCell.Null);
