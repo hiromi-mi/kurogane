@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Numerics;
 
 namespace Kurogane.Test {
 
@@ -35,8 +36,7 @@ namespace Kurogane.Test {
 				"1をパスする。" +
 				"※｛括弧で囲むよ。複数でもOK！。。。｝" +
 				"3をパスする。");
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 3);
+			Assert.AreEqual(3, (int)num);
 		}
 
 		[TestMethod]
@@ -51,28 +51,33 @@ namespace Kurogane.Test {
 				"以上。" +
 				"10をフィボナッチする。";
 			object num = Execute(code);
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 55);
+			Assert.AreEqual(55, (int)num);
 
-			//code =
-			//    "以下の定義でNをパスする。" +
-			//    "	Nである。" +
-			//    "以上。"+
-			//    "以下の定義でNをFIB変換する。" +
-			//    "	以下の定義で頭と体をNまでFIB変換する。" +
-			//    "		頭をAに代入する。" +
-			//    "		体をBに代入する。" +
-			//    "		もし(N>0)なら" +
-			//    "			Bと(A+B)を(N-1)までFIB変換する。" +
-			//    "		他なら" +
-			//    "			Aをパスする。" +
-			//    "	以上。" +
-			//    "	0と1をNまでFIB変換する。" +
-			//    "以上。" +
-			//    "1000をFIB変換する。";
-			//num = Execute(code);
-			//Assert.IsInstanceOfType(num, typeof(int));
-			//Assert.AreEqual((int)num, 1556111435);
+			code =
+				"以下の定義でNをパスする。" +
+				"	Nである。" +
+				"以上。" +
+				"以下の定義でNをFIB変換する。" +
+				"	以下の定義で頭と体をNまでFIB変換する。" +
+				"		頭をAに代入する。" +
+				"		体をBに代入する。" +
+				"		もし(N>0)なら" +
+				"			Bと(A+B)を(N-1)までFIB変換する。" +
+				"		他なら" +
+				"			Aをパスする。" +
+				"	以上。" +
+				"	0と1をNまでFIB変換する。" +
+				"以上。" +
+				"1000をFIB変換する。";
+			num = Execute(code);
+			var resultTxt =
+				"4346655768" + "6937456435" + "6885276750" + "4062580256" + "4660517371" +
+				"7804024817" + "2908953655" + "5417949051" + "8904038798" + "4007925516" +
+				"9295922593" + "0803226347" + "7520968962" + "3239873322" + "4711616429" +
+				"9644090653" + "3187938298" + "9696499285" + "1600370447" + "6137795166" +
+				"849228875";
+			var expected = BigInteger.Parse(resultTxt);
+			Assert.AreEqual(expected, (BigInteger)num);
 
 			code =
 				"【□＋△】を加算とする。" +
@@ -84,8 +89,7 @@ namespace Kurogane.Test {
 				"以上。" +
 				"10をフィボナッチする。";
 			num = Execute(code);
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 55);
+			Assert.AreEqual(55, (int)num);
 		}
 
 		[TestMethod]
@@ -95,8 +99,7 @@ namespace Kurogane.Test {
 				"	(A+B)である。" +
 				"以上。" +
 				"3と5を加算する。");
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 8);
+			Assert.AreEqual(8, (int)num);
 		}
 
 		[TestMethod]
@@ -162,8 +165,7 @@ namespace Kurogane.Test {
 				"以上。" +
 				"0を1に連結し、2に連結し、3に連結し、4に連結し、合計する。";
 			object num = Execute(code);
-			Assert.IsInstanceOfType(num, typeof(int));
-			Assert.AreEqual((int)num, 10);
+			Assert.AreEqual(10, (int)num);
 		}
 	}
 }
