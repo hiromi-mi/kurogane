@@ -9,6 +9,24 @@ namespace Kurogane.RuntimeBinder {
 
 	public static class BinderHelper {
 
+		internal struct TypeCastPattern {
+			public readonly Type Narrow;
+			public readonly Type Wide;
+			public TypeCastPattern(Type narrow, Type wide) {
+				this.Narrow = narrow;
+				this.Wide = wide;
+			}
+		}
+
+		/// <summary>
+		/// キャストするパターン
+		/// </summary>
+		internal static readonly TypeCastPattern[] CastPatterns = new[]{
+			new TypeCastPattern(typeof(int), typeof(double)),
+			new TypeCastPattern(typeof(long), typeof(double)),
+			new TypeCastPattern(typeof(int), typeof(long)),
+		};
+
 		/// <summary>
 		/// 値が「nullである」かどうかを判定する式を返す。
 		/// </summary>
@@ -46,6 +64,13 @@ namespace Kurogane.RuntimeBinder {
 				}
 			}
 			return null;
+		}
+
+		public static Expression LimitTypeConvert(DynamicMetaObject mo) {
+			if (mo.Expression.Type == mo.LimitType)
+				return mo.Expression;
+			else
+				return Expression.Convert(mo.Expression, mo.LimitType);
 		}
 
 		/// <summary>

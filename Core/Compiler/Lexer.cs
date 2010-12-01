@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Numerics;
 
 namespace Kurogane.Compiler {
 
@@ -205,15 +206,14 @@ namespace Kurogane.Compiler {
 
 		private LiteralToken ReadNumberToken() {
 			var startLoc = _Location;
-
-			int num = 0;
+			var buff = new StringBuilder();
 			while (true) {
 				int c = _CurrentChar;
 				if ('0' <= c && c <= '9') {
-					num = num * 10 + c - '0';
+					buff.Append((char)c);
 				}
 				else if ('０' <= c && c <= '９') {
-					num = num * 10 + c - '０';
+					buff.Append((char)(c - '０' + '0'));
 				}
 				else {
 					break;
@@ -222,32 +222,41 @@ namespace Kurogane.Compiler {
 			}
 
 			if (_CurrentChar == '.' || _CurrentChar == '．') {
+				buff.Append('.');
 				// 小数の処理
-				int denom = 1;
-				int numer = 0;
 				while (true) {
 					int c = _NextChar();
-					int n = 0;
 					if ('0' <= c && c <= '9') {
-						n = c - '0';
+						buff.Append((char)c);
 					}
 					else if ('０' <= c && c <= '９') {
-						n = c - '０';
+						buff.Append((char)(c - '０' + '0'));
 					}
 					else {
 						break;
 					}
-					numer = numer * 10 + n;
-					denom *= 10;
 				}
 				var range = new TextRange(startLoc, _Location);
-				double value = num + (1.0 * numer / denom);
+				double value = Double.Parse(buff.ToString());
 				return new LiteralToken(this, range, value);
 			}
 			else {
 				var range = new TextRange(startLoc, _Location);
-				return new LiteralToken(this, range, num);
+				var numTxt = buff.ToString();
+
+				int num;
+				if (Int32.TryParse(numTxt, out num))
+					return new LiteralToken(this, range, num);
+				long numLong;
+				if (Int64.TryParse(numTxt, out numLong))
+					return new LiteralToken(this, range, numLong);
+				BigInteger numBig;
+				if (BigInteger.TryParse(numTxt, out numBig))
+					return new LiteralToken(this, range, numBig);
+				
+				var value = BigInteger.Parse(numTxt);
 			}
+			throw Error("解析できない数値（" + buff.ToString() + "）です。");
 		}
 
 		private Token ReadLambdSpaceToken() {
@@ -421,7 +430,7 @@ namespace Kurogane.Compiler {
 				else {
 					var sfxRange = new TextRange(startLoc, soLoc);
 					var soRange = new TextRange(soLoc, _Location);
-					_stack.Push( new ReservedToken(this,  soRange, mapKeyword) );
+					_stack.Push(new ReservedToken(this, soRange, mapKeyword));
 					var sfxTxt = str.Substring(0, str.Length - mapKeyword.Length);
 					return new SuffixToken(this, sfxRange, sfxTxt);
 				}

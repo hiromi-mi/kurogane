@@ -25,21 +25,6 @@ namespace Kurogane.Compiler {
 			return Expression.Lambda<Func<Scope, object>>(expr, "プログラム", new[] { global });
 		}
 
-		//public static Expression<Func<Scope, object>> GenerateAll(BinderFactory factory, IEnumerable<Tuple<Block, string>> programs) {
-		//    Contract.Requires<ArgumentNullException>(factory != null);
-		//    Contract.Requires<ArgumentNullException>(programs != null);
-
-		//    var global = Expression.Parameter(typeof(Scope), "global");
-		//    var exprs =
-		//        from pair in programs/*.AsParallel()*/
-		//        let gen = new GlobalGen(pair.Item2, factory, global)
-		//        select gen.Generate(pair.Item1);
-		//    Expression block = Expression.Block(exprs);
-		//    if (block.Type != typeof(object))
-		//        block = Expression.Convert(block, typeof(object));
-		//    return Expression.Lambda<Func<Scope, object>>(block, global);
-		//}
-
 		#region InnerClass
 
 		private class ParamList {
@@ -732,15 +717,16 @@ namespace Kurogane.Compiler {
 				var left = GenElem(elem.Left);
 				var right = GenElem(elem.Right);
 				var binder = SearchBinder(elem.ExprType);
-				if (binder != null)
+				if (binder != null) {
 					return Expression.Dynamic(binder, typeof(object), left, right);
+				}
 				switch (elem.ExprType) {
 				case BinaryOperationType.Cons:
-					return ExpressionHelper.BetaReduction<object, object, object>(
-						(arg0, arg1) => ListCell.Cons(arg0, arg1), left, right);
-				case BinaryOperationType.Concat:
-					return ExpressionHelper.BetaReduction<object, object, object>(
-						(arg0, arg1) => String.Concat(arg0, arg1), left, right);
+					return Cons(left, right);
+				case BinaryOperationType.Concat: {
+						return ExpressionHelper.BetaReduction<object, object, object>(
+							(arg0, arg1) => String.Concat(arg0, arg1), left, right);
+					}
 				}
 				throw Error("未定義の演算が現れました。", elem.Range.Start);
 			}

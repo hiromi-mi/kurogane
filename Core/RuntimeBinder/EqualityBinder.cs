@@ -69,23 +69,26 @@ namespace Kurogane.RuntimeBinder {
 		/// 整数と小数の比較
 		/// </summary>
 		private DynamicMetaObject TryCalcOnDefferentNumericType(DynamicMetaObject left, DynamicMetaObject right) {
-			Expression binExpr = null;
-
-			if (left.LimitType == typeof(int) && right.LimitType == typeof(double)) {
-				binExpr = Expression.MakeBinary(this.Operation,
-					BinderHelper.Wrap(left.Expression, typeof(int), typeof(double)),
-					BinderHelper.Wrap(right.Expression, typeof(double)));
+			Expression leftExpr = BinderHelper.LimitTypeConvert(left);
+			Expression rightExpr = BinderHelper.LimitTypeConvert(right);
+			Expression expr = null;
+			foreach (var pattern in BinderHelper.CastPatterns) {
+				if (leftExpr.Type == pattern.Narrow && rightExpr.Type == pattern.Wide) {
+					var upperLeft = Expression.Convert(leftExpr, pattern.Wide);
+					expr = Expression.MakeBinary(this.Operation, upperLeft, rightExpr);
+					break;
+				}
+				if (leftExpr.Type == pattern.Wide && rightExpr.Type == pattern.Narrow) {
+					var upperRight = Expression.Convert(rightExpr, pattern.Wide);
+					expr = Expression.MakeBinary(this.Operation, leftExpr, upperRight);
+					break;
+				}
 			}
-			if (left.LimitType == typeof(double) && right.LimitType == typeof(int)) {
-				binExpr = Expression.MakeBinary(this.Operation,
-					BinderHelper.Wrap(left.Expression, typeof(double)),
-					BinderHelper.Wrap(right.Expression, typeof(int), typeof(double)));
-			}
-			if (binExpr == null)
+			if (expr == null)
 				return null;
-			var expr = BinderHelper.Wrap(binExpr, this.ReturnType);
-			var rest = BinderHelper.GetTypeRestriction(left, right);
-			return new DynamicMetaObject(expr, rest);
+			return new DynamicMetaObject(
+				BinderHelper.Wrap(expr, this.ReturnType),
+				BinderHelper.GetTypeRestriction(left, right));
 		}
 
 		/// <summary>
