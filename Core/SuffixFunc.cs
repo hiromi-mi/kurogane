@@ -201,9 +201,8 @@ namespace Kurogane {
 		}
 
 		public override string ToString() {
-			var sfxs = Suffix.Split(new[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
 			const string blank = "～";
-			return blank + String.Join(blank, sfxs) + blank + "する。";
+			return Suffix.Replace(Separator, "～") + blank + "する。";
 		}
 
 		#region IDynamicMetaObjectProvider メンバー

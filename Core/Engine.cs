@@ -24,6 +24,8 @@ namespace Kurogane {
 
 		#region static
 
+		public const string FileExtension = ".krg";
+
 		/// <summary>言語のバージョン</summary>
 		public static readonly Version Version;
 
@@ -112,11 +114,20 @@ namespace Kurogane {
 		/// <summary>
 		/// クロガネのプログラムを実行する。
 		/// </summary>
-		/// <param name="filepath">プログラムのファイル名</param>
+		/// <param name="fileName">プログラムのファイル名</param>
 		/// <returns>実行結果</returns>
-		public object ExecuteFile(string filepath) {
-			using (var stream = new StreamReader(filepath, DefaultEncoding)) {
-				return ExecuteCore(stream, filepath);
+		public object ExecuteFile(string fileName) {
+			string fullPath = null;
+			if (File.Exists(fileName)) {
+				fullPath = Path.GetFullPath(fileName);
+			}
+			else if (  File.Exists(fileName + FileExtension)) {
+				fullPath = Path.GetFullPath(fileName + FileExtension);
+			}
+			if (fullPath == null)
+				throw new FileNotFoundException("実行するファイルが見つかりません。", fileName);
+			using (var stream = new StreamReader(fullPath, DefaultEncoding)) {
+				return ExecuteCore(stream, fullPath);
 			}
 		}
 
@@ -195,7 +206,7 @@ namespace Kurogane {
 			});
 			// 動的ライブラリのロード
 			foreach (var name in asm.GetManifestResourceNames())
-				if (name.EndsWith(".krg"))
+				if (name.EndsWith(FileExtension))
 					this.ExecuteStream(asm.GetManifestResourceStream(name), name);
 
 			//var pairs =

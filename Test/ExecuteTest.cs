@@ -54,17 +54,12 @@ namespace Kurogane.Test {
 			Assert.AreEqual(55, (int)num);
 
 			code =
-				"以下の定義でNをパスする。" +
-				"	Nである。" +
-				"以上。" +
 				"以下の定義でNをFIB変換する。" +
-				"	以下の定義で頭と体をNまでFIB変換する。" +
-				"		頭をAに代入する。" +
-				"		体をBに代入する。" +
+				"	以下の定義でAとBをNまでFIB変換する。" +
 				"		もし(N>0)なら" +
 				"			Bと(A+B)を(N-1)までFIB変換する。" +
 				"		他なら" +
-				"			Aをパスする。" +
+				"			Aである。" +
 				"	以上。" +
 				"	0と1をNまでFIB変換する。" +
 				"以上。" +
@@ -80,9 +75,8 @@ namespace Kurogane.Test {
 			Assert.AreEqual(expected, (BigInteger)num);
 
 			code =
-				"【□＋△】を加算とする。" +
 				"以下の定義でNをフィボナッチする。" +
-				"　　もし（N≦１）なら、" +
+				"　　もしN≦1なら、" +
 				"　　　　Nである。" +
 				"　　他なら、" +
 				"　　　　(N-1)と(N-2)をそれぞれフィボナッチし、加算する。" +
@@ -130,20 +124,6 @@ namespace Kurogane.Test {
 			Assert.AreEqual("こんばんは", _engine.Global.GetVariable("B"));
 		}
 
-		[TestMethod]
-		public void もし文が動く() {
-			var result = Execute(
-				"3をAとする。" +
-				"もし" +
-				"　(A＝無)なら" +
-				"　　「失敗」である。" +
-				"　(A＝３)なら" +
-				"　　「成功」である。" +
-				"　他なら" +
-				"　　「失敗」である。");
-
-			Assert.AreEqual("成功", result);
-		}
 
 		[TestMethod]
 		public void リストの中身を合計する() {

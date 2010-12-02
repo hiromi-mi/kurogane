@@ -24,5 +24,10 @@ namespace Kurogane.Libraries {
 			engine.Out.Write(obj);
 			return obj;
 		}
+
+		[JpName("参照")]
+		public static object Execute(this Engine engine, [Suffix("を")]string path) {
+			return engine.ExecuteFile(path);
+		}
 	}
 }
